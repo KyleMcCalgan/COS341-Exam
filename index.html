@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Interactive COS341 walkthroughs for compiler construction, liveness analysis, and register allocation.">
+<title>COS341 Exam Walkthroughs</title>
+<style>
+:root{
+  color-scheme:light dark;
+  --paper:#f5f7fa;--panel:#fff;--ink:#18212f;--muted:#526071;--rule:#d4dbe4;--link:#1756a9;
+}
+@media(prefers-color-scheme:dark){
+  :root{--paper:#151b24;--panel:#1e2632;--ink:#edf2f8;--muted:#aab6c5;--rule:#3a4655;--link:#a7c9ff}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 Arial,"Segoe UI",Roboto,sans-serif}
+main{width:min(100% - 40px,900px);margin:0 auto;padding:64px 0}
+.eyebrow{margin:0 0 8px;color:var(--muted);font-size:14px;font-weight:700;letter-spacing:.04em}
+h1{margin:0;font-size:clamp(30px,5vw,42px);line-height:1.15}
+.intro{max-width:65ch;margin:14px 0 32px;color:var(--muted)}
+.pages{display:grid;gap:14px}
+a.page{display:block;padding:20px 22px;border:1px solid var(--rule);border-radius:6px;background:var(--panel);color:inherit;text-decoration:none;transition:border-color .15s ease,transform .15s ease}
+a.page:hover{border-color:var(--link);transform:translateY(-2px)}
+a.page:focus-visible{outline:3px solid var(--link);outline-offset:3px}
+.page h2{margin:0 0 4px;font-size:21px;line-height:1.3}
+.page p{margin:0;color:var(--muted)}
+.page .open{display:inline-block;margin-top:12px;color:var(--link);font-weight:700}
+@media(max-width:600px){main{padding:40px 0}.intro{margin-bottom:24px}a.page{padding:17px}}
+@media(prefers-reduced-motion:reduce){a.page{transition:none}a.page:hover{transform:none}}
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">COS341 · EXAM REVISION</p>
+  <h1>Walkthroughs</h1>
+  <p class="intro">Choose an interactive walkthrough to follow the liveness analysis, interference graph, register colouring, and spilling steps.</p>
+  <nav class="pages" aria-label="Walkthrough pages">
+    <a class="page" href="ch6_9_walkthrough.html">
+      <h2>Chapters 6 &amp; 9 walkthrough</h2>
+      <p>Follow the tree method and textbook translation tables for expressions, statements, and procedure calls.</p>
+      <span class="open">Open Chapters 6 &amp; 9 →</span>
+    </a>
+    <a class="page" href="ch9_guide.html">
+      <h2>Chapter 9 guide</h2>
+      <p>Compare call sequences and inlining, and follow how procedure calls use the stack.</p>
+      <span class="open">Open Chapter 9 →</span>
+    </a>
+    <a class="page" href="ch8_walkthrough.html">
+      <h2>Chapter 8 walkthrough</h2>
+      <p>Work through the concepts and algorithms using tutorial and textbook examples.</p>
+      <span class="open">Open Chapter 8 →</span>
+    </a>
+    <a class="page" href="h6_walkthrough.html">
+      <h2>Homework 6 walkthrough</h2>
+      <p>Apply the Chapter 8 methods to the homework code and inspect its register allocation.</p>
+      <span class="open">Open Homework 6 →</span>
+    </a>
+  </nav>
+</main>
+</body>
+</html>

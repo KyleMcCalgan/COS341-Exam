@@ -1,0 +1,1037 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>COS341 Ch 6 + 9 walkthrough (Sem Test 2, Task 2)</title>
+<style>
+:root{
+  --paper:#f5f7fa; --panel:#fff; --ink:#18212f; --muted:#526071; --rule:#d4dbe4;
+  --read:#1756a9; --write:#b42318;
+  --src:#fff0bf; --srcline:#9a6b00; --dst:#d9f0df; --dstline:#28713d;
+  --new:#f7d7cb; --accent:#28713d; --warn:#8a4b00;
+  --sans:Arial,"Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#151b24; --panel:#1e2632; --ink:#edf2f8; --muted:#aab6c5; --rule:#3a4655;
+    --read:#8db7f0; --write:#ff9b91; --src:#554719; --srcline:#e0c35a; --dst:#23482f; --dstline:#8fd17c;
+    --new:#6b3b27; --accent:#8fd17c; --warn:#e5a55c;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#151b24; --panel:#1e2632; --ink:#edf2f8; --muted:#aab6c5; --rule:#3a4655;
+  --read:#8db7f0; --write:#ff9b91; --src:#554719; --srcline:#e0c35a; --dst:#23482f; --dstline:#8fd17c;
+  --new:#6b3b27; --accent:#8fd17c; --warn:#e5a55c;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font:17px/1.65 var(--sans)}
+code,.mono{font-family:var(--mono);font-size:.92em}
+header{border-bottom:1px solid var(--rule);padding:16px 24px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:baseline;background:var(--panel)}
+header h1{font-size:21px;margin:0;font-weight:700}
+header .sub{color:var(--muted);font-size:14px}
+header .spacer{flex:1}
+select,button,textarea,input{font:inherit;color:var(--ink)}
+select,input[type=number]{background:var(--panel);border:1px solid var(--rule);padding:3px 6px}
+button{background:var(--panel);border:1px solid var(--ink);padding:4px 12px;cursor:pointer}
+button:hover:not(:disabled){background:var(--ink);color:var(--paper)}
+button:disabled{opacity:.35;cursor:default}
+button.quiet{border-color:var(--rule);padding:2px 8px;font-size:14px}
+.layout{display:grid;grid-template-columns:230px minmax(0,1fr);min-height:calc(100vh - 60px)}
+nav{border-right:1px solid var(--rule);padding:14px 0;position:sticky;top:0;align-self:start;max-height:100vh;overflow:auto}
+nav a{display:block;padding:9px 16px;color:var(--muted);text-decoration:none;cursor:pointer;border-left:3px solid transparent;font-size:15px;line-height:1.4}
+nav a b{display:inline-block;width:1.4em;font-family:var(--mono);font-weight:400}
+nav a:hover{color:var(--ink)}
+nav a.on{color:var(--ink);border-left-color:var(--ink);background:var(--panel);font-weight:700}
+nav a.done b::after{content:"·"}
+main{padding:28px 36px 64px;max-width:1240px}
+h2{font-size:26px;line-height:1.25;margin:0 0 8px}
+h3{font-size:17px;margin:28px 0 8px;color:var(--ink);font-weight:700}
+p{margin:.65em 0}
+.lede{color:var(--muted);margin:0 0 20px;max-width:75ch}
+.box{background:var(--panel);border:1px solid var(--rule);padding:16px 20px;margin:16px 0;border-radius:6px}
+.box.eq{border-left:4px solid var(--ink)}
+.box.warn{border-left:4px solid var(--warn)}
+.box.ok{border-left:4px solid var(--accent)}
+.row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.row>.col{flex:1 1 340px;min-width:0}
+table.t{border-collapse:collapse;font-size:15px;width:100%}
+table.t th{font-weight:700;text-align:left;border-bottom:2px solid var(--ink);padding:7px 8px;white-space:nowrap}
+table.t td{padding:5px 8px;border-bottom:1px solid var(--rule);vertical-align:top}
+table.t td.i{color:var(--muted);text-align:right;width:2.4em}
+table.t td.pend{color:var(--rule)}
+table.t tr.lab td.ins{color:var(--muted)}
+table.t tr.cur td{background:color-mix(in srgb,var(--ink) 6%,transparent)}
+table.t td.src{background:var(--src);outline:2px dashed var(--srcline);outline-offset:-2px}
+table.t td.dst{background:var(--dst);outline:2px solid var(--dstline);outline-offset:-2px;font-weight:700}
+table.t td.chg::after{content:" ●";color:var(--write);font-size:.7em}
+table.t td.bnd{background:var(--src);outline:2px dashed var(--srcline);outline-offset:-2px}
+.r{color:var(--read);font-weight:700;border-bottom:2px solid var(--read)}
+.w{color:var(--write);font-weight:700;border-bottom:2px solid var(--write)}
+.lab-tok{font-style:italic}
+.chip{display:inline-block;font-family:var(--mono);font-size:.9em;padding:0 5px;border:1px solid var(--rule);background:var(--paper)}
+.chip.src{background:var(--src);border:1px dashed var(--srcline)}
+.chip.dst{background:var(--dst);border:1px solid var(--dstline);font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;color:var(--muted);margin:6px 0 10px}
+.eqline{font-family:var(--mono);font-size:15px;margin:3px 0;white-space:pre-wrap}
+.eqline.sub{color:var(--muted);font-family:var(--sans);font-size:15px;white-space:normal}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+.ctl .cnt{font-family:var(--mono);font-size:14px;color:var(--muted);margin:0 6px}
+.badge{font-family:var(--mono);font-size:13px;border:1px solid var(--ink);padding:0 6px;margin-right:6px}
+.pill-ref td.hit,.pill-ref tr.hit td{background:var(--src);font-weight:700}
+table.ref{border-collapse:collapse;font-size:14px}
+table.ref td,table.ref th{border-bottom:1px solid var(--rule);padding:5px 10px;text-align:left}
+table.ref tr.hit td{background:var(--src);outline:2px dashed var(--srcline);outline-offset:-2px;font-weight:700}
+svg.g{width:100%;max-width:520px;height:auto;background:var(--panel);border:1px solid var(--rule)}
+svg.g .e{stroke:var(--muted);stroke-width:1.4;opacity:.8}
+svg.g .e.new{stroke:var(--write);stroke-width:3;opacity:1}
+svg.g .e.faint{opacity:.12}
+svg.g circle{fill:var(--paper);stroke:var(--ink);stroke-width:1.6}
+svg.g circle.hot{stroke-width:4;stroke:var(--dstline)}
+svg.g circle.sp{stroke:var(--write);stroke-dasharray:4 3;stroke-width:3}
+svg.g text{font-family:var(--mono);font-size:13px;fill:var(--ink);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+svg.g text.rg{font-size:10px;fill:var(--muted)}
+svg.g g.gone{opacity:.18}
+svg.g .fillc text{fill:#1c1a16}
+svg.g .fillc text.rg{fill:var(--muted)}
+.stack{display:flex;flex-direction:column-reverse;gap:2px;font-family:var(--mono);font-size:14px;max-width:360px}
+.stack div{border:1px solid var(--ink);padding:2px 8px;background:var(--panel)}
+.stack div.top{background:var(--dst)}
+.stack small{color:var(--muted)}
+textarea{width:100%;min-height:210px;font-family:var(--mono);font-size:14px;background:var(--panel);border:1px solid var(--rule);padding:8px}
+.err{color:var(--write);font-family:var(--mono);font-size:14px}
+.tag{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.swatch{display:inline-block;width:12px;height:12px;border:1px solid var(--ink);vertical-align:-1px;margin-right:4px}
+ol.rules li{margin:4px 0}
+.pipe{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-family:var(--mono);font-size:14px}
+.pipe span.s{border:1px solid var(--ink);padding:2px 8px;background:var(--panel)}
+kbd{font-family:var(--mono);border:1px solid var(--rule);padding:0 4px;font-size:.85em}
+@media (max-width:820px){
+  .layout{grid-template-columns:1fr}
+  nav{position:static;display:flex;overflow-x:auto;border-right:0;border-bottom:1px solid var(--rule);padding:0;max-height:none}
+  nav a{white-space:nowrap;border-left:0;border-bottom:3px solid transparent}
+  nav a.on{border-bottom-color:var(--ink)}
+  main{padding:20px 16px 50px}
+  table.t{font-size:13px}
+}
+
+:root{--p1:#fff0bf;--p2:#d9f0df;--p3:#d9e8fb;--p4:#f7d7cb;--p5:#e8ddf2;--p6:#d8e0e8}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--p1:#5b4a12;--p2:#254a1d;--p3:#1e3a5c;--p4:#5c3320;--p5:#432b56;--p6:#3a3a3a}}
+:root[data-theme="dark"]{--p1:#5b4a12;--p2:#254a1d;--p3:#1e3a5c;--p4:#5c3320;--p5:#432b56;--p6:#3a3a3a}
+.themebtn{margin-left:auto}
+.scroll{overflow-x:auto}
+.seg{display:inline-flex;border:1px solid var(--ink);margin:8px 0}
+.seg button{border:0;border-right:1px solid var(--ink);padding:6px 14px;background:var(--panel)}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--ink);color:var(--paper)}
+.fig{margin:14px 0}
+.figcap{margin-bottom:4px}
+table.ft{border-collapse:collapse;width:100%;font-size:14px}
+table.ft td,table.ft th{border:1px solid var(--rule);padding:3px 8px;vertical-align:top;text-align:left}
+table.ft th{background:var(--panel);font-size:13px}
+table.ft td.pat{background:var(--panel);min-width:120px;font-size:13.5px}
+table.ft td.no{color:var(--muted);width:2em;text-align:right;font-family:var(--mono)}
+table.ft td.gl{font-family:var(--sans);font-size:15px}
+table.ft td.cv{font-family:var(--mono);font-size:13.5px}
+table.ft td.tp{font-size:13.5px;color:var(--ink);background:color-mix(in srgb,var(--p3) 40%,transparent)}
+table.ft tr.act td.gl{background:color-mix(in srgb,var(--p1) 55%,transparent)}
+table.ft tr.act td.pat{background:var(--p1);font-weight:700;outline:2px solid var(--srcline);outline-offset:-2px}
+table.ft tr.act td.cv{background:color-mix(in srgb,var(--p2) 45%,transparent)}
+table.ft tr.cur td.cv,table.ft tr.cur td.gl{outline:2px solid var(--dstline);outline-offset:-2px}
+table.ft tr.skip td{color:var(--muted);font-size:13px}
+table.ft tr.skip td.sk{font-style:italic;opacity:.7}
+table.ft .fg{font-size:11.5px;color:var(--muted);font-weight:400}
+table.ft .dots{color:var(--muted)}
+table.ft .nw b{background:var(--new);padding:0 3px}
+table.ft .res{margin-top:2px;color:var(--accent);font-weight:700}
+table.ft .desc{color:var(--write);font-size:12px}
+table.ft .cm{font-size:12.5px;color:var(--muted);font-style:italic}
+table.ft.c9 tr.ph-save td.pat,table.ft.c9 tr.ph-save td.gl{background:var(--p1)}
+table.ft.c9 tr.ph-res td.pat,table.ft.c9 tr.ph-res td.gl{background:var(--p4)}
+table.ft.c9 tr.ph-arg td.pat,table.ft.c9 tr.ph-arg td.gl{background:var(--p3)}
+table.ft.c9 tr.ph-ret td.pat,table.ft.c9 tr.ph-ret td.gl{background:var(--p5)}
+table.ft.c9 tr.ph-go td.pat,table.ft.c9 tr.ph-go td.gl{background:var(--p2)}
+table.ft.c9 tr.ph-fet td.pat,table.ft.c9 tr.ph-fet td.gl{background:var(--p6)}
+table.ft.c9 tr.ph-free td.pat,table.ft.c9 tr.ph-free td.gl{background:var(--p4)}
+.narr{font-size:15.5px}
+.narr .tpl{margin-top:6px;color:var(--muted);font-size:14.5px}
+.stk,.cnts,.mem,.vars{background:var(--panel);border:1px solid var(--rule);padding:8px 10px;margin-bottom:10px}
+.stkh{font-size:14px;color:var(--muted);font-weight:700;margin-bottom:4px}
+.fr{font-family:var(--mono);font-size:12.5px;padding:2px 4px;border-left:3px solid var(--rule);margin-bottom:2px;overflow-wrap:anywhere}
+.fr.top{border-left-color:var(--dstline);background:var(--dst)}
+.fr .tag{display:block}
+.tog{display:block;margin-top:8px;font-size:14px;color:var(--muted)}
+.treewrap{overflow-x:auto;padding-bottom:6px}
+.tn{border:1px solid var(--rule);background:var(--panel);padding:6px 8px;margin:6px 0 6px 0;min-width:230px}
+.tn.unv{opacity:.45}
+.tn.cur{outline:3px solid var(--dstline);background:color-mix(in srgb,var(--dst) 35%,var(--panel))}
+.tn .th{font-size:14.5px}
+.tn .th .src{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-left:8px}
+.tn .ta{margin-top:4px;font-size:13px}
+.tn .tc{margin-top:4px;border-top:1px dashed var(--rule);padding-top:4px}
+.tn .comp{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.tn .code{font-family:var(--mono);font-size:13px;margin-top:2px;color:var(--ink)}
+.tn .kids{margin-left:18px;border-left:2px solid var(--rule);padding-left:10px}
+.chip.nw{background:var(--new);border-color:var(--write)}
+.kid{background:var(--p3);padding:0 3px}
+pre.code{font-family:var(--mono);font-size:13.5px;background:var(--panel);border:1px solid var(--rule);padding:8px 10px;margin:6px 0;overflow-x:auto;line-height:1.5}
+pre.code .ln{display:block;padding:0 4px;white-space:pre}
+pre.code .ln.ph-save{background:var(--p1)}
+pre.code .ln.ph-res{background:var(--p4)}
+pre.code .ln.ph-arg{background:var(--p3)}
+pre.code .ln.ph-ret{background:var(--p5)}
+pre.code .ln.ph-go{background:var(--p2)}
+pre.code .ln.ph-fet{background:var(--p6)}
+pre.code .ln.ph-free{background:var(--p4)}
+pre.code .ln.cur{outline:2px solid var(--ink);outline-offset:-1px;font-weight:700}
+.swatch.ph-save{background:var(--p1)}.swatch.ph-res{background:var(--p4)}.swatch.ph-arg{background:var(--p3)}.swatch.ph-ret{background:var(--p5)}.swatch.ph-go{background:var(--p2)}.swatch.ph-fet{background:var(--p6)}
+.frame{display:flex;flex-direction:column;max-width:520px}
+.fc{border:1px solid var(--ink);padding:3px 10px;font-family:var(--mono);font-size:13.5px;background:var(--paper);margin-bottom:-1px}
+.fc.hi{background:var(--p5)}
+.fc.dots{border-style:dashed}
+.mc{display:flex;gap:10px;font-family:var(--mono);font-size:13.5px;border-bottom:1px solid var(--rule);padding:1px 2px}
+.mc .ad{color:var(--muted);width:6.5em}
+.mc.sp{background:var(--dst)}
+.mc .spm{color:var(--write);font-weight:700}
+.badge{background:var(--paper)}
+
+body{overflow-x:hidden}main{min-width:0}pre.code{max-width:100%}.row>.col{min-width:0}
+.sourcePages{display:grid;gap:20px;margin-top:20px}
+.sourcePage{margin:0;padding:14px;background:var(--panel);border:1px solid var(--rule);border-radius:6px}
+.sourcePage figcaption{margin:0 0 10px;font-weight:700}
+.sourcePage a{display:block;color:var(--read);text-align:center}
+.sourcePage img{display:block;width:100%;height:auto;max-width:1000px;margin:0 auto;border:1px solid var(--rule)}
+.sourceNote{margin:0 0 14px;color:var(--muted)}
+
+</style></head><body>
+<header><h1>COS341 · Chapters 6 &amp; 9</h1><span class="sub">Semester Test 2, Task 2: tree method and textbook tables, side by side</span><span class="spacer"></span><button class="quiet themebtn" onclick="toggleTheme()">Light / dark</button></header>
+<div class="layout"><nav></nav><main></main></div>
+<script>
+"use strict";
+/* ============================================================
+   Helpers
+   ============================================================ */
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtSet=a=>{a=[...a].sort((x,y)=>x.localeCompare(y,undefined,{numeric:true}));return a.length?'{'+a.map(esc).join(', ')+'}':'∅'};
+const iv=(n,s)=>`<i>${n}${s?`<sub>${s}</sub>`:''}</i>`;
+const T_EXP='<i>Trans<sub>Exp</sub></i>',T_EXPS='<i>Trans<sub>Exps</sub></i>',T_STAT='<i>Trans<sub>Stat</sub></i>',T_COND='<i>Trans<sub>Cond</sub></i>';
+const VF=`${iv('vtable')}, ${iv('ftable')}`;
+
+/* ============================================================
+   The textbook's recursive tables, line for line
+   (Fig 6.3 TransExp + TransExps, Fig 6.5 TransStat, Fig 6.6 and Fig 6.8 TransCond)
+   ============================================================ */
+const TB={
+ Exp:{fig:'6.3',title:`${T_EXP}(${iv('Exp')}, ${VF}, ${iv('place')}) = case ${iv('Exp')} of`,rows:[
+  {key:'e_num',pat:'<b>num</b>',lines:[
+    `${iv('v')} = ${iv('getvalue')}(<b>num</b>)`,
+    `[${iv('place')} := ${iv('v')}]`]},
+  {key:'e_id',pat:'<b>id</b>',lines:[
+    `${iv('x')} = ${iv('lookup')}(${iv('vtable')}, ${iv('getname')}(<b>id</b>))`,
+    `[${iv('place')} := ${iv('x')}]`]},
+  {key:'e_unop',pat:`<b>unop</b> ${iv('Exp',1)}`,lines:[
+    `${iv('place',1)} = ${iv('newvar')}()`,
+    `${iv('code',1)} = ${T_EXP}(${iv('Exp',1)}, ${VF}, ${iv('place',1)})`,
+    `${iv('op')} = ${iv('transop')}(${iv('getopname')}(<b>unop</b>))`,
+    `${iv('code',1)} ++ [${iv('place')} := ${iv('op')} ${iv('place',1)}]`]},
+  {key:'e_binop',pat:`${iv('Exp',1)} <b>binop</b> ${iv('Exp',2)}`,lines:[
+    `${iv('place',1)} = ${iv('newvar')}()`,
+    `${iv('place',2)} = ${iv('newvar')}()`,
+    `${iv('code',1)} = ${T_EXP}(${iv('Exp',1)}, ${VF}, ${iv('place',1)})`,
+    `${iv('code',2)} = ${T_EXP}(${iv('Exp',2)}, ${VF}, ${iv('place',2)})`,
+    `${iv('op')} = ${iv('transop')}(${iv('getopname')}(<b>binop</b>))`,
+    `${iv('code',1)} ++ ${iv('code',2)} ++ [${iv('place')} := ${iv('place',1)} ${iv('op')} ${iv('place',2)}]`]},
+  {key:'e_call',pat:`<b>id</b>(${iv('Exps')})`,lines:[
+    `(${iv('code',1)}, [${iv('a',1)},...,${iv('a','n')}]) = ${T_EXPS}(${iv('Exps')}, ${VF})`,
+    `${iv('fname')} = ${iv('lookup')}(${iv('ftable')}, ${iv('getname')}(<b>id</b>))`,
+    `${iv('code',1)} ++ [${iv('place')} := CALL ${iv('fname')}(${iv('a',1)},...,${iv('a','n')})]`]},
+  {key:'e_true',fig:'6.8',pat:'true',lines:[`[${iv('place')} := 1]`]},
+  {key:'e_false',fig:'6.8',pat:'false',lines:[`[${iv('place')} := 0]`]},
+  {key:'e_cond',fig:'6.8',pat:iv('Cond'),lines:[
+    `${iv('label',1)} = ${iv('newlabel')}()`,
+    `${iv('label',2)} = ${iv('newlabel')}()`,
+    `${iv('code',1)} = ${T_COND}(${iv('Cond')}, ${iv('label',1)}, ${iv('label',2)}, ${VF})`,
+    `[${iv('place')} := 0] ++ ${iv('code',1)}<br>&nbsp;&nbsp;&nbsp;++ [LABEL ${iv('label',1)}, ${iv('place')} := 1]<br>&nbsp;&nbsp;&nbsp;++ [LABEL ${iv('label',2)}]`]}
+ ]},
+ Exps:{fig:'6.3',title:`${T_EXPS}(${iv('Exps')}, ${VF}) = case ${iv('Exps')} of`,rows:[
+  {key:'exps_one',pat:iv('Exp'),lines:[
+    `${iv('place')} = ${iv('newvar')}()`,
+    `${iv('code',1)} = ${T_EXP}(${iv('Exp')}, ${VF}, ${iv('place')})`,
+    `(${iv('code',1)}, [${iv('place')}])`]},
+  {key:'exps_more',pat:`${iv('Exp')} , ${iv('Exps')}`,lines:[
+    `${iv('place')} = ${iv('newvar')}()`,
+    `${iv('code',1)} = ${T_EXP}(${iv('Exp')}, ${VF}, ${iv('place')})`,
+    `(${iv('code',2)}, ${iv('args')}) = ${T_EXPS}(${iv('Exps')}, ${VF})`,
+    `${iv('code',3)} = ${iv('code',1)} ++ ${iv('code',2)}`,
+    `${iv('args',1)} = ${iv('place')} :: ${iv('args')}`,
+    `(${iv('code',3)}, ${iv('args',1)})`]}
+ ]},
+ Stat:{fig:'6.5',title:`${T_STAT}(${iv('Stat')}, ${VF}) = case ${iv('Stat')} of`,rows:[
+  {key:'s_seq',pat:`${iv('Stat',1)} ; ${iv('Stat',2)}`,lines:[
+    `${iv('code',1)} = ${T_STAT}(${iv('Stat',1)}, ${VF})`,
+    `${iv('code',2)} = ${T_STAT}(${iv('Stat',2)}, ${VF})`,
+    `${iv('code',1)} ++ ${iv('code',2)}`]},
+  {key:'s_assign',pat:`<b>id</b> := ${iv('Exp')}`,lines:[
+    `${iv('place')} = ${iv('newvar')}()`,
+    `${iv('x')} = ${iv('lookup')}(${iv('vtable')}, ${iv('getname')}(<b>id</b>))`,
+    `${T_EXP}(${iv('Exp')}, ${VF}, ${iv('place')}) ++ [${iv('x')} := ${iv('place')}]`]},
+  {key:'s_if',pat:`<code>if</code> ${iv('Cond')}<br><code>then</code> ${iv('Stat',1)}`,lines:[
+    `${iv('label',1)} = ${iv('newlabel')}()`,
+    `${iv('label',2)} = ${iv('newlabel')}()`,
+    `${iv('code',1)} = ${T_COND}(${iv('Cond')}, ${iv('label',1)}, ${iv('label',2)}, ${VF})`,
+    `${iv('code',2)} = ${T_STAT}(${iv('Stat',1)}, ${VF})`,
+    `${iv('code',1)} ++ [LABEL ${iv('label',1)}] ++ ${iv('code',2)}<br>&nbsp;&nbsp;&nbsp;++ [LABEL ${iv('label',2)}]`]},
+  {key:'s_ifelse',pat:`<code>if</code> ${iv('Cond')}<br><code>then</code> ${iv('Stat',1)}<br><code>else</code> ${iv('Stat',2)}`,lines:[
+    `${iv('label',1)} = ${iv('newlabel')}()`,
+    `${iv('label',2)} = ${iv('newlabel')}()`,
+    `${iv('label',3)} = ${iv('newlabel')}()`,
+    `${iv('code',1)} = ${T_COND}(${iv('Cond')}, ${iv('label',1)}, ${iv('label',2)}, ${VF})`,
+    `${iv('code',2)} = ${T_STAT}(${iv('Stat',1)}, ${VF})`,
+    `${iv('code',3)} = ${T_STAT}(${iv('Stat',2)}, ${VF})`,
+    `${iv('code',1)} ++ [LABEL ${iv('label',1)}] ++ ${iv('code',2)}<br>&nbsp;&nbsp;&nbsp;++ [GOTO ${iv('label',3)}, LABEL ${iv('label',2)}]<br>&nbsp;&nbsp;&nbsp;++ ${iv('code',3)} ++ [LABEL ${iv('label',3)}]`]},
+  {key:'s_while',pat:`<code>while</code> ${iv('Cond')}<br><code>do</code> ${iv('Stat',1)}`,lines:[
+    `${iv('label',1)} = ${iv('newlabel')}()`,
+    `${iv('label',2)} = ${iv('newlabel')}()`,
+    `${iv('label',3)} = ${iv('newlabel')}()`,
+    `${iv('code',1)} = ${T_COND}(${iv('Cond')}, ${iv('label',2)}, ${iv('label',3)}, ${VF})`,
+    `${iv('code',2)} = ${T_STAT}(${iv('Stat',1)}, ${VF})`,
+    `[LABEL ${iv('label',1)}] ++ ${iv('code',1)}<br>&nbsp;&nbsp;&nbsp;++ [LABEL ${iv('label',2)}] ++ ${iv('code',2)}<br>&nbsp;&nbsp;&nbsp;++ [GOTO ${iv('label',1)}, LABEL ${iv('label',3)}]`]},
+  {key:'s_repeat',pat:`<code>repeat</code> ${iv('Stat',1)}<br><code>until</code> ${iv('Cond')}`,lines:[
+    `${iv('label',1)} = ${iv('newlabel')}()`,
+    `${iv('label',2)} = ${iv('newlabel')}()`,
+    `${iv('code',1)} = ${T_STAT}(${iv('Stat',1)}, ${VF})`,
+    `${iv('code',2)} = ${T_COND}(${iv('Cond')}, ${iv('label',2)}, ${iv('label',1)}, ${VF})`,
+    `[LABEL ${iv('label',1)}] ++ ${iv('code',1)}<br>&nbsp;&nbsp;&nbsp;++ ${iv('code',2)} ++ [LABEL ${iv('label',2)}]`]}
+ ]},
+ Cond:{fig:'6.6',title:`${T_COND}(${iv('Cond')}, ${iv('label','t')}, ${iv('label','f')}, ${VF}) = case ${iv('Cond')} of`,rows:[
+  {key:'c_rel',pat:`${iv('Exp',1)} <b>relop</b> ${iv('Exp',2)}`,lines:[
+    `${iv('t',1)} = ${iv('newvar')}()`,
+    `${iv('t',2)} = ${iv('newvar')}()`,
+    `${iv('code',1)} = ${T_EXP}(${iv('Exp',1)}, ${VF}, ${iv('t',1)})`,
+    `${iv('code',2)} = ${T_EXP}(${iv('Exp',2)}, ${VF}, ${iv('t',2)})`,
+    `${iv('op')} = ${iv('transop')}(${iv('getopname')}(<b>relop</b>))`,
+    `${iv('code',1)} ++ ${iv('code',2)} ++ [IF ${iv('t',1)} ${iv('op')} ${iv('t',2)} THEN ${iv('label','t')} ELSE ${iv('label','f')}]`]},
+  {key:'c_true',fig:'6.8',pat:'true',lines:[`[GOTO ${iv('label','t')}]`]},
+  {key:'c_false',fig:'6.8',pat:'false',lines:[`[GOTO ${iv('label','f')}]`]},
+  {key:'c_not',fig:'6.8',pat:`! ${iv('Cond',1)}`,lines:[
+    `${T_COND}(${iv('Cond',1)}, ${iv('label','f')}, ${iv('label','t')}, ${VF})`]},
+  {key:'c_and',fig:'6.8',pat:`${iv('Cond',1)} &amp;&amp; ${iv('Cond',2)}`,lines:[
+    `${iv('arg',2)} = ${iv('newlabel')}()`,
+    `${iv('code',1)} = ${T_COND}(${iv('Cond',1)}, ${iv('arg',2)}, ${iv('label','f')}, ${VF})`,
+    `${iv('code',2)} = ${T_COND}(${iv('Cond',2)}, ${iv('label','t')}, ${iv('label','f')}, ${VF})`,
+    `${iv('code',1)} ++ [LABEL ${iv('arg',2)}] ++ ${iv('code',2)}`]},
+  {key:'c_or',fig:'6.8',pat:`${iv('Cond',1)} || ${iv('Cond',2)}`,lines:[
+    `${iv('arg',2)} = ${iv('newlabel')}()`,
+    `${iv('code',1)} = ${T_COND}(${iv('Cond',1)}, ${iv('label','t')}, ${iv('arg',2)}, ${VF})`,
+    `${iv('code',2)} = ${T_COND}(${iv('Cond',2)}, ${iv('label','t')}, ${iv('label','f')}, ${VF})`,
+    `${iv('code',1)} ++ [LABEL ${iv('arg',2)}] ++ ${iv('code',2)}`]},
+  {key:'c_exp',fig:'6.8',pat:iv('Exp'),lines:[
+    `${iv('t')} = ${iv('newvar')}()`,
+    `${iv('code',1)} = ${T_EXP}(${iv('Exp')}, ${VF}, ${iv('t')})`,
+    `${iv('code',1)} ++ [IF ${iv('t')} ≠ 0 THEN ${iv('label','t')} ELSE ${iv('label','f')}]`]}
+ ]}
+};
+const FN_OF_KEY={};Object.entries(TB).forEach(([fn,t])=>t.rows.forEach(r=>FN_OF_KEY[r.key]=fn));
+// the friend's "templates" (the same rules, shortened)
+const TEMPLATE={
+ e_num:'number n: <code>place := n</code>',e_id:'variable: <code>place := v0</code>',
+ e_unop:'op E: new t → E→t, <code>place := op t</code>',
+ e_binop:'E1 op E2: new t1,t2 → E1→t1, E2→t2, <code>place := t1 op t2</code>',
+ e_call:'f(args): Exps→[a1..an], <code>place := CALL f(a1..an)</code>',
+ e_true:'true: <code>place := 1</code>',e_false:'false: <code>place := 0</code>',e_cond:'Cond as value: place := 0, cond(C,L1,L2), LABEL L1, place := 1, LABEL L2',
+ s_seq:'S1 ; S2: code of S1, then code of S2',s_assign:'x := E: new t → E→t, then <code>x := t</code>',
+ s_if:'if C then S: cond(C,L1,L2), LABEL L1, S, LABEL L2',
+ s_ifelse:'if C then S1 else S2: cond(C,L1,L2), LABEL L1, S1, GOTO L3, LABEL L2, S2, LABEL L3',
+ s_while:'while C do S: LABEL L1, cond(C,L2,L3), LABEL L2, S, GOTO L1, LABEL L3',
+ s_repeat:'repeat S until C: LABEL L1, S, cond(C,L2,L1), LABEL L2',
+ c_rel:'E1 relop E2: new t1,t2 → E1→t1, E2→t2, <code>IF t1 relop t2 THEN Lt ELSE Lf</code>',
+ c_true:'true: <code>GOTO Lt</code>',c_false:'false: <code>GOTO Lf</code>',c_not:'!C: cond(C, Lf, Lt), emits nothing itself',
+ c_and:'C1 &amp;&amp; C2: new L → cond(C1,L,Lf), LABEL L, cond(C2,Lt,Lf)',c_or:'C1 || C2: new L → cond(C1,Lt,L), LABEL L, cond(C2,Lt,Lf)',
+ c_exp:'plain E: new t → E→t, <code>IF t ≠ 0 THEN Lt ELSE Lf</code>',
+ exps_one:'last argument: new place → translate it',exps_more:'argument, then the rest: new place → translate it, then the remaining arguments'
+};
+const ROWNAME={e_num:'num',e_id:'id',e_unop:'unop Exp₁',e_binop:'Exp₁ binop Exp₂',e_call:'id(Exps)',e_true:'true',e_false:'false',e_cond:'Cond',
+ exps_one:'Exp',exps_more:'Exp , Exps',s_seq:'Stat₁ ; Stat₂',s_assign:'id := Exp',s_if:'if Cond then Stat₁',s_ifelse:'if Cond then Stat₁ else Stat₂',
+ s_while:'while Cond do Stat₁',s_repeat:'repeat Stat₁ until Cond',c_rel:'Exp₁ relop Exp₂',c_true:'true',c_false:'false',c_not:'! Cond₁',c_and:'Cond₁ && Cond₂',c_or:'Cond₁ || Cond₂',c_exp:'Exp'};
+
+/* ============================================================
+   AST builders and the presets (sem test 2 + two extras)
+   ============================================================ */
+let NID=0;
+const mk=o=>{o.id=NID++;return o};
+const E_num=v=>mk({k:'e_num',v}),E_id=name=>mk({k:'e_id',name}),E_un=(op,e)=>mk({k:'e_unop',op,e}),
+  E_bin=(op,l,r)=>mk({k:'e_binop',op,l,r}),E_call=(f,args)=>mk({k:'e_call',f,args});
+const S_seq=(a,b)=>mk({k:'s_seq',a,b}),S_asg=(nm,e)=>mk({k:'s_assign',nm,e}),S_wh=(c,s)=>mk({k:'s_while',c,s}),S_rep=(s,c)=>mk({k:'s_repeat',s,c});
+const C_rel=(op,l,r)=>mk({k:'c_rel',op,l,r}),C_and=(a,b)=>mk({k:'c_and',a,b}),C_or=(a,b)=>mk({k:'c_or',a,b}),C_not=c=>mk({k:'c_not',c});
+function src(n){
+  switch(n.k){
+   case 'e_num':return String(n.v);case 'e_id':return n.name;
+   case 'e_unop':return n.op+src(n.e);
+   case 'e_binop':return src(n.l)+' '+n.op+' '+src(n.r);
+   case 'e_call':return n.f+'('+n.args.map(src).join(', ')+')';
+   case 'c_rel':return src(n.l)+' '+n.op+' '+src(n.r);
+   case 'c_not':return '!('+src(n.c)+')';
+   case 'c_and':return '('+src(n.a)+') && ('+src(n.b)+')';
+   case 'c_or':return '('+src(n.a)+') || ('+src(n.b)+')';
+   case 's_assign':return n.nm+' := '+src(n.e);
+   case 's_seq':return src(n.a)+'; '+src(n.b);
+   case 's_while':return 'while ('+src(n.c)+') do { '+src(n.s)+' }';
+   case 's_repeat':return 'repeat { '+src(n.s)+' } until ('+src(n.c)+')';
+  }
+  return '?';
+}
+const PRESETS={
+ q2a:{key:'q2a',tag:'2a',short:'2a · MAIN (two calls)',title:'Question 2a: the MAIN program',
+   code:'result := add( 3 , add( 4 , 5 ) );',vt:{result:'u0',x:'u1',y:'u2'},ft:{add:'f'},start:0,
+   build:()=>{NID=0;return S_asg('result',E_call('add',[E_num(3),E_call('add',[E_num(4),E_num(5)])]))}},
+ q2b:{key:'q2b',tag:'2b',short:'2b · the while-loop',title:'Question 2b: the while-loop inside add',after:'q2a',
+   code:'while ( y > 0 ) do { x := x + 1 ; y := y - 1 ; }',vt:{result:'u0',x:'u1',y:'u2'},ft:{add:'f'},start:0,
+   build:()=>{NID=0;return S_wh(C_rel('>',E_id('y'),E_num(0)),S_seq(S_asg('x',E_bin('+',E_id('x'),E_num(1))),S_asg('y',E_bin('-',E_id('y'),E_num(1)))))}},
+ x1:{key:'x1',tag:'extra',short:'extra · repeat-until with &&',title:'Extra: your HW5 (repeat-until with &&)',
+   code:'x := 12; repeat { x := ((x*2)-5) } until ((x>80) && (x<100))',vt:{x:'v0'},ft:{},start:1,
+   build:()=>{NID=0;return S_seq(S_asg('x',E_num(12)),S_rep(S_asg('x',E_bin('-',E_bin('*',E_id('x'),E_num(2)),E_num(5))),C_and(C_rel('>',E_id('x'),E_num(80)),C_rel('<',E_id('x'),E_num(100)))))}},
+ x2:{key:'x2',tag:'extra',short:'extra · while with ! and ||',title:'Extra: the friend\'s while example (! and ||)',
+   code:'y := 3; while ( !(y>100) || (y=0) ) do { y := ((y+1)*3) }',vt:{y:'v1'},ft:{},start:1,
+   build:()=>{NID=0;return S_seq(S_asg('y',E_num(3)),S_wh(C_or(C_not(C_rel('>',E_id('y'),E_num(100))),C_rel('=',E_id('y'),E_num(0))),S_asg('y',E_bin('*',E_bin('+',E_id('y'),E_num(1)),E_num(3)))))}}
+};
+
+/* ============================================================
+   The engine: runs the textbook recursion and records everything
+   ============================================================ */
+function codeTxt(lines){return lines.length?'['+lines.map(esc).join(', ')+']':'[ ]'}
+function translate(P,start){
+  const ast=P.build();
+  let tn=start.t,ln=start.l,RID=0;
+  const EV=[];
+  const nv=()=>'t'+(tn++),nl=()=>'L'+(ln++);
+  const vt=P.vt,ft=P.ft;
+  const newR=(fn,key,node,desc,params,parent)=>{
+    const r={id:RID++,fn,key,node,desc,params,parent,inst:[],children:[],comp:[],code:[],args:null,allocs:[],enterAt:-1,retAt:-1,in:{}};
+    if(parent)parent.children.push(r);return r};
+  const enter=r=>{r.enterAt=EV.length;EV.push({t:'e',r})};
+  const I=(r,txt,kind)=>{r.inst.push({at:EV.length,kind:kind||'plain',pend:txt,done:txt,doneAt:EV.length});};
+  const alloc=(r,lhs,val)=>{r.allocs.push(val);I(r,`${lhs} = ${lhs.startsWith('label')||lhs==='arg2'?'newlabel':'newvar'}() = <b>${val}</b>`,'alloc');return val};
+  const callLine=(r,lhs,callTxt,fnChild,isPair)=>{
+    const e={at:EV.length,kind:'call',pend:`${lhs} = ${callTxt}`,done:null,doneAt:1e9};
+    r.inst.push(e);const ch=fnChild();
+    e.doneAt=ch.retAt;
+    e.done=isPair?`${lhs} = (${codeTxt(ch.code)}, [${ch.args.join(', ')}])`:`${lhs} = ${codeTxt(ch.code)}`;
+    e.child=ch;return ch};
+  const fin=(r,comp,names)=>{
+    r.comp=comp;r.code=[];
+    comp.forEach(p=>{if(p.child)r.code.push(...p.child.code);else r.code.push(...p.lines)});
+    r.retAt=EV.length+1;EV.push({t:'r',r});
+    const txt=comp.map(p=>p.child?esc(p.nm):codeTxt(p.lines)).join(' ++ ');
+    r.ret={at:r.retAt,txt,code:r.code,args:r.args};
+    if(!r.noRet)r.inst.push({at:r.retAt,kind:'ret',pend:txt,done:txt,doneAt:r.retAt});
+    return r};
+  const lk=(m,n)=>m[n]===undefined?n:m[n];
+  /* ---------- TransExp ---------- */
+  function Exp(n,place,parent){
+    const r=newR('Exp',n.k,n,src(n),`place = ${place}`,parent);enter(r);
+    switch(n.k){
+     case 'e_num':
+      I(r,`v = getvalue(num) = ${n.v}`);
+      return fin(r,[{lines:[`${place} := ${n.v}`]}]);
+     case 'e_id':{
+      const x=lk(vt,n.name);I(r,`x = lookup(vtable, "${esc(n.name)}") = <b>${x}</b>`);
+      return fin(r,[{lines:[`${place} := ${x}`]}]);}
+     case 'e_unop':{
+      const p1=alloc(r,'place₁',nv());
+      const c1=callLine(r,'code₁',`TransExp(${esc(src(n.e))}, vtable, ftable, ${p1})`,()=>Exp(n.e,p1,r));
+      I(r,`op = transop("${n.op}") = ${n.op}`);
+      return fin(r,[{child:c1,nm:'code₁'},{lines:[`${place} := ${n.op} ${p1}`]}]);}
+     case 'e_binop':{
+      const p1=alloc(r,'place₁',nv()),p2=alloc(r,'place₂',nv());
+      const c1=callLine(r,'code₁',`TransExp(${esc(src(n.l))}, vtable, ftable, ${p1})`,()=>Exp(n.l,p1,r));
+      const c2=callLine(r,'code₂',`TransExp(${esc(src(n.r))}, vtable, ftable, ${p2})`,()=>Exp(n.r,p2,r));
+      I(r,`op = transop("${n.op}") = ${n.op}`);
+      return fin(r,[{child:c1,nm:'code₁'},{child:c2,nm:'code₂'},{lines:[`${place} := ${p1} ${n.op} ${p2}`]}]);}
+     case 'e_call':{
+      const c1=callLine(r,'(code₁, [a₁,…,aₙ])',`TransExps(${esc(n.args.map(src).join(', '))}, vtable, ftable)`,()=>Exps(n.args,r),true);
+      const f=lk(ft,n.f);I(r,`fname = lookup(ftable, "${n.f}") = <b>${f}</b>`);
+      return fin(r,[{child:c1,nm:'code₁'},{lines:[`${place} := CALL ${f}(${c1.args.join(', ')})`]}]);}
+    }}
+  /* ---------- TransExps ---------- */
+  function Exps(list,parent){
+    const one=list.length===1;
+    const r=newR('Exps',one?'exps_one':'exps_more',null,list.map(src).join(', '),'',parent);r.list=list;enter(r);
+    const place=alloc(r,'place',nv());
+    const c1=callLine(r,'code₁',`TransExp(${esc(src(list[0]))}, vtable, ftable, ${place})`,()=>Exp(list[0],place,r));
+    if(one){r.args=[place];
+      r.inst.push({at:EV.length+1,kind:'ret',pend:`(${codeTxt(c1.code)}, [${place}])`,done:`(${codeTxt(c1.code)}, [${place}])`,doneAt:0});
+      r.comp=[{child:c1,nm:'code₁'}];r.code=[...c1.code];r.retAt=EV.length+1;EV.push({t:'r',r});
+      r.inst[r.inst.length-1].at=r.retAt;r.inst[r.inst.length-1].doneAt=r.retAt;
+      r.ret={at:r.retAt,txt:r.inst[r.inst.length-1].done,code:r.code,args:r.args};return r}
+    const c2=callLine(r,'(code₂, args)',`TransExps(${esc(list.slice(1).map(src).join(', '))}, vtable, ftable)`,()=>Exps(list.slice(1),r),true);
+    const code3=[...c1.code,...c2.code];
+    I(r,`code₃ = code₁ ++ code₂ = ${codeTxt(code3)}`);
+    r.args=[place,...c2.args];
+    I(r,`args₁ = place :: args = [${r.args.join(', ')}]`);
+    r.comp=[{child:c1,nm:'code₁'},{child:c2,nm:'code₂'}];r.code=code3;
+    r.retAt=EV.length+1;EV.push({t:'r',r});
+    r.inst.push({at:r.retAt,kind:'ret',pend:`(${codeTxt(code3)}, [${r.args.join(', ')}])`,done:`(${codeTxt(code3)}, [${r.args.join(', ')}])`,doneAt:r.retAt});
+    r.ret={at:r.retAt,txt:r.inst[r.inst.length-1].done,code:r.code,args:r.args};
+    return r}
+  /* ---------- TransStat ---------- */
+  function Stat(n,parent){
+    const r=newR('Stat',n.k,n,src(n),'',parent);enter(r);
+    switch(n.k){
+     case 's_seq':{
+      const c1=callLine(r,'code₁',`TransStat(${esc(src(n.a))}, vtable, ftable)`,()=>Stat(n.a,r));
+      const c2=callLine(r,'code₂',`TransStat(${esc(src(n.b))}, vtable, ftable)`,()=>Stat(n.b,r));
+      return fin(r,[{child:c1,nm:'code₁'},{child:c2,nm:'code₂'}]);}
+     case 's_assign':{
+      const place=alloc(r,'place',nv());
+      const x=lk(vt,n.nm);I(r,`x = lookup(vtable, "${n.nm}") = <b>${x}</b>`);
+      r.noRet=true;const e={at:EV.length,kind:'call',pend:`TransExp(${esc(src(n.e))}, vtable, ftable, ${place}) ++ [${x} := ${place}]`,done:null,doneAt:1e9};
+      r.inst.push(e);
+      const ch=Exp(n.e,place,r);
+      const res=fin(r,[{child:ch,nm:'TransExp(…)'},{lines:[`${x} := ${place}`]}]);
+      e.done=codeTxt(r.code);e.doneAt=r.retAt;return res;}
+     case 's_while':{
+      const l1=alloc(r,'label₁',nl()),l2=alloc(r,'label₂',nl()),l3=alloc(r,'label₃',nl());
+      const c1=callLine(r,'code₁',`TransCond(${esc(src(n.c))}, ${l2}, ${l3}, vtable, ftable)`,()=>Cond(n.c,l2,l3,r));
+      const c2=callLine(r,'code₂',`TransStat(${esc(src(n.s))}, vtable, ftable)`,()=>Stat(n.s,r));
+      return fin(r,[{lines:['LABEL '+l1]},{child:c1,nm:'code₁'},{lines:['LABEL '+l2]},{child:c2,nm:'code₂'},{lines:['GOTO '+l1,'LABEL '+l3]}]);}
+     case 's_repeat':{
+      const l1=alloc(r,'label₁',nl()),l2=alloc(r,'label₂',nl());
+      const c1=callLine(r,'code₁',`TransStat(${esc(src(n.s))}, vtable, ftable)`,()=>Stat(n.s,r));
+      const c2=callLine(r,'code₂',`TransCond(${esc(src(n.c))}, ${l2}, ${l1}, vtable, ftable)`,()=>Cond(n.c,l2,l1,r));
+      return fin(r,[{lines:['LABEL '+l1]},{child:c1,nm:'code₁'},{child:c2,nm:'code₂'},{lines:['LABEL '+l2]}]);}
+    }}
+  /* ---------- TransCond ---------- */
+  function Cond(n,lt,lf,parent){
+    const r=newR('Cond',n.k,n,src(n),`Lt = ${lt}, Lf = ${lf}`,parent);enter(r);
+    switch(n.k){
+     case 'c_rel':{
+      const t1=alloc(r,'t₁',nv()),t2=alloc(r,'t₂',nv());
+      const c1=callLine(r,'code₁',`TransExp(${esc(src(n.l))}, vtable, ftable, ${t1})`,()=>Exp(n.l,t1,r));
+      const c2=callLine(r,'code₂',`TransExp(${esc(src(n.r))}, vtable, ftable, ${t2})`,()=>Exp(n.r,t2,r));
+      I(r,`op = transop("${n.op}") = ${n.op}`);
+      return fin(r,[{child:c1,nm:'code₁'},{child:c2,nm:'code₂'},{lines:[`IF ${t1} ${n.op} ${t2} THEN ${lt} ELSE ${lf}`]}]);}
+     case 'c_not':{
+      r.noRet=true;const e={at:EV.length,kind:'call',pend:`TransCond(${esc(src(n.c))}, <b>${lf}</b>, <b>${lt}</b>, vtable, ftable)`,done:null,doneAt:1e9};
+      r.inst.push(e);const ch=Cond(n.c,lf,lt,r);
+      const res=fin(r,[{child:ch,nm:'TransCond(…)'}]);e.done=codeTxt(r.code);e.doneAt=r.retAt;return res;}
+     case 'c_and':{
+      const a=alloc(r,'arg₂',nl());
+      const c1=callLine(r,'code₁',`TransCond(${esc(src(n.a))}, ${a}, ${lf}, vtable, ftable)`,()=>Cond(n.a,a,lf,r));
+      const c2=callLine(r,'code₂',`TransCond(${esc(src(n.b))}, ${lt}, ${lf}, vtable, ftable)`,()=>Cond(n.b,lt,lf,r));
+      return fin(r,[{child:c1,nm:'code₁'},{lines:['LABEL '+a]},{child:c2,nm:'code₂'}]);}
+     case 'c_or':{
+      const a=alloc(r,'arg₂',nl());
+      const c1=callLine(r,'code₁',`TransCond(${esc(src(n.a))}, ${lt}, ${a}, vtable, ftable)`,()=>Cond(n.a,lt,a,r));
+      const c2=callLine(r,'code₂',`TransCond(${esc(src(n.b))}, ${lt}, ${lf}, vtable, ftable)`,()=>Cond(n.b,lt,lf,r));
+      return fin(r,[{child:c1,nm:'code₁'},{lines:['LABEL '+a]},{child:c2,nm:'code₂'}]);}
+    }}
+  const root=ast.k.startsWith('s_')?Stat(ast,null):ast.k.startsWith('c_')?Cond(ast,'Lt','Lf',null):Exp(ast,'t0',null);
+  return {ast,root,EV,code:root.code,end:{t:tn,l:ln}};
+}
+function runPreset(key,cache){
+  cache=cache||{};if(cache[key])return cache[key];
+  const P=PRESETS[key];let st={t:P.start,l:P.start};
+  if(P.after){st=runPreset(P.after,cache).end}
+  const res=translate(P,st);res.start=st;res.P=P;cache[key]=res;return res}
+
+
+/* ============================================================
+   Chapter 9 + inlining: generators and a tiny machine to verify them
+   ============================================================ */
+const ID_RE=/\b[tuv]\d+\b/g;
+function parseIR(line){
+  let m;
+  if((m=/^(\S+) := CALL (\w+)\((.*)\)$/.exec(line)))return{k:'call',res:m[1],f:m[2],args:m[3].trim()?m[3].split(/\s*,\s*/):[],gen:m[3].trim()?m[3].split(/\s*,\s*/):[],kill:[m[1]]};
+  if((m=/^(\S+) := (\S+) ([-+*<>=]+) (\S+)$/.exec(line)))return{k:'bin',gen:[m[2],m[4]].filter(x=>/^[tuv]\d+$/.test(x)),kill:[m[1]]};
+  if((m=/^(\S+) := (\S+)$/.exec(line)))return{k:'mov',gen:/^[tuv]\d+$/.test(m[2])?[m[2]]:[],kill:[m[1]]};
+  return{k:'other',gen:[],kill:[]};
+}
+function liveness(code){
+  const P=code.map(parseIR),n=code.length,IN=Array(n).fill(0).map(()=>new Set()),OUT=Array(n).fill(0).map(()=>new Set());
+  for(let i=n-1;i>=0;i--){
+    OUT[i]=i===n-1?new Set():new Set(IN[i+1]);
+    const s=new Set(OUT[i]);P[i].kill.forEach(v=>s.delete(v));P[i].gen.forEach(v=>s.add(v));IN[i]=s}
+  return code.map((c,i)=>({line:c,p:P[i],gen:P[i].gen,kill:P[i].kill,in:IN[i],out:OUT[i]}));
+}
+/* ---- Fig 9.4 call sequence ---- */
+function callSequence(call,save,retLabel,fname){
+  const n=call.args.length,L=[];
+  save.forEach((v,i)=>L.push({txt:i===0?`M[SP] := ${v}`:`M[SP+${4*i}] := ${v}`,ph:'save',fig:i===0?'M[SP] := R0':'M[SP+4*k] := Rk'}));
+  if(!save.length)L.push({txt:'// nothing is live across this call, so no save lines',ph:'save',fig:'(the R0 … Rk lines are empty: k+1 = 0)',note:true});
+  L.push({txt:`SP := SP − ${4*(n+1)}`,ph:'reserve',fig:'SP := SP − 4*(n+1)'});
+  call.args.forEach((a,i)=>L.push({txt:`M[SP+${4*(i+1)}] := ${a}`,ph:'args',fig:i===0?'M[SP+4] := a₁':(i===n-1?'M[SP+4*n] := aₙ':'M[SP+4*i] := aᵢ')}));
+  L.push({txt:`M[SP] := ${retLabel}`,ph:'ret',fig:'M[SP] := returnaddress'});
+  L.push({txt:`GOTO ${fname}`,ph:'goto',fig:'GOTO g'});
+  L.push({txt:`LABEL ${retLabel}`,ph:'goto',fig:'LABEL returnaddress'});
+  L.push({txt:`${call.res} := M[SP+4]`,ph:'fetch',fig:'x := M[SP+4]'});
+  L.push({txt:`SP := SP + ${4*(n+1)}`,ph:'free',fig:'SP := SP + 4*(n+1)'});
+  save.forEach((v,i)=>L.push({txt:i===0?`${v} := M[SP]`:`${v} := M[SP+${4*i}]`,ph:'restore',fig:i===0?'R0 := M[SP]':'Rk := M[SP+4*k]'}));
+  return L}
+function ch9Plan(mainCode,bodyCode,params,retVar,fname,framesize){
+  const live=liveness(mainCode),out=[],seqs=[];let c=0;
+  const rets=['retA','retB','retC','retD'];
+  live.forEach((row,i)=>{
+    if(row.p.k==='call'){
+      const save=[...row.out].filter(v=>v!==row.p.res).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+      const seq=callSequence(row.p,save,rets[c++],fname);
+      seqs.push({i,row,save,seq});seq.forEach(s=>out.push({...s,call:seqs.length}));
+    }else out.push({txt:row.line,ph:'plain',call:0});
+  });
+  const pro=[{txt:`LABEL ${fname}`,fig:'LABEL f'}];
+  params.forEach((p,i)=>pro.push({txt:`${p} := M[SP+${4*(i+1)}]`,fig:i===params.length-1&&i>0?'p_m := M[SP+4*m]':'p₁ := M[SP+4]'}));
+  pro.push({txt:`SP := SP − ${framesize}`,fig:'SP := SP − framesize_f'});
+  const epi=[{txt:`SP := SP + ${framesize}`,fig:'SP := SP + framesize_f'},{txt:`M[SP+4] := ${retVar}`,fig:'M[SP+4] := result'},{txt:'GOTO M[SP]',fig:'GOTO M[SP]'}];
+  const mainFinal=out.map(o=>o.txt).filter(t=>!t.startsWith('//'));
+  const fFinal=[...pro.map(o=>o.txt),...bodyCode,...epi.map(o=>o.txt)];
+  return{live,seqs,out,pro,epi,mainFinal,fFinal};
+}
+/* ---- inlining ---- */
+function inlinePlan(mainCode,bodyCode,params,retVar,fname,startT,startL,startU){
+  const out=[];let copy=0,tc=startT,lc=startL,uc=startU;const copies=[];
+  mainCode.forEach(line=>{
+    const p=parseIR(line);
+    if(p.k!=='call'){out.push({txt:line,ph:'plain'});return}
+    const map={};
+    if(copy>0){
+      // fresh names for the 2nd and later copies: labels, parameters, locals, temporaries
+      bodyCode.forEach(l=>{(l.match(/\bL\d+\b/g)||[]).forEach(x=>{if(!map[x])map[x]='L'+(lc++)})});
+      params.forEach(x=>{map[x]='u'+(uc++)});
+      const ts=new Set();bodyCode.forEach(l=>{(l.match(ID_RE)||[]).forEach(x=>{if(!map[x]&&/^[tu]\d+$/.test(x))ts.add(x)})});
+      [...ts].sort((a,b)=>(+a.slice(1))-(+b.slice(1))).forEach(x=>{map[x]=x[0]+(x[0]==='t'?tc++:uc++)});
+    }
+    const R=l=>l.replace(/\b[tuvL]\d+\b/g,x=>map[x]||x);
+    const rn=x=>map[x]||x;
+    const pieces=[];
+    out.push({txt:`// ── inlined copy ${copy+1} of  ${line}`,ph:'head',note:true,copy:copy+1});
+    params.forEach((q,i)=>out.push({txt:`${rn(q)} := ${p.args[i]}`,ph:'param',copy:copy+1,orig:`${q} := (argument ${i+1})`}));
+    bodyCode.forEach(l=>out.push({txt:R(l),ph:'body',copy:copy+1,orig:l}));
+    out.push({txt:`${p.res} := ${rn(retVar)}`,ph:'ret',copy:copy+1,orig:`return ${retVar}`});
+    copies.push({map,call:line});copy++;
+  });
+  return{out,copies,final:out.map(o=>o.txt).filter(t=>!t.startsWith('//'))};
+}
+/* ---- tiny machine ---- */
+function runMachine(code,opts){
+  opts=opts||{};const V={},M={};let SP=opts.sp||1000;const lab={};
+  code.forEach((l,i)=>{const m=/^LABEL (\S+)$/.exec(l);if(m)lab[m[1]]=i});
+  const val=x=>/^-?\d+$/.test(x)?+x:(x in V?V[x]:NaN);
+  const addr=s=>{const m=/^M\[SP(?:\+(\d+))?\]$/.exec(s);return m?SP+(m[1]?+m[1]:0):null};
+  const ops={'+':(a,b)=>a+b,'-':(a,b)=>a-b,'*':(a,b)=>a*b,'>':(a,b)=>a>b,'<':(a,b)=>a<b,'=':(a,b)=>a===b};
+  let pc=0,steps=0;const snap={};
+  let last=-1;
+  const shot=()=>{if(opts.trace&&last>=0&&snap[last]===null)snap[last]={SP,V:{...V},M:{...M}}};
+  while(pc<code.length&&steps++<5000){
+    shot();
+    const l=code[pc];let m;const cur=pc;last=cur;pc++;
+    if(opts.trace&&!(cur in snap)){snap[cur]=null}
+    if((m=/^LABEL /.exec(l)))continue;
+    if((m=/^GOTO M\[SP\]$/.exec(l))){if(M[SP]===undefined)break;pc=lab[M[SP]];continue}
+    if((m=/^GOTO (\S+)$/.exec(l))){if(opts.clobber&&m[1]===opts.fname)(opts.clobber).forEach(v=>V[v]=NaN);pc=lab[m[1]];continue}
+    if((m=/^IF (\S+) (\S+) (\S+) THEN (\S+) ELSE (\S+)$/.exec(l))){pc=lab[ops[m[2]](val(m[1]),val(m[3]))?m[4]:m[5]];continue}
+    if((m=/^SP := SP ([−-]|\+) (\d+)$/.exec(l))){SP+=(m[1]==='+'?1:-1)*+m[2];continue}
+    if((m=/^(M\[SP(?:\+\d+)?\]) := (\S+)$/.exec(l))){M[addr(m[1])]=(m[2] in lab)?m[2]:val(m[2]);continue}
+    if((m=/^(\S+) := (M\[SP(?:\+\d+)?\])$/.exec(l))){V[m[1]]=M[addr(m[2])];continue}
+    if((m=/^(\S+) := (\S+) ([-+*<>=]) (\S+)$/.exec(l))){V[m[1]]=ops[m[3]](val(m[2]),val(m[4]));continue}
+    if((m=/^(\S+) := (\S+)$/.exec(l))){V[m[1]]=val(m[2]);continue}
+    throw new Error('cannot run: '+l)}
+  shot();
+  return{V,M,SP,steps,snap};
+}
+
+
+/* ============================================================
+   UI
+   ============================================================ */
+const $=s=>document.querySelector(s);
+const STAGES=[
+ {id:'intro',t:'The big picture',n:'0'},
+ {id:'tables',t:'The exact tables',n:'1'},
+ {id:'q2a',t:'2a · MAIN, two calls',n:'2'},
+ {id:'q2b',t:'2b · the while-loop',n:'3'},
+ {id:'c9',t:'2c.II · call sequences',n:'4'},
+ {id:'inl',t:'2c.I · inlining',n:'5'},
+ {id:'prac',t:'Practice programs',n:'6'},
+ {id:'crib',t:'Crib-book summary',n:'7'},
+ {id:'source',t:'Source · Semester Test 2',n:'8'}
+];
+const S={stage:0,tr:{},prac:'x1',c9:{step:0,drop:false},inl:{}};
+const CACHE={};
+const getRun=k=>runPreset(k,CACHE);
+const FNNAME={Exp:T_EXP,Exps:T_EXPS,Stat:T_STAT,Cond:T_COND};
+const KLAB={e_num:'num',e_id:'id',e_unop:'unop',e_binop:'binop',e_call:'call',s_seq:';',s_assign:':=',s_while:'while',s_repeat:'repeat',c_rel:'relop',c_and:'&amp;&amp;',c_or:'||',c_not:'!'};
+function nodeLabel(r){const n=r.node;switch(r.key){
+  case 'e_num':return `<b>num</b> ${n.v}`;case 'e_id':return `<b>id</b> ${esc(n.name)}`;
+  case 'e_binop':return `<b>binop</b> ${esc(n.op)}`;case 'e_unop':return `<b>unop</b> ${esc(n.op)}`;
+  case 'e_call':return `<b>call</b> ${esc(n.f)}(…)`;case 's_assign':return `<b>:=</b> into ${esc(n.nm)}`;
+  case 's_seq':return `<b>;</b> sequence`;case 's_while':return `<b>while</b>`;case 's_repeat':return `<b>repeat</b>`;
+  case 'c_rel':return `<b>relop</b> ${esc(n.op)}`;case 'c_and':return `<b>&amp;&amp;</b>`;case 'c_or':return `<b>||</b>`;case 'c_not':return `<b>!</b>`}return r.key}
+function bind(r){const n=r.node;switch(r.key){
+  case 'e_num':return `<b>num</b> = ${n.v}`;
+  case 'e_id':return `<b>id</b> = ${esc(n.name)}`;
+  case 'e_binop':return `${iv('Exp',1)} = ${esc(src(n.l))}, <b>binop</b> = ${esc(n.op)}, ${iv('Exp',2)} = ${esc(src(n.r))}`;
+  case 'e_unop':return `<b>unop</b> = ${esc(n.op)}, ${iv('Exp',1)} = ${esc(src(n.e))}`;
+  case 'e_call':return `<b>id</b> = ${esc(n.f)}, ${iv('Exps')} = ${esc(n.args.map(src).join(', '))}`;
+  case 'exps_one':return `${iv('Exp')} = ${esc(src(r.list[0]))}`;
+  case 'exps_more':return `${iv('Exp')} = ${esc(src(r.list[0]))}, ${iv('Exps')} = ${esc(r.list.slice(1).map(src).join(', '))}`;
+  case 's_seq':return `${iv('Stat',1)} = ${esc(src(n.a))}, ${iv('Stat',2)} = ${esc(src(n.b))}`;
+  case 's_assign':return `<b>id</b> = ${esc(n.nm)}, ${iv('Exp')} = ${esc(src(n.e))}`;
+  case 's_while':return `${iv('Cond')} = ${esc(src(n.c))}, ${iv('Stat',1)} = ${esc(src(n.s))}`;
+  case 's_repeat':return `${iv('Stat',1)} = ${esc(src(n.s))}, ${iv('Cond')} = ${esc(src(n.c))}`;
+  case 'c_rel':return `${iv('Exp',1)} = ${esc(src(n.l))}, <b>relop</b> = ${esc(n.op)}, ${iv('Exp',2)} = ${esc(src(n.r))}`;
+  case 'c_not':return `${iv('Cond',1)} = ${esc(src(n.c))}`;
+  case 'c_and':case 'c_or':return `${iv('Cond',1)} = ${esc(src(n.a))}, ${iv('Cond',2)} = ${esc(src(n.b))}`}return ''}
+const allRecs=R=>{const o=[];const w=r=>{o.push(r);r.children.forEach(w)};w(R.root);return o};
+
+function sourceView(){
+  return `<h2>Source: Semester Test 2</h2>
+  <p class="lede">The original test pages used for this walkthrough. Select either image to open the full-size photograph.</p>
+  <div class="sourcePages">
+   <figure class="sourcePage"><figcaption>Page 1 · Task 1: grammar and semantic attribution rules</figcaption>
+    <a href="SOURCES/ST2_1.jpeg" target="_blank" rel="noopener"><img src="SOURCES/ST2_1.jpeg" alt="Photograph of page 1 of the COS341 Semester Test 2, showing Task 1: a context-free grammar and a question about semantic attribution rules." loading="lazy"></a>
+   </figure>
+   <figure class="sourcePage"><figcaption>Page 2 · Task 2: intermediate code and procedure calls</figcaption>
+    <a href="SOURCES/ST2_2.jpeg" target="_blank" rel="noopener"><img src="SOURCES/ST2_2.jpeg" alt="Photograph of page 2 of the COS341 Semester Test 2, showing Task 2: translating a main program and function add using Chapters 6 and 9." loading="lazy"></a>
+   </figure>
+  </div>`;
+}
+
+/* ---------- textbook table (active row expanded) ---------- */
+function tableHTML(r,s,ev,showAll){
+  const T=TB[r.fn];
+  const pendIdx=r.inst.findIndex(e=>e.kind==='call'&&e.at<=s&&s<e.doneAt);
+  let h=`<div class="fig"><div class="figcap"><span class="badge">Fig ${T.fig}</span> <span class="mono">${T.title}</span></div><div class="scroll"><table class="ft">`;
+  T.rows.forEach(row=>{
+    const act=row.key===r.key;
+    if(!act&&!showAll){h+=`<tr class="skip"><td class="pat">${row.pat}</td><td colspan="3" class="sk">row not used for this node</td></tr>`;return}
+    row.lines.forEach((ln,j)=>{
+      let cc='',cls='';
+      if(act){const e=r.inst[j];
+        if(e&&s>=e.at){const txt=s>=e.doneAt?e.done:e.pend;
+          const isRet=e.kind==='ret',cur=(ev.t==='e'&&j===pendIdx)||(ev.t==='r'&&isRet&&ev.r===r)||(ev.t==='e'&&ev.r===r&&e.kind==='alloc'&&e.at===ev.r.enterAt+1+0&&false);
+          cc=`<span class="${e.kind==='alloc'?'nw':''}">${txt}</span>`;
+          if(isRet&&e.done&&r.ret&&s>=r.retAt)cc+=`<div class="res">= ${codeTxt(r.code)}${r.args&&r.fn==='Exps'?'':''}</div>`;
+          if(e.kind==='call'&&s<e.doneAt)cc+=` <span class="desc">⟶ descend</span>`;
+          cls=(cur?' cur':'')+(s>=e.doneAt&&e.kind!=='alloc'&&e.kind!=='plain'?' fin':'')}
+        else cc='<span class="dots">·</span>'}
+      h+=`<tr class="${act?'act':'dim'}${cls}">`;
+      if(j===0)h+=`<td class="pat" rowspan="${row.lines.length}">${row.pat}${row.fig&&row.fig!==T.fig?`<div class="fg">Fig ${row.fig}</div>`:''}</td>`;
+      h+=`<td class="no">${j+1}</td><td class="gl">${ln}</td><td class="cv">${cc}</td></tr>`});
+  });
+  h+=`</table></div></div>`;return h}
+
+/* ---------- narration ---------- */
+function narrate(R,s){
+  if(s===0)return `Nothing has run yet. The top function is called on the whole program: <b>${R.root.fn==='Stat'?T_STAT:T_EXP}</b>(<code>${esc(R.root.desc)}</code>). Press <kbd>Next ▶</kbd>.`;
+  const ev=R.EV[s-1],r=ev.r;
+  if(ev.t==='e'){
+    const k=R.EV.slice(0,s).filter(x=>x.t==='e').length;
+    const al=r.allocs.length?`Its first lines create fresh names: <b>${r.allocs.join(', ')}</b> (<i>names are handed out going <u>down</u></i>).`:`This row creates no fresh names.`;
+    return `<b>Call ${k}.</b> ${FNNAME[r.fn]}(<code>${esc(r.desc)}</code>${r.params?`, ${esc(r.params)}`:''}). Find the row of Fig ${TB[r.fn].fig} whose pattern fits: <b>${ROWNAME[r.key]}</b>. Binding: ${bind(r)}. ${al}`}
+  return `<b>Return.</b> ${FNNAME[r.fn]}(<code>${esc(r.desc)}</code>) has finished all its recursive calls. The last line of the row glues the pieces together (<i>code is built coming back <u>up</u></i>): <span class="mono">${r.ret.txt.replace(/&lt;/g,'<')}</span> = ${codeTxt(r.code)}.`}
+function stackHTML(r,s){
+  const chain=[];let c=r;while(c){chain.unshift(c);c=c.parent}
+  return `<div class="stk"><div class="stkh">Call stack (outermost first)</div>`+chain.map((c,i)=>{
+    const live=i<chain.length-1;const pl=live?c.inst.findIndex(e=>e.kind==='call'&&e.at<=s&&s<e.doneAt):-1;
+    return `<div class="fr${i===chain.length-1?' top':''}" style="margin-left:${Math.min(i,8)*14}px">${FNNAME[c.fn]}(${esc(c.desc.length>38?c.desc.slice(0,36)+'…':c.desc)}) <span class="tag">row «${ROWNAME[c.key]}»${live&&pl>=0?` · waiting at line ${pl+1}`:''}</span></div>`}).join('')+`</div>`}
+function counterHTML(R,s){
+  let t=R.start.t,l=R.start.l;
+  allRecs(R).forEach(r=>r.inst.forEach(e=>{if(e.kind==='alloc'&&e.at<=s){if(/\bt\d+\b/.test(e.pend.replace(/<[^>]+>/g,'').split('=').pop()))t++;else l++}}));
+  return `<span class="chip">next newvar() → t${t}</span> <span class="chip">next newlabel() → L${l}</span>`}
+
+/* ---------- tree method ---------- */
+function buildTree(R){
+  const pre=[],post=[];
+  const walk=(r,par)=>{const tn={r,kids:[],par,extra:[]};pre.push(tn);
+    const col=cs=>cs.forEach(ch=>{if(ch.fn==='Exps'){tn.extra.push(...ch.allocs);col(ch.children)}else tn.kids.push(walk(ch,tn))});
+    col(r.children);post.push(tn);return tn};
+  const root=walk(R.root,null);pre.forEach((n,i)=>n.pre=i);post.forEach((n,i)=>n.post=i);return{root,pre,post}}
+function compTxt(r){return r.comp.map(p=>p.child?`<span class="kid">⟨${p.child.fn==='Exps'?'args':KLAB[p.child.key]||p.child.key}⟩</span>`:codeTxt(p.lines)).join(' ++ ')}
+function treeNodeHTML(tn,s,N){
+  const ph1=s<=N,vis=tn.pre<(ph1?s:N+1),cur=ph1?(tn.pre===s-1):false,
+        emittedN=s>N?s-N:0,em=tn.post<emittedN,curE=s>N&&tn.post===emittedN-1;
+  const r=tn.r;
+  let h=`<div class="tn${vis?'':' unv'}${cur||curE?' cur':''}"><div class="th">${nodeLabel(r)}${r.key==='e_num'||r.key==='e_id'?'':`<span class="src">${esc(r.desc)}</span>`}</div>`;
+  if(vis){
+    const inh=r.fn==='Exp'?`<span class="chip">place ${esc(r.params.replace('place = ',''))}</span>`:r.fn==='Cond'?`<span class="chip">Lt/Lf ${esc(r.params.replace('Lt = ','').replace(', Lf = ','/'))}</span>`:'';
+    const cr=r.allocs.length&&r.fn!=='Exps'?`<span class="chip nw">creates ${r.allocs.join(', ')}</span>`:'';
+    const ex=tn.extra.length?`<span class="chip nw">arg places ${tn.extra.join(', ')} <small>(made one by one)</small></span>`:'';
+    h+=`<div class="ta">${inh} ${cr} ${ex}</div>`}
+  if(em){h+=`<div class="tc"><div class="comp">${compTxt(r)}</div><div class="code">${r.code.map(esc).join('<br>')}</div></div>`}
+  h+=`<div class="kids">${tn.kids.map(k=>treeNodeHTML(k,s,N)).join('')}</div></div>`;return h}
+
+function transView(key,host){
+  const R=getRun(key),st=S.tr[key]||(S.tr[key]={mode:'book',step:0,all:false});
+  const max=st.mode==='book'?R.EV.length:2*buildTree(R).pre.length;
+  st.step=Math.max(0,Math.min(st.step,max));
+  const s=st.step;
+  let h=`<div class="seg"><button class="${st.mode==='book'?'on':''}" onclick="setMode('${key}','book')">Textbook recursive tables</button><button class="${st.mode==='tree'?'on':''}" onclick="setMode('${key}','tree')">Rachel's tree method</button></div>`;
+  h+=`<div class="ctl"><button onclick="stp('${key}',-1)" ${s<=0?'disabled':''}>◀ Back</button><button onclick="stp('${key}',1)" ${s>=max?'disabled':''}>Next ▶</button><input type="range" min="0" max="${max}" value="${s}" oninput="stp('${key}',this.value,true)" style="flex:1;min-width:120px"><span class="cnt">${s} / ${max}</span><button class="quiet" onclick="stp('${key}',0,true)">Reset</button><button class="quiet" onclick="stp('${key}',${max},true)">Skip to end</button></div>`;
+  if(st.mode==='book'){
+    const ev=s?R.EV[s-1]:null;
+    h+=`<div class="box eq narr">${narrate(R,s)}</div>`;
+    if(s){
+      h+=`<div class="row"><div class="col" style="flex:2 1 460px">${tableHTML(ev.r,s,ev,st.all)}<label class="tog"><input type="checkbox" ${st.all?'checked':''} onchange="S.tr['${key}'].all=this.checked;draw()"> show every row of this table (not just the one in use)</label></div>
+      <div class="col" style="flex:1 1 260px">${stackHTML(ev.r,s)}<div class="cnts"><div class="stkh">Counters</div>${counterHTML(R,s)}</div></div></div>`}
+    else h+=`<div class="cnts">${counterHTML(R,s)}</div>`;
+  }else{
+    const T=buildTree(R),N=T.pre.length;
+    let narr;
+    if(s===0)narr=`<b>Pass 1 (going down):</b> visit every node top-to-bottom. At each node write the place / labels it was <i>given</i>, and the fresh names it <i>creates</i> for its children. <b>Pass 2 (coming up):</b> go bottom-to-top and write each node's code: its children's code and its own lines in the order the rule says.`;
+    else if(s<=N){const tn=T.pre[s-1],r=tn.r;narr=`<b>Pass 1 · node ${s} of ${N}:</b> ${nodeLabel(r)} <code>${esc(r.desc)}</code>. ${r.fn==='Exp'?`It is given <b>place ${esc(r.params.replace('place = ',''))}</b>. `:''}${r.fn==='Cond'?`It is given <b>${esc(r.params)}</b>. `:''}${r.allocs.length&&r.fn!=='Exps'?`It creates <b>${r.allocs.join(', ')}</b>. `:''}${tn.extra.length?`Its arguments get places <b>${tn.extra.join(', ')}</b>, one at a time, just before each argument is translated. `:''}${!r.allocs.length&&!tn.extra.length?'It creates nothing. ':''}<div class="tpl">Template used: ${TEMPLATE[r.key]}</div><div class="tpl">Same thing in the book: Fig ${TB[r.fn].fig}, row «${ROWNAME[r.key]}»</div>`}
+    else{const tn=T.post[s-N-1],r=tn.r;narr=`<b>Pass 2 · node ${s-N} of ${N}:</b> ${nodeLabel(r)} <code>${esc(r.desc)}</code> writes its code: ${compTxt(r)}<div class="tpl">Template used: ${TEMPLATE[r.key]}</div>`}
+    h+=`<div class="box eq narr">${narr}</div><div class="treewrap">${treeNodeHTML(T.root,s,N)}</div>`;
+  }
+  if(s===max){
+    h+=`<div class="box ok"><b>Final answer to write down</b> (${esc(R.P.tag==='extra'?R.P.short:'Question '+R.P.tag)}):<pre class="code">${R.code.map(esc).join('\n')}</pre><div class="tag">counters after this program: next t${R.end.t}, next L${R.end.l}</div></div>`}
+  host.innerHTML=h}
+window.setMode=(k,m)=>{S.tr[k]=S.tr[k]||{mode:'book',step:0,all:false};const o=S.tr[k];o.mode=m;o.step=0;draw()};
+window.stp=(k,d,abs)=>{
+  const o=S.tr[k]=S.tr[k]||{mode:'book',step:0,all:false};
+  const R=getRun(k),max=o.mode==='book'?R.EV.length:2*buildTree(R).pre.length;
+  const next=abs?+d:o.step+(+d);
+  o.step=Math.max(0,Math.min(max,next));
+  draw();
+};
+
+/* ---------- code listing helpers ---------- */
+function colorCode(items,cls){return '<pre class="code">'+items.map(o=>`<span class="ln ${(cls&&cls(o))||''}">${esc(o.txt)}</span>`).join('')+'</pre>'}
+const PHC={save:'ph-save',reserve:'ph-res',args:'ph-arg',ret:'ph-ret',goto:'ph-go',fetch:'ph-fet',free:'ph-free',restore:'ph-save',plain:''};
+
+/* ============================================================
+   Stages
+   ============================================================ */
+function staticTable(fn){
+  const T=TB[fn];
+  let h=`<div class="fig"><div class="figcap"><span class="badge">Fig ${T.fig}</span> <span class="mono">${T.title}</span></div><div class="scroll"><table class="ft"><tr class="hd"><th>Pattern</th><th></th><th>Textbook (exact)</th><th>Rachel's tree: the same rule</th></tr>`;
+  T.rows.forEach(row=>{row.lines.forEach((ln,j)=>{
+    h+=`<tr class="${j===0?'first':''}">`;
+    if(j===0)h+=`<td class="pat" rowspan="${row.lines.length}">${row.pat}${row.fig&&row.fig!==T.fig?`<div class="fg">Fig ${row.fig}</div>`:''}</td>`;
+    h+=`<td class="no">${j+1}</td><td class="gl">${ln}</td>`;
+    if(j===0)h+=`<td class="tp" rowspan="${row.lines.length}">${TEMPLATE[row.key]}</td>`;
+    h+='</tr>'})});
+  return h+'</table></div></div>'}
+
+function introView(){return `
+<h2>Chapters 6 and 9 on Semester Test 2, Task 2</h2>
+<p class="lede">Every example here is the real Task 2 from your test. Each one is worked twice: Rachel's tree method, and the exact recursive tables from the textbook (Fig 6.3, 6.5, 6.6, 6.8, 9.2, 9.3, 9.4). It is the same algorithm done two ways, and the interface shows you the proof.</p>
+<div class="box"><b>The program in Task 2</b>
+<div class="row" style="margin-top:6px"><div class="col"><div class="tag">MAIN PROGRAM</div><pre class="code">result := add( 3 , add( 4 , 5 ) );</pre></div>
+<div class="col"><div class="tag">FUNCTION add(x, y)</div><pre class="code">while ( y &gt; 0 ) do { x := x + 1 ;
+                   y := y - 1 ; } ;
+return x ;</pre></div></div>
+<p>Symbol table: <code>result→u0</code>, <code>x→u1</code>, <code>y→u2</code>, <code>add→f</code>. Operators stay <code>&gt; + −</code>.</p></div>
+<h3>What each question asks</h3>
+<table class="ref"><tr><th>Q</th><th>Task</th><th>Chapter</th><th>Marks</th><th>Stage</th></tr>
+<tr><td>2a</td><td>Intermediate code for MAIN (two calls)</td><td>6</td><td>2</td><td><a href="#" onclick="go(2);return false">2</a></td></tr>
+<tr><td>2b</td><td>Intermediate code for the while-loop in add (no return)</td><td>6</td><td>4</td><td><a href="#" onclick="go(3);return false">3</a></td></tr>
+<tr><td>2c.I</td><td>Inline add twice into MAIN, re-name jump labels</td><td>lecture / §9.12.1</td><td>2</td><td><a href="#" onclick="go(5);return false">5</a></td></tr>
+<tr><td>2c.II</td><td>Caller-save: add with prologue and epilogue, MAIN with two call sequences</td><td>9 (with 8's liveness)</td><td>2</td><td><a href="#" onclick="go(4);return false">4</a></td></tr></table>
+<p class="tag">Do either 2c.I or 2c.II, not both. If you do both your worst result counts.</p>
+<h3>The one idea underneath everything in Chapter 6</h3>
+<div class="box eq"><p><b>Names are handed out going DOWN the tree. Code is written coming back UP.</b></p>
+<p>Each function (<i>TransExp</i>, <i>TransStat</i>, <i>TransCond</i>, <i>TransExps</i>) is called on a node. The moment it is called, its first lines create the fresh names that node needs (<code>newvar()</code>, <code>newlabel()</code>), then it calls itself on its children, passing names down. Only when the children have returned does it glue their code together with its own lines (<code>++</code>).</p></div>
+<h3>Rachel's tree method ↔ the textbook tables</h3>
+<table class="ref"><tr><th>Rachel (by hand)</th><th>Textbook (recursion)</th></tr>
+<tr><td>a node in the syntax tree</td><td>one call of a <i>Trans</i> function</td></tr>
+<tr><td>the <b>place</b> or the <b>labels</b> written beside a node</td><td>the extra arguments: <i>place</i>, or <i>label<sub>t</sub></i>, <i>label<sub>f</sub></i></td></tr>
+<tr><td>"fresh names" a node creates for its children</td><td>the <code>newvar()</code> / <code>newlabel()</code> lines at the <u>top</u> of the row</td></tr>
+<tr><td><b>Pass 1</b>: going down, labelling nodes</td><td>the calls being made (pre-order): names handed out as each call starts</td></tr>
+<tr><td><b>Pass 2</b>: coming up, writing code</td><td>the <b>last line</b> of the row: <code>code₁ ++ code₂ ++ [own line]</code></td></tr>
+<tr><td>the template for each node type</td><td>the row of the table whose <i>pattern</i> matches the node</td></tr></table>
+<h3>How to use this page</h3>
+<p>Go through the stages in order. In stages 2 and 3, flip between <b>Textbook recursive tables</b> and <b>Rachel's tree method</b> at the same step to see that they give the same names and the same code. In the textbook view the row in use is highlighted, with the actual values filled in beside each line of the rule.</p>
+<div class="box warn"><b>Naming convention in the lecturer's solutions.</b> The counters start at <code>t0</code> and <code>L0</code> and keep counting from MAIN straight into the function (MAIN uses t0–t4, so add's body starts at t5; labels start at L0). That is why 2b begins at t5, and why MAIN and the function never share a temporary. Your own homework HW5 (the repeat-until) started counting at t1, so check which convention your marker used.</div>`}
+
+function tablesView(){return `
+<h2>The exact tables from the textbook</h2>
+<p class="lede">These are the tables you will use. Beside each rule is the same rule in Rachel's template form. Nothing is left out: the figure numbers are those of your textbook (Fig 6.8 holds the extra rows for <code>true</code>, <code>false</code>, <code>!</code>, <code>&amp;&amp;</code>, <code>||</code> and a plain expression used as a condition).</p>
+${staticTable('Exp')}${staticTable('Exps')}${staticTable('Stat')}${staticTable('Cond')}
+<h3>Things the tables do not shout about</h3>
+<ol class="rules">
+<li><b>Binop allocates both places before translating either operand</b> (lines 1 and 2, then 3 and 4). That is why <code>x + 1</code> gives <code>t8, t9</code> to its operands straight after its own place <code>t7</code>.</li>
+<li><b>TransExps allocates a place right before each argument</b>, one argument at a time (line 1 of each row). So the second argument's place is only created <i>after</i> the first argument has been completely translated.</li>
+<li><b>Assignment goes through a fresh temporary</b> in this edition: <code>place = newvar()</code>, translate the right-hand side into <code>place</code>, then <code>x := place</code>.</li>
+<li><b>Labels are created at the node</b> that owns them. <code>while</code> takes three before touching anything else, <code>&amp;&amp;</code> and <code>||</code> take one.</li>
+<li><b>repeat</b> translates the body <i>before</i> the condition (the other way round from while).</li>
+<li><b>!</b> creates nothing and emits nothing. It only swaps the two labels it passes down.</li>
+<li>In <code>while</code> the condition is told <i>label₂</i> (loop body) for true and <i>label₃</i> (exit) for false; in <code>repeat</code> it is told <i>label₂</i> (exit) for true and <i>label₁</i> (loop back) for false.</li></ol>`}
+
+function transStage(key,title,lede,extra){return `<h2>${title}</h2><p class="lede">${lede}</p>${extra||''}<div id="tv"></div>`}
+
+/* ---------- Chapter 9 ---------- */
+function c9Data(){
+  if(S._c9)return S._c9;
+  const A=getRun('q2a'),B=getRun('q2b');
+  const plan=ch9Plan(A.code,B.code,['u1','u2'],'u1','f','framesize'),planN=ch9Plan(A.code,B.code,['u1','u2'],'u1','f',0);
+  const meta=[];
+  plan.out.forEach(o=>meta.push({txt:o.txt,ph:o.ph,fig:o.fig,call:o.call,part:'MAIN'}));
+  meta.push({txt:'GOTO END',ph:'x',part:'end',fig:'(test harness: stops the simulation after MAIN)',hidden:true});
+  plan.pro.forEach(o=>meta.push({txt:o.txt,ph:'pro',fig:o.fig,part:'add'}));
+  B.code.forEach(l=>meta.push({txt:l,ph:'body',fig:'(translated body from 2b)',part:'add'}));
+  plan.epi.forEach(o=>meta.push({txt:o.txt,ph:'epi',fig:o.fig,part:'add'}));
+  meta.push({txt:'LABEL END',ph:'x',part:'end',hidden:true});
+  // mainFinal omits note lines; make machine program from planN
+  const prog=[...planN.mainFinal,'GOTO END',...planN.fFinal,'LABEL END'];
+  const metaRun=[];let mi=0;
+  const mainNoNote=meta.filter(m=>m.part==='MAIN'&&!m.txt.startsWith('//'));
+  const rest=meta.filter(m=>m.part!=='MAIN');
+  [...mainNoNote,...rest].forEach(m=>metaRun.push(m));
+  const clob=['t0','t1','t2','t3','t4','u0'];
+  const good=runMachine(prog,{fname:'f',clobber:clob,trace:true});
+  const noSave=planN.mainFinal.filter(l=>!/^(M\[SP\] := t1|t1 := M\[SP\])$/.test(l));
+  const bad=runMachine([...noSave,'GOTO END',...planN.fFinal,'LABEL END'],{fname:'f',clobber:clob});
+  return S._c9={A,B,plan,planN,prog,metaRun,good,bad}}
+const phName={save:'1 · save',reserve:'2 · reserve',args:'3 · fill args',ret:'3 · return address',goto:'4 · jump and come back',fetch:'5 · fetch result',free:'5 · free the frame',restore:'5 · restore'};
+function memRows(sn,base){
+  if(!sn)return'<div class="tag">(this line is never reached in the run)</div>';
+  const ks=Object.keys(sn.M).map(Number).sort((a,b)=>b-a);
+  let h='<div class="mem"><div class="stkh">Memory (stack grows down)</div>';
+  const spOff=sn.SP-base;
+  const rows=[...new Set([...ks,sn.SP])].sort((a,b)=>b-a);
+  rows.forEach(a=>{const off=a-base;h+=`<div class="mc${a===sn.SP?' sp':''}"><span class="ad">SP₀${off===0?'':off>0?'+'+off:off}</span><span class="vl">${a in sn.M?esc(sn.M[a]):'·'}</span>${a===sn.SP?'<span class="spm">← SP</span>':''}</div>`});
+  return h+'</div>'}
+function c9View(){
+  const D=c9Data(),P=D.plan,live=P.live;
+  const callRows=P.seqs;
+  let h=`<h2>2c.II · The caller-save call sequence (Chapter 9)</h2>
+<p class="lede">Chapter 6 left each call as one instruction, <code>t2 := CALL f(t3, t4)</code>. Chapter 9 turns that single instruction into a <i>call sequence</i>, wraps the function in a <i>prologue</i> and an <i>epilogue</i>, and uses Chapter 8's liveness to decide which of the caller's variables must be saved. The task: <b>the completed code for add</b> (with prologue and epilogue) and <b>the final version of MAIN</b> with two call sequences, using a dynamic <code>GOTO M[SP]</code> for the <code>return x</code>.</p>
+<h3>Step 1 · The frame the textbook uses (Fig 9.1)</h3>
+<div class="box"><div class="frame"><div class="fc hi">M[SP]  return address</div><div class="fc">M[SP+4]  parameter 1 (and, on the way back, the <b>result</b>)</div><div class="fc">M[SP+8]  parameter 2</div><div class="fc dots">… M[SP+4n]  parameter n</div></div>
+<p>The stack grows <b>down</b> and SP points at the last used word. A call to a function with <i>n</i> arguments needs <b>4·(n+1)</b> bytes. Here n = 2, so <b>12 bytes</b>. This block is built by the caller. The callee's own locals (<i>framesize<sub>f</sub></i>, which excludes parameters and return address) sit below it.</p></div>
+<h3>Step 2 · Which variables must be saved? (liveness from Chapter 8)</h3>
+<p>The book's Fig 9.4 saves registers R0…Rk, the ones holding the caller's variables. The lecture/H6 version saves only the variables that are <b>live after the call</b>: <code>out[call]</code> minus the call's own result (it gets overwritten anyway). MAIN is straight-line code, so liveness is a single backward pass.</p>
+<div class="scroll"><table class="t"><tr><th>#</th><th>MAIN line</th><th>gen</th><th>kill</th><th>in</th><th>out</th></tr>`;
+  live.forEach((r,i)=>{const isCall=r.p.k==='call';
+    h+=`<tr class="${isCall?'cur':''}"><td class="i">${i+1}</td><td>${esc(r.line)}</td><td>${fmtSet(r.gen)}</td><td>${fmtSet(r.kill)}</td><td>${fmtSet(r.in)}</td><td>${fmtSet(r.out)}</td></tr>`});
+  h+=`</table></div>`;
+  callRows.forEach((c,i)=>{h+=`<div class="box ${c.save.length?'warn':'ok'}"><b>Call ${i+1}</b> <code>${esc(c.row.line)}</code>: out = ${fmtSet(c.row.out)}, minus its result <b>${c.row.p.res}</b> → must save <b>${fmtSet(c.save)}</b> ${c.save.length?`(${c.save.length} value${c.save.length>1?'s':''}, so the save lines are <code>R0</code>${c.save.length>1?'…<code>R'+(c.save.length-1)+'</code>':''}, i.e. the book's <i>k</i> = ${c.save.length-1})`:`(nothing: no save and no restore lines)`}.${i===0?` <code>t3</code> and <code>t4</code> are arguments: they are read by the call and dead after it. <code>t1</code> is needed by the second call, so it must survive the first.`:` Everything the call needs goes through the stack as arguments, and nothing is used afterwards except the result <code>t0</code>.`}</div>`});
+  h+=`<div class="box warn">MAIN's own frame must hold these saved values, so <i>framesize<sub>MAIN</sub></i> ≥ 4 for the single saved word. The test says nothing about MAIN's frame; state it in a sentence if you want to be safe.</div>
+<h3>Step 3 · Fig 9.4, line by line, for your two calls</h3>
+<p>Left: the exact textbook call sequence. Right: your two calls, in the same rows. Colours match the final code further down.</p>
+<div class="scroll"><table class="ft c9"><tr class="hd"><th>Phase</th><th>Fig 9.4 (exact)</th><th>Call 1 <code>t2 := CALL f(t3,t4)</code></th><th>Call 2 <code>t0 := CALL f(t1,t2)</code></th></tr>`;
+  const fig94=[
+   ['save','M[SP] := R0<br>…<br>M[SP+4*k] := Rk','Save caller\'s local variables'],
+   ['reserve','SP := SP − 4*(n+1)','Make space for parameters and return address'],
+   ['args','M[SP+4] := a₁<br>…<br>M[SP+4*n] := aₙ','Save parameters on stack'],
+   ['ret','M[SP] := <i>returnaddress</i>','Save return address on stack'],
+   ['goto','GOTO g<br>LABEL <i>returnaddress</i>','Jump to callee'],
+   ['fetch','x := M[SP+4]','Fetch result from stack'],
+   ['free','SP := SP + 4*(n+1)','Restore caller\'s local variables'],
+   ['restore','R0 := M[SP]<br>…<br>Rk := M[SP+4*k]','']];
+  fig94.forEach(([ph,gen,cm])=>{
+    h+=`<tr class="${PHC[ph]}"><td class="pat">${phName[ph]}</td><td class="gl">${gen}${cm?`<div class="cm">${cm}</div>`:''}</td>`;
+    callRows.forEach(c=>{const ls=c.seq.filter(x=>x.ph===ph).map(x=>x.note?`<i>${esc(x.txt)}</i>`:esc(x.txt));h+=`<td class="cv">${ls.join('<br>')||'<span class="dots">·</span>'}</td>`});
+    h+='</tr>'});
+  h+=`</table></div>
+<p class="tag">Return labels: <code>retA</code> and <code>retB</code> (the lecture writes <code>dynamicReturnAddrA/B</code>). Each call needs its own, otherwise the callee could not tell where to come back.</p>
+<h3>Step 4 · The callee: prologue (Fig 9.2) and epilogue (Fig 9.3)</h3>
+<div class="scroll"><table class="ft c9"><tr class="hd"><th></th><th>Textbook (exact)</th><th>For add(x, y) with x→u1, y→u2, result u1</th></tr>
+<tr class="ph-go"><td class="pat">Fig 9.2<br>prologue</td><td class="gl">LABEL f<br>p₁ := M[SP+4]<br>…<br>p_m := M[SP+4*m]<br>SP := SP − framesize<sub>f</sub></td><td class="cv">${P.pro.map(o=>esc(o.txt)).join('<br>')}</td></tr>
+<tr class="ph-fet"><td class="pat">body</td><td class="gl"><i>translated statements</i></td><td class="cv">the while-loop from 2b (t5 … L2)</td></tr>
+<tr class="ph-res"><td class="pat">Fig 9.3<br>epilogue</td><td class="gl">SP := SP + framesize<sub>f</sub><br>M[SP+4] := <i>result</i><br>GOTO M[SP]</td><td class="cv">${P.epi.map(o=>esc(o.txt)).join('<br>')}</td></tr></table></div>
+<div class="box">The <b>return x</b> statement is exactly the epilogue with <i>result</i> = <code>u1</code>. The jump back is <code>GOTO M[SP]</code>: M[SP] holds the return address the caller stored (<code>retA</code> or <code>retB</code>), so one function can return to different places.</div>
+<div class="box warn"><b>framesize.</b> It is the space for the callee's own memory-resident locals (spilled variables, and saves for calls it makes itself). add makes no calls and its three live values fit in registers (Chapter 8 / H6 gave 3 colours), so <b>framesize<sub>add</sub> = 0</b>. Write it as <code>framesize</code> and say it is 0, or write <code>SP := SP − 0</code>; either way state the reason.</div>
+<h3>Step 5 · The final answer</h3>
+<div class="row"><div class="col"><div class="tag">MAIN (final version, no CALL left)</div>${colorCode(P.out.filter(o=>!o.txt.startsWith('//')),o=>PHC[o.ph]||'')}</div>
+<div class="col"><div class="tag">FUNCTION add (completed)</div>${colorCode([...P.pro.map(o=>({txt:o.txt,ph:'goto'})),...D.B.code.map(l=>({txt:l,ph:''})),...P.epi.map(o=>({txt:o.txt,ph:'reserve'}))],o=>PHC[o.ph]||'')}</div></div>
+<div class="legend"><span><span class="swatch ph-save"></span>save / restore</span><span><span class="swatch ph-res"></span>reserve / free</span><span><span class="swatch ph-arg"></span>arguments</span><span><span class="swatch ph-ret"></span>return address</span><span><span class="swatch ph-go"></span>jump / label</span><span><span class="swatch ph-fet"></span>result</span></div>
+<h3>Step 6 · Run it and watch the stack</h3>
+<p>This is a tiny machine that actually executes the final code (MAIN, then add). Step through it: the memory column shows the frame being built, used and torn down. Loop lines show the state the <i>first</i> time they run.</p>`;
+  const lines=D.metaRun,idx=Math.min(S.c9.step,lines.length-1);
+  h+=`<div class="ctl"><button onclick="c9s(-1)" ${idx<=0?'disabled':''}>◀ Back</button><button onclick="c9s(1)" ${idx>=lines.length-1?'disabled':''}>Next ▶</button><input type="range" min="0" max="${lines.length-1}" value="${idx}" oninput="c9s(this.value,true)" style="flex:1;min-width:120px"><span class="cnt">${idx+1} / ${lines.length}</span></div>`;
+  const sn=D.good.snap[idx],m=lines[idx];
+  h+=`<div class="row"><div class="col" style="flex:2 1 420px"><pre class="code run">${lines.map((l,i)=>`<span class="ln ${i===idx?'cur':''} ${l.part==='MAIN'?PHC[l.ph]||'':''}">${String(i+1).padStart(2,' ')}  ${esc(l.txt)}</span>`).join('')}</pre></div>
+  <div class="col" style="flex:1 1 260px"><div class="box"><b>${esc(m.txt)}</b><div class="tag">${m.fig?'Rule: '+m.fig:''}</div></div>${memRows(sn,1000)}<div class="vars"><div class="stkh">Variables now</div>${sn?Object.entries(sn.V).filter(([k,v])=>!Number.isNaN(v)).map(([k,v])=>`<span class="chip">${k} = ${esc(v)}</span>`).join(' '):''}</div></div></div>
+  <div class="box ok">The run finishes with <b>u0 = ${D.good.V.u0}</b> and SP back at its starting value (${D.good.SP===1000?'1000 ✓':D.good.SP}). add(3, add(4,5)) = add(3, 9) = 12.</div>
+  <div class="box warn"><b>Why the save matters.</b> Delete the two lines that save and restore <code>t1</code> and run again, with the callee free to overwrite registers (the lecture comment: "Caller's values got flushed from Registers"): the second call then receives garbage and the result is <b>u0 = ${Number.isNaN(D.bad.V.u0)?'garbage (NaN)':D.bad.V.u0}</b>. That is exactly what the save/restore of <code>t1</code> prevents.</div>
+  <h3>Where this differs between the book and your lecture</h3>
+  <ol class="rules"><li><b>Which values are saved.</b> The book's Fig 9.4 saves registers R0…Rk (everything that may hold a variable). The lecture/H6 saves only those live after the call. Both give a correct program; the second is what the "<i>how large is k</i>" questions in H6 assume. Here call 1 saves one value (<code>t1</code>), call 2 saves none.</li>
+  <li><b>framesize</b> counts only the callee's own locals, never the parameters and return address.</li>
+  <li><b>Not needed for 2c.II:</b> callee-save, register parameters and tail calls (textbook §9.x), which the test does not ask.</li></ol>`;
+  return h}
+window.c9s=(d,abs)=>{S.c9.step=abs?+d:S.c9.step+d;draw()};
+
+/* ---------- inlining ---------- */
+function inlView(){
+  const A=getRun('q2a'),B=getRun('q2b');
+  const I=inlinePlan(A.code,B.code,['u1','u2'],'u1','f',B.end.t,B.end.l,3);
+  const m2=I.copies[1].map,keys=Object.keys(m2);
+  const run=runMachine(I.final,{});
+  let h=`<h2>2c.I · Inlining add into MAIN, twice</h2>
+<p class="lede">Instead of calling <code>f</code>, paste a copy of its body at each call. No call sequence, no prologue, no epilogue: the call instruction disappears. The test warns that the generated jump-labels need extra re-naming. The lecture's own inlining recipe is not in the material I have, so this follows the textbook's procedure (§9.12.1), which agrees with the test's hint.</p>
+<h3>The recipe for one call <code>res := CALL f(a₁, a₂)</code></h3>
+<ol class="rules"><li><b>Take a fresh copy</b> of f's translated body (the 2b code).</li>
+<li><b>Initialise the parameters from the arguments:</b> <code>u1 := a₁</code>, <code>u2 := a₂</code>.</li>
+<li><b>Paste the body</b> after them.</li>
+<li><b>Turn <code>return x</code> into an assignment</b> to the call's result: <code>res := u1</code> (no jump needed: the return is the last thing in add).</li>
+<li><b>Rename</b> everything in the second copy that would clash with the first: jump-labels (<b>essential</b>) and the parameters and temporaries (what the textbook asks for, to avoid variable capture).</li></ol>
+<h3>What the renaming looks like for copy 2</h3>
+<div class="scroll"><table class="t"><tr><th>kind</th><th>in copy 1 (unchanged)</th><th>in copy 2</th></tr>
+<tr><td>labels</td><td>L0, L1, L2</td><td>${['L0','L1','L2'].map(k=>m2[k]).join(', ')}</td></tr>
+<tr><td>parameters</td><td>u1, u2</td><td>${m2.u1}, ${m2.u2}</td></tr>
+<tr><td>temporaries</td><td>t5 … t12</td><td>${['t5','t6','t7','t8','t9','t10','t11','t12'].map(k=>m2[k]).join(', ')}</td></tr></table></div>
+<div class="box warn"><b>Why the labels matter most.</b> Both copies would otherwise contain <code>LABEL L0</code>, <code>LABEL L1</code>, <code>LABEL L2</code>. A <code>GOTO L0</code> would then have two possible targets. That ambiguity is the "confusion" the test warns about. Variables are safer: the copies run one after the other and each initialises its own parameters first, but renaming them is what the textbook procedure prescribes. If you are short of time, labels first.<br>The reason MAIN's variables (<code>t0…t4, u0</code>) never clash with add's (<code>u1,u2,t5…</code>) is the continuing counters from 2a to 2b.</div>
+<h3>The final MAIN, with the origin of every line</h3>
+${colorCode(I.out,o=>o.ph==='plain'?'':o.note?'ph-go':o.copy===1?'ph-save':'ph-arg')}
+<div class="legend"><span><span class="swatch ph-save"></span>copy 1 (call 1)</span><span><span class="swatch ph-arg"></span>copy 2 (call 2)</span></div>
+<p class="tag">The lines starting <code>//</code> are only markers for you; leave them out or keep them as comments.</p>
+<div class="box ok"><b>Check by running it:</b> the inlined MAIN above executes to <b>u0 = ${run.V.u0}</b> (= add(3, add(4,5)) = 12), with no <code>CALL</code> left.</div>
+<h3>Inlining versus the call sequence</h3>
+<table class="ref"><tr><th></th><th>call sequence (2c.II)</th><th>inlining (2c.I)</th></tr>
+<tr><td>run time</td><td>pays for the frame, saves, jump and return</td><td>no call overhead</td></tr>
+<tr><td>code size</td><td>one copy of add</td><td>a copy of add per call</td></tr>
+<tr><td>things to watch</td><td>which variables to save; return labels</td><td>renaming labels and variables; recursion cannot be inlined indefinitely</td></tr></table>`;
+  return h}
+
+function pracView(){
+  return `<h2>Practice programs</h2><p class="lede">Two more examples that exercise the rows 2a and 2b do not: <code>repeat … until</code> with <code>&amp;&amp;</code> (your HW5), and a <code>while</code> whose condition uses <code>!</code> and <code>||</code> (your friend's example, the one drawn with the tree). The same stepper, both methods.</p>
+  <div class="ctl"><label>Program: <select onchange="S.prac=this.value;draw()">${['x1','x2','q2a','q2b'].map(k=>`<option value="${k}" ${S.prac===k?'selected':''}>${esc(PRESETS[k].short)}</option>`).join('')}</select></label></div>
+  <div class="box"><code>${esc(PRESETS[S.prac].code)}</code><div class="tag">symbol table ${esc(JSON.stringify(PRESETS[S.prac].vt))}${PRESETS[S.prac].after?' · counters continue from 2a':''}</div></div><div id="tv"></div>`}
+
+function cribView(){
+  const A=getRun('q2a'),B=getRun('q2b');
+  return `<h2>Crib-book summary</h2><p class="lede">What to copy into the booklet for Chapters 6 and 9. The tables are in stage 1; this is the working method and the answers to the sample.</p>
+<h3>Chapter 6 method (either style)</h3>
+<ol class="rules"><li>Choose the function by the node: expression → <i>TransExp</i> (needs a place), statement → <i>TransStat</i>, condition → <i>TransCond</i> (needs <i>label<sub>t</sub></i>, <i>label<sub>f</sub></i>).</li>
+<li>On entering a node, create its fresh names <b>first</b> (top lines of the row), then recurse.</li>
+<li>Binop: both places before either operand. Arguments: one place right before each argument. Assignment: fresh temp, then <code>x := temp</code>.</li>
+<li>Code is assembled afterwards, as the row's last line says.</li>
+<li>Counter order decides the numbers: t0/L0 first, continued from MAIN into the function.</li></ol>
+<h3>Answers to Task 2</h3>
+<div class="row"><div class="col"><div class="tag">2a · MAIN</div><pre class="code">${A.code.map(esc).join('\n')}</pre><div class="tag">2b · while-loop</div><pre class="code">${B.code.map(esc).join('\n')}</pre></div>
+<div class="col"><div class="tag">2c.II · MAIN with call sequences</div><pre class="code">${c9Data().plan.mainFinal.map(esc).join('\n')}</pre></div></div>
+<div class="row"><div class="col"><div class="tag">2c.II · add with prologue/epilogue (framesize = 0)</div><pre class="code">${c9Data().plan.fFinal.map(esc).join('\n')}</pre></div>
+<div class="col"><div class="tag">2c.I · MAIN with add inlined twice</div><pre class="code">${inlinePlan(A.code,B.code,['u1','u2'],'u1','f',B.end.t,B.end.l,3).final.map(esc).join('\n')}</pre></div></div>
+<h3>Chapter 9 formulas</h3>
+<ul class="rules"><li>Frame for a call with n arguments: <code>4·(n+1)</code> bytes; <code>M[SP]</code> = return address, <code>M[SP+4i]</code> = argument i; result returns in <code>M[SP+4]</code>.</li>
+<li>Call sequence: save live values → <code>SP := SP − 4(n+1)</code> → arguments → <code>M[SP] := ret</code> → <code>GOTO f</code> → <code>LABEL ret</code> → <code>x := M[SP+4]</code> → <code>SP := SP + 4(n+1)</code> → restore.</li>
+<li>Prologue: <code>LABEL f; pᵢ := M[SP+4i]; SP := SP − framesize</code>. Epilogue: <code>SP := SP + framesize; M[SP+4] := result; GOTO M[SP]</code>.</li>
+<li>Save set = <code>out[call]</code> minus the call's result.</li></ul>
+<div class="box warn"><b>Things I could not confirm from your material:</b> the lecturer's exact inlining recipe, whether the marker counts saved registers as the book's R0…Rk or only live variables, and whether framesize is written symbolically or as a number. The answers above follow the textbook where the lecture is silent. Worth a quick check with the lecturer or tutors.</div>`}
+
+/* ---------- shell ---------- */
+function draw(){
+  const nav=STAGES.map((s,i)=>`<a class="${i===S.stage?'on':''}" onclick="go(${i})"><b>${s.n}</b>${s.t}</a>`).join('');
+  $('nav').innerHTML=nav;
+  const id=STAGES[S.stage].id;let h='';
+  if(id==='intro')h=introView();
+  else if(id==='tables')h=tablesView();
+  else if(id==='q2a')h=transStage('q2a','2a · Intermediate code for MAIN',`<code>result := add( 3 , add( 4 , 5 ) );</code>. Two calls, so two <code>CALL</code> instructions. Watch how the argument places are created one at a time, and how the inner call's result lands in a place the outer call then uses.`);
+  else if(id==='q2b')h=transStage('q2b','2b · The while-loop inside add',`<code>while ( y &gt; 0 ) do { x := x + 1 ; y := y − 1 ; }</code>. The counters carry on from 2a (t5 and L0 next), as in the lecturer's solution. The <code>return x</code> is not translated here.`);
+  else if(id==='c9')h=c9View();
+  else if(id==='inl')h=inlView();
+  else if(id==='prac')h=pracView();
+  else if(id==='source')h=sourceView();
+  else h=cribView();
+  $('main').innerHTML=h;
+  const tv=$('#tv');
+  if(tv){const key=id==='prac'?S.prac:id;transView(key,tv)}
+}
+window.go=i=>{S.stage=i;draw();window.scrollTo(0,0)};
+document.addEventListener('keydown',e=>{
+  if(['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)&&e.target.type!=='range')return;
+  const id=STAGES[S.stage].id;if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;const d=e.key==='ArrowRight'?1:-1;
+  if(id==='q2a'||id==='q2b'||id==='prac')stp(id==='prac'?S.prac:id,d);else if(id==='c9')c9s(d)});
+window.toggleTheme=()=>{const r=document.documentElement;const dark=r.dataset.theme==='dark'||(!r.dataset.theme&&matchMedia('(prefers-color-scheme:dark)').matches);r.dataset.theme=dark?'light':'dark'};
+draw();
+
+</script></body></html>

@@ -1,0 +1,1040 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>COS341 H6 · liveness to spilling</title>
+<style>
+:root{
+  --paper:#f5f7fa; --panel:#fff; --ink:#18212f; --muted:#526071; --rule:#d4dbe4;
+  --read:#1756a9; --write:#b42318;
+  --src:#fff0bf; --srcline:#9a6b00; --dst:#d9f0df; --dstline:#28713d;
+  --new:#f7d7cb; --accent:#28713d; --warn:#8a4b00;
+  --sans:Arial,"Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#151b24; --panel:#1e2632; --ink:#edf2f8; --muted:#aab6c5; --rule:#3a4655;
+    --read:#8db7f0; --write:#ff9b91; --src:#554719; --srcline:#e0c35a; --dst:#23482f; --dstline:#8fd17c;
+    --new:#6b3b27; --accent:#8fd17c; --warn:#e5a55c;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#151b24; --panel:#1e2632; --ink:#edf2f8; --muted:#aab6c5; --rule:#3a4655;
+  --read:#8db7f0; --write:#ff9b91; --src:#554719; --srcline:#e0c35a; --dst:#23482f; --dstline:#8fd17c;
+  --new:#6b3b27; --accent:#8fd17c; --warn:#e5a55c;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font:17px/1.65 var(--sans)}
+code,.mono{font-family:var(--mono);font-size:.92em}
+header{border-bottom:1px solid var(--rule);padding:16px 24px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:baseline;background:var(--panel)}
+header h1{font-size:21px;margin:0;font-weight:700}
+header .sub{color:var(--muted);font-size:14px}
+header .spacer{flex:1}
+select,button,textarea,input{font:inherit;color:var(--ink)}
+select,input[type=number]{background:var(--panel);border:1px solid var(--rule);padding:3px 6px}
+button{background:var(--panel);border:1px solid var(--ink);padding:4px 12px;cursor:pointer}
+button:hover:not(:disabled){background:var(--ink);color:var(--paper)}
+button:disabled{opacity:.35;cursor:default}
+button.quiet{border-color:var(--rule);padding:2px 8px;font-size:14px}
+.layout{display:grid;grid-template-columns:230px minmax(0,1fr);min-height:calc(100vh - 60px)}
+nav{border-right:1px solid var(--rule);padding:14px 0;position:sticky;top:0;align-self:start;max-height:100vh;overflow:auto}
+nav a{display:block;padding:9px 16px;color:var(--muted);text-decoration:none;cursor:pointer;border-left:3px solid transparent;font-size:15px;line-height:1.4}
+nav a b{display:inline-block;width:1.4em;font-family:var(--mono);font-weight:400}
+nav a:hover{color:var(--ink)}
+nav a.on{color:var(--ink);border-left-color:var(--ink);background:var(--panel);font-weight:700}
+nav a.done b::after{content:"·"}
+main{padding:28px 36px 64px;max-width:1240px}
+h2{font-size:26px;line-height:1.25;margin:0 0 8px}
+h3{font-size:17px;margin:28px 0 8px;color:var(--ink);font-weight:700}
+p{margin:.65em 0}
+.lede{color:var(--muted);margin:0 0 20px;max-width:75ch}
+.box{background:var(--panel);border:1px solid var(--rule);padding:16px 20px;margin:16px 0;border-radius:6px}
+.box.eq{border-left:4px solid var(--ink)}
+.box.warn{border-left:4px solid var(--warn)}
+.box.ok{border-left:4px solid var(--accent)}
+.row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.row>.col{flex:1 1 340px;min-width:0}
+table.t{border-collapse:collapse;font-size:15px;width:100%}
+table.t th{font-weight:700;text-align:left;border-bottom:2px solid var(--ink);padding:7px 8px;white-space:nowrap}
+table.t td{padding:5px 8px;border-bottom:1px solid var(--rule);vertical-align:top}
+table.t td.i{color:var(--muted);text-align:right;width:2.4em}
+table.t td.pend{color:var(--rule)}
+table.t tr.lab td.ins{color:var(--muted)}
+table.t tr.cur td{background:color-mix(in srgb,var(--ink) 6%,transparent)}
+table.t td.src{background:var(--src);outline:2px dashed var(--srcline);outline-offset:-2px}
+table.t td.dst{background:var(--dst);outline:2px solid var(--dstline);outline-offset:-2px;font-weight:700}
+table.t td.chg::after{content:" ●";color:var(--write);font-size:.7em}
+table.t td.bnd{background:var(--src);outline:2px dashed var(--srcline);outline-offset:-2px}
+.r{color:var(--read);font-weight:700;border-bottom:2px solid var(--read)}
+.w{color:var(--write);font-weight:700;border-bottom:2px solid var(--write)}
+.lab-tok{font-style:italic}
+.chip{display:inline-block;font-family:var(--mono);font-size:.9em;padding:0 5px;border:1px solid var(--rule);background:var(--paper)}
+.chip.src{background:var(--src);border:1px dashed var(--srcline)}
+.chip.dst{background:var(--dst);border:1px solid var(--dstline);font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;color:var(--muted);margin:6px 0 10px}
+.eqline{font-family:var(--mono);font-size:15px;margin:3px 0;white-space:pre-wrap}
+.eqline.sub{color:var(--muted);font-family:var(--sans);font-size:15px;white-space:normal}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+.ctl .cnt{font-family:var(--mono);font-size:14px;color:var(--muted);margin:0 6px}
+.badge{font-family:var(--mono);font-size:13px;border:1px solid var(--ink);padding:0 6px;margin-right:6px}
+.pill-ref td.hit,.pill-ref tr.hit td{background:var(--src);font-weight:700}
+table.ref{border-collapse:collapse;font-size:14px}
+table.ref td,table.ref th{border-bottom:1px solid var(--rule);padding:5px 10px;text-align:left}
+table.ref tr.hit td{background:var(--src);outline:2px dashed var(--srcline);outline-offset:-2px;font-weight:700}
+svg.g{width:100%;max-width:520px;height:auto;background:var(--panel);border:1px solid var(--rule)}
+svg.g .e{stroke:var(--muted);stroke-width:1.4;opacity:.8}
+svg.g .e.new{stroke:var(--write);stroke-width:3;opacity:1}
+svg.g .e.faint{opacity:.12}
+svg.g circle{fill:var(--paper);stroke:var(--ink);stroke-width:1.6}
+svg.g circle.hot{stroke-width:4;stroke:var(--dstline)}
+svg.g circle.sp{stroke:var(--write);stroke-dasharray:4 3;stroke-width:3}
+svg.g text{font-family:var(--mono);font-size:13px;fill:var(--ink);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+svg.g text.rg{font-size:10px;fill:var(--muted)}
+svg.g g.gone{opacity:.18}
+svg.g .fillc text{fill:#1c1a16}
+svg.g .fillc text.rg{fill:var(--muted)}
+.stack{display:flex;flex-direction:column-reverse;gap:2px;font-family:var(--mono);font-size:14px;max-width:360px}
+.stack div{border:1px solid var(--ink);padding:2px 8px;background:var(--panel)}
+.stack div.top{background:var(--dst)}
+.stack small{color:var(--muted)}
+textarea{width:100%;min-height:210px;font-family:var(--mono);font-size:14px;background:var(--panel);border:1px solid var(--rule);padding:8px}
+.err{color:var(--write);font-family:var(--mono);font-size:14px}
+.tag{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.swatch{display:inline-block;width:12px;height:12px;border:1px solid var(--ink);vertical-align:-1px;margin-right:4px}
+ol.rules li{margin:4px 0}
+.pipe{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-family:var(--mono);font-size:14px}
+.pipe span.s{border:1px solid var(--ink);padding:2px 8px;background:var(--panel)}
+kbd{font-family:var(--mono);border:1px solid var(--rule);padding:0 4px;font-size:.85em}
+@media (max-width:820px){
+  .layout{grid-template-columns:1fr}
+  nav{position:static;display:flex;overflow-x:auto;border-right:0;border-bottom:1px solid var(--rule);padding:0;max-height:none}
+  nav a{white-space:nowrap;border-left:0;border-bottom:3px solid transparent}
+  nav a.on{border-bottom-color:var(--ink)}
+  main{padding:20px 16px 50px}
+  table.t{font-size:13px}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>H6 walkthrough</h1>
+  <span class="sub">liveness · interference · colouring · spilling, on the homework's own code</span>
+  <span class="spacer"></span>
+  <label class="sub">Code
+    <select id="progSel"></select>
+  </label>
+  <button class="quiet" id="themeBtn">Theme</button>
+</header>
+<div class="layout">
+  <nav id="nav"></nav>
+  <main id="main"></main>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   Helpers
+   ============================================================ */
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cmp=(a,b)=>a.localeCompare(b,undefined,{numeric:true});
+const srt=a=>[...a].sort(cmp);
+const fmt=a=>{a=srt(a);return a.length?'{'+a.map(esc).join(', ')+'}':'∅'};
+const fmtN=a=>{a=[...a].sort((x,y)=>x-y);return a.length?'{'+a.join(', ')+'}':'∅'};
+const same=(a,b)=>a.size===b.size&&[...a].every(x=>b.has(x));
+const uniq=a=>[...new Set(a)];
+const isConst=t=>/^(\d+|#\w+)$/.test(t);
+
+/* ============================================================
+   Example programs
+   ============================================================ */
+const PROGRAMS={
+  h6a:{name:"H6 (a) · Callee function f",N:3,mode:'def82',
+    title:"Homework 6 (a): the callee function f",
+    lede:"One function, 20 lines, one loop. Every number on the following pages is computed on exactly these lines.",
+    question:"“With reference to the Callee's code, apply the methods from textbook Chapter 8 to investigate the variable-interferences within the Callee. Present your findings in the form of a <b>minimally coloured interference graph</b>, such that the number of different colours in the graph indicates how many CPU registers the Callee at least needs in order to function properly.” <span class='tag'>[0.9 points]</span>",
+    how:"<b>How the code is read.</b> <code>SP</code> is the stack-pointer register (Chapter 9). It is not one of the variables we colour, so the SP bookkeeping lines get empty gen and kill, and an address such as <code>M[SP+4]</code> is treated like a constant address <code>M[k]</code>. The code is analysed exactly as printed in the homework: u2 is never updated inside the loop (the semester-test version appears to have had <code>t10 := t11 − t12; u2 := t10</code> before the GOTO), which is also how the student answer in the homework PDF was drawn.",
+    ex:[11,7,13],
+    spillTip:"In f, u1 and u2 are live through the whole loop, so every temporary (t5, t6, …) conflicts with both of them. That is why 2 registers fail. Try ticking <code>u1</code> and <code>u2</code>: spilling those two long-lived variables is what actually frees registers, while spilling the temporaries the algorithm happened to mark does not.",
+    student:[['red',['u1','t8','t7']],['blue',['u2','t5','t11']],['green',['t6','t12','t9']]],
+    rowNotes:{
+      0:"Entry label of f. LABEL rows are real instructions (as in textbook Fig 8.1) with empty gen and kill, so control simply continues to row 2.",
+      1:"Parameter 1 is read from memory at SP+4. SP is not a variable we colour, so this behaves like x := M[k]: gen = ∅, kill = {u1}.",
+      2:"Parameter 2, same shape: gen = ∅, kill = {u2}.",
+      3:"Prologue stack bookkeeping. SP is ignored, so gen = ∅ and kill = ∅, and control continues to row 5.",
+      4:"L0 is the loop head. The GOTO in row 16 jumps back here.",
+      7:"The only IF in f: two successors, the LABEL L1 row (the loop body) and the LABEL L2 row (the exit).",
+      15:"A backward jump: GOTO L0 goes to row 5, a smaller row number. This is what makes the loop, and why the fixed point needs more than one pass.",
+      16:"L2: the loop exit.",
+      17:"Epilogue stack bookkeeping, ignored like row 4.",
+      18:"The return value goes to memory at SP+4. It reads u1 (gen = {u1}); SP is ignored.",
+      19:"Jump to the return address stored at M[SP], back in the caller. Nothing inside f follows it, so it behaves like RETURN."},
+    code:`Label f
+u1 := M[SP+4]
+u2 := M[SP+8]
+SP := SP - framesize
+Label L0
+t5 := u2
+t6 := 0
+IF t5 > t6 THEN L1 ELSE L2
+Label L1
+t8 := u1
+t9 := 1
+t7 := t8 + t9
+u1 := t7
+t11 := u2
+t12 := 1
+GOTO L0
+Label L2
+SP := SP + framesize
+M[SP+4] := u1
+GOTO M[SP]`},
+  h6bc:{name:"H6 (b, c) · Main program (caller)",N:3,mode:'def82',
+    title:"Homework 6 (b) and (c): the main program (caller)",
+    lede:"The caller is straight-line code with two calls to f. Part (b) asks what must be saved around each call, part (c) asks for the interference graph.",
+    question:"<b>(b)</b> Which of t1, t3, t4 must be rescued in the 1st call sequence, which in the 2nd, must t2 be rescued in the 2nd, and how large is k (the number of register values rescued) in each call? <b>(c)</b> Apply the Chapter 8 methods to the six variables t1, t3, t4, t2, t0, u0 and present a minimally coloured interference graph. <span class='tag'>[0.5 + 0.6 points]</span>",
+    how:"<b>How the code is read.</b> Each call sequence is modelled as one instruction <code>x := CALL f(args)</code>: it <i>reads</i> the values handed over (gen = the arguments) and <i>writes</i> the result (kill = {x}). Rows 5 and 8 stand for <code>screen_print(…)</code>, which reads its variable; the final RETURN just ends the program. Because f flushes the registers, anything still live after a call (other than the call's own result) has to be rescued first. That is part (b), answered on stage 9.",
+    ex:[3,5,6],
+    student:[['red',['t1','t0','u0']],['blue',['t3','t2']],['green',['t4']]],
+    rowNotes:{
+      3:"The whole 1st call sequence as one instruction. It hands t3 and t4 over (gen = {t3, t4}) and receives the result in t2 (kill = {t2}).",
+      4:"Stands for screen_print(t2): it reads t2, so gen = {t2}.",
+      5:"The 2nd call sequence: hands t1 and t2 over (gen = {t1, t2}) and receives t0 (kill = {t0}).",
+      6:"u0 := t0 is a plain copy (this matters for the Def 8.2 rule).",
+      7:"Stands for screen_print(u0): reads u0.",
+      8:"End of the main program (stand-in for its last line)."},
+    code:`t1 := 3
+t3 := 4
+t4 := 5
+t2 := CALL f(t3, t4)
+M[#screen] := t2
+t0 := CALL f(t1, t2)
+u0 := t0
+M[#screen] := u0
+RETURN #0`}
+};
+
+/* ============================================================
+   Parser  (instruction -> parts, kind, gen/kill, mapping)
+   ============================================================ */
+function parseProgram(text){
+  const P=[],errors=[];
+  text.split('\n').forEach((raw,ln)=>{
+    let s=raw.replace(/\/\/.*$/,'').trim();
+    if(!s)return;
+    s=s.replace(/^\d+\s*[:.]\s+/,'').replace(/^\d+:\s*/,'');
+    const ins=parseLine(s);
+    if(!ins){errors.push(`line ${ln+1}: cannot parse "${raw.trim()}"`);return}
+    ins.gen=uniq(ins.parts.filter(p=>p.t==='v'&&p.role==='r').map(p=>p.s));
+    ins.kill=uniq(ins.parts.filter(p=>p.t==='v'&&p.role==='w').map(p=>p.s));
+    P.push(ins);
+  });
+  const labels={};
+  P.forEach((ins,i)=>{ if(ins.kind==='label'){ if(labels[ins.label]!==undefined)errors.push(`label ${ins.label} defined twice`); labels[ins.label]=i; }});
+  P.forEach((ins,i)=>{
+    const lab=l=>{ if(labels[l]===undefined){errors.push(`instruction ${i+1}: label ${l} does not exist`);return null} return labels[l]; };
+    const nxt=i+1<P.length?i+1:null;
+    if(ins.kind==='ret'){ins.succ=[];ins.rule='4'}
+    else if(ins.kind==='goto'){const j=lab(ins.m.l);ins.succ=j===null?[]:[j];ins.rule='2';ins.labelRows=ins.succ}
+    else if(ins.kind==='if'){
+      const j=lab(ins.m.lt);
+      if(ins.m.lf){const k=lab(ins.m.lf);ins.succ=uniq([j,k].filter(x=>x!==null));ins.rule='3';ins.labelRows=ins.succ}
+      else{ins.succ=uniq([j,nxt].filter(x=>x!==null));ins.rule='3b';ins.labelRows=j===null?[]:[j];ins.fall=nxt}
+    }else{
+      ins.succ=nxt===null?[]:[nxt];ins.rule='1';ins.fall=nxt;
+      if(nxt===null)errors.push(`instruction ${i+1} is last but is not RETURN/GOTO (control would fall off the end)`);
+    }
+  });
+  if(!P.length)errors.push('program is empty');
+  return {P,errors};
+}
+function parseLine(s){
+  let m;
+  const V=(n,role)=>isConst(n)?{t:'c',s:n}:{t:'v',s:n,role};
+  const T=x=>({t:'t',s:x}), L=x=>({t:'l',s:x});
+  if(m=s.match(/^SP\s*:=\s*SP\s*([-+])\s*(\w+)$/i))return{kind:'sp',key:'sp',parts:[T('SP := SP '+m[1]+' '+m[2])],m:{},vars:{}};
+  if(m=s.match(/^GOTO\s+M\[\s*SP\s*\]$/i))return{kind:'ret',key:'retjump',parts:[T('GOTO M[SP]')],m:{},vars:{}};
+  if(m=s.match(/^(\w+)\s*:=\s*M\[\s*SP\s*\+\s*(\d+)\s*\]$/i))return{kind:'load',key:'loadk',parts:[V(m[1],'w'),T(' := M[SP+'+m[2]+']')],m:{},vars:{x:m[1],k:'SP+'+m[2]}};
+  if(m=s.match(/^M\[\s*SP\s*\+\s*(\d+)\s*\]\s*:=\s*([#\w]+)$/i))return{kind:'store',key:'storek',parts:[T('M[SP+'+m[1]+'] := '),V(m[2],'r')],m:{},vars:{k:'SP+'+m[1],y:m[2]}};
+  if(m=s.match(/^LABEL\s+(\w+)$/i))return{kind:'label',label:m[1],key:'label',parts:[T('LABEL '),L(m[1])],m:{l:m[1]},vars:{}};
+  if(m=s.match(/^GOTO\s+(\w+)$/i))return{kind:'goto',key:'goto',parts:[T('GOTO '),L(m[1])],m:{l:m[1]},vars:{}};
+  if(m=s.match(/^IF\s+([#\w]+)\s*(<=|>=|<>|!=|==|=|<|>)\s*([#\w]+)\s+THEN\s+(\w+)(?:\s+ELSE\s+(\w+))?$/i)){
+    const parts=[T('IF '),V(m[1],'r'),T(' '+m[2]+' '),V(m[3],'r'),T(' THEN '),L(m[4])];
+    if(m[5]){parts.push(T(' ELSE '),L(m[5]))}
+    return{kind:'if',key:'if',parts,m:{lt:m[4],lf:m[5]||null},vars:{x:m[1],y:m[3],lt:m[4],lf:m[5]||'(none: falls through)'}};
+  }
+  if(m=s.match(/^RETURN\s+([#\w]+)$/i))return{kind:'ret',key:'return',parts:[T('RETURN '),V(m[1],'r')],m:{},vars:{x:m[1]}};
+  if(m=s.match(/^(\w+)\s*:=\s*CALL\s+(\w+)\s*\(([^)]*)\)$/i)){
+    const args=m[3].split(',').map(a=>a.trim()).filter(Boolean);
+    const parts=[V(m[1],'w'),T(' := CALL '+m[2]+'(')];
+    args.forEach((a,i)=>{if(i)parts.push(T(', '));parts.push(V(a,'r'))});parts.push(T(')'));
+    return{kind:'call',key:'call',parts,m:{},vars:{x:m[1],f:m[2],args:args.join(', ')||'none'}};
+  }
+  if(m=s.match(/^M\[\s*([#\w]+)\s*\]\s*:=\s*([#\w]+)$/))
+    return{kind:'store',key:isConst(m[1])?'storek':'store',parts:[T('M['),V(m[1],'r'),T('] := '),V(m[2],'r')],m:{},vars:{[isConst(m[1])?'k':'x']:m[1],y:m[2]}};
+  if(m=s.match(/^(\w+)\s*:=\s*M\[\s*([#\w]+)\s*\]$/))
+    return{kind:'load',key:isConst(m[2])?'loadk':'load',parts:[V(m[1],'w'),T(' := M['),V(m[2],'r'),T(']')],m:{},vars:{x:m[1],[isConst(m[2])?'k':'y']:m[2]}};
+  if(m=s.match(/^(\w+)\s*:=\s*([#\w]+)\s*(<<|>>|[-+*\/%&|^])\s*([#\w]+)$/)){
+    const both=!isConst(m[2])&&!isConst(m[4]);
+    const vars={x:m[1]};
+    if(isConst(m[2]))vars.k=m[2];else vars.y=m[2];
+    if(isConst(m[4])){vars[isConst(m[2])?'k2':'k']=m[4]}else vars.z=m[4];
+    return{kind:'binop',key:both?'binop':'binopk',parts:[V(m[1],'w'),T(' := '),V(m[2],'r'),T(' '+m[3]+' '),V(m[4],'r')],m:{},vars,op:m[3]};
+  }
+  if(m=s.match(/^(\w+)\s*:=\s*([-~!])\s*([#\w]+)$/))
+    return{kind:'unop',key:isConst(m[3])?'unopk':'unop',parts:[V(m[1],'w'),T(' := '+m[2]),V(m[3],'r')],m:{},vars:{x:m[1],[isConst(m[3])?'k':'y']:m[3]}};
+  if(m=s.match(/^(\w+)\s*:=\s*([#\w]+)$/)){
+    const c=isConst(m[2]);
+    return{kind:c?'const':'move',key:c?'const':'move',parts:[V(m[1],'w'),T(' := '),V(m[2],'r')],m:{},vars:{x:m[1],[c?'k':'y']:m[2]}};
+  }
+  return null;
+}
+function insText(ins,ren){return ins.parts.map(p=>(p.t==='v'&&ren&&ren[p.s])?ren[p.s]:p.s).join('')}
+function insHTML(ins,colour){
+  return ins.parts.map(p=>{
+    if(p.t==='v'&&colour)return `<span class="${p.role==='w'?'w':'r'}">${esc(p.s)}</span>`;
+    if(p.t==='l')return `<span class="lab-tok">${esc(p.s)}</span>`;
+    return esc(p.s);
+  }).join('');
+}
+const FIG82=[
+ ['label','LABEL l','∅','∅'],['move','x := y','{y}','{x}'],['const','x := k','∅','{x}'],
+ ['unop','x := unop y','{y}','{x}'],['unopk','x := unop k','∅','{x}'],
+ ['binop','x := y binop z','{y, z}','{x}'],['binopk','x := y binop k','{y}','{x}'],
+ ['load','x := M[y]','{y}','{x}'],['loadk','x := M[k]','∅','{x}'],
+ ['store','M[x] := y','{x, y}','∅'],['storek','M[k] := y','{y}','∅'],
+ ['goto','GOTO l','∅','∅'],['if','IF x relop y THEN lt ELSE lf','{x, y}','∅'],
+ ['call','x := CALL f(args)','args','{x}'],['return','RETURN x','{x}','∅'],
+ ['sp','SP := SP ± framesize (H6)','∅ (SP ignored)','∅ (SP ignored)'],
+ ['retjump','GOTO M[SP] (H6)','∅ (SP ignored)','∅']
+];
+
+/* ============================================================
+   Liveness fixed-point trace
+   ============================================================ */
+function liveTrace(P,order){
+  const n=P.length;
+  let IN=P.map(()=>new Set()),OUT=P.map(()=>new Set());
+  const snap=()=>({IN:IN.map(s=>[...s]),OUT:OUT.map(s=>[...s])});
+  const steps=[{kind:'init',iter:0,...snap()}];
+  let iter=0,any;
+  const seq=[...Array(n).keys()];
+  if(order==='back')seq.reverse();
+  do{
+    iter++;any=false;
+    for(const i of seq){
+      const ins=P[i];
+      const o=new Set();ins.succ.forEach(j=>IN[j].forEach(v=>o.add(v)));
+      const prevO=new Set(OUT[i]);const chO=!same(prevO,o);
+      OUT[i]=o;if(chO)any=true;
+      steps.push({kind:'out',iter,i,value:[...o],prev:[...prevO],changed:chO,
+        succ:[...ins.succ],succVals:ins.succ.map(j=>[...IN[j]]),...snap()});
+      const diff=new Set([...OUT[i]].filter(v=>!ins.kill.includes(v)));
+      const inn=new Set([...ins.gen,...diff]);
+      const prevI=new Set(IN[i]);const chI=!same(prevI,inn);
+      IN[i]=inn;if(chI)any=true;
+      steps.push({kind:'in',iter,i,value:[...inn],prev:[...prevI],changed:chI,
+        outV:[...OUT[i]],diff:[...diff],...snap()});
+    }
+    steps.push({kind:'endIter',iter,changed:any,...snap()});
+  }while(any);
+  return {steps,iterations:iter,final:snap()};
+}
+
+/* ============================================================
+   Interference
+   ============================================================ */
+const ekey=(a,b)=>cmp(a,b)<0?a+'|'+b:b+'|'+a;
+function interfTrace(P,fin,mode){
+  const edges=new Map(),steps=[];
+  P.forEach((ins,i)=>{
+    const pairs=[],grid=[];
+    if(mode==='colive'){
+      [['in',fin.IN[i]],['out',fin.OUT[i]]].forEach(([nm,set])=>{
+        const a=srt(set);
+        for(let x=0;x<a.length;x++)for(let y=x+1;y<a.length;y++)pairs.push([a[x],a[y],nm]);
+      });
+    }else{
+      ins.kill.forEach(x=>fin.OUT[i].forEach(y=>{
+        if(x===y){grid.push({x,y,v:'self'});return}
+        if(ins.kind==='move'&&ins.vars.y===y){grid.push({x,y,v:'copy'});return}
+        grid.push({x,y,v:'edge'});
+        pairs.push([x,y,'kill×out']);
+      }));
+    }
+    const fresh=[];
+    pairs.forEach(([a,b,why])=>{const k=ekey(a,b);if(!edges.has(k)){edges.set(k,{a,b,i,why});fresh.push(k)}});
+    steps.push({i,pairs,grid,fresh,edgesAfter:[...edges.keys()]});
+  });
+  return {steps,edges};
+}
+function gridHTML(st,ins,i){
+  if(S.mode!=='def82')return '';
+  if(!ins.kill.length)return `<p class="tag">kill[${i+1}] is empty, so this row creates no edge.</p>`;
+  if(!M.fin.OUT[i].length)return `<p class="tag">out[${i+1}] is empty, so this row creates no edge.</p>`;
+  const rows=st.grid.map(g=>{
+    const txt=g.v==='self'?'same variable, no edge to itself'
+      :g.v==='copy'?`<b>SKIP.</b> This row is the copy <code>${esc(insText(ins))}</code>, so ${esc(g.x)} and ${esc(g.y)} hold the same value and may share a register`
+      :(st.fresh.includes(ekey(g.x,g.y))?'<b>edge added</b>':'edge (already in the graph)');
+    return `<tr class="${g.v==='copy'?'hit':''}"><td>${esc(g.x)} × ${esc(g.y)}</td><td>${txt}</td></tr>`;
+  }).join('');
+  return `<p class="tag" style="margin-bottom:2px">Every x in kill[${i+1}] against every y in out[${i+1}]:</p><table class="ref"><tbody>${rows}</tbody></table>`;
+}
+function exemptBox(I){
+  if(S.mode!=='def82')return '';
+  const ex=I.steps.flatMap(st=>(st.grid||[]).filter(g=>g.v==='copy'&&!I.edges.has(ekey(g.x,g.y))).map(g=>`${esc(g.x)}—${esc(g.y)} (row ${st.i+1}, <code>${esc(insText(M.P[st.i]))}</code>)`));
+  return `<div class="box ok"><b>Pairs skipped by the copy exemption (and never added by another row):</b> ${ex.length?ex.join('; '):'none in this program'}.</div>`;
+}
+function selectLog(cs){
+  const sim=cs.filter(s=>s.phase==='simplify'),sel=cs.filter(s=>s.phase==='select');
+  const r1=sim.map((s,k)=>`<tr><td>${k+1}</td><td>${esc(s.v)}</td><td>${s.nb.length}</td><td>${fmt(s.nb)}</td><td>${s.forced?'optimistic':'safe'}</td></tr>`).join('');
+  return `<h3>Simplify phase, in one table (bottom of stack first)</h3><div style="overflow-x:auto"><table class="ref"><thead><tr><th>push #</th><th>node</th><th>degree then</th><th>neighbours stored</th><th>kind</th></tr></thead><tbody>${r1}</tbody></table></div>
+  ${selectTable(sel,'Select phase, in one table (top of stack first)')}`;
+}
+function studentCheck(edgeKeys){
+  const st=PROGRAMS[S.key].student;
+  if(!st||S.mode!=='def82')return '';
+  const E=new Set(edgeKeys);
+  const rows=st.map(([nm,vs])=>{
+    const bad=[];for(let a=0;a<vs.length;a++)for(let b=a+1;b<vs.length;b++)if(E.has(ekey(vs[a],vs[b])))bad.push(vs[a]+'—'+vs[b]);
+    return `<tr><td>${nm}</td><td>${fmt(vs)}</td><td>${bad.length?'<b style="color:var(--write)">conflict: '+bad.join(', ')+'</b>':'no edge inside the group'}</td></tr>`;
+  }).join('');
+  const covered=new Set(st.flatMap(x=>x[1])),missing=M.vars.filter(v=>!covered.has(v));
+  return `<h3>Check against the student answer in the homework PDF</h3>
+  <p>Its colour groups differ from the ones above, but a grouping is legal when no edge of the graph lies inside a group. That is all a colouring has to satisfy.</p>
+  <table class="ref"><thead><tr><th>colour</th><th>variables</th><th>check</th></tr></thead><tbody>${rows}</tbody></table>${missing.length?`<p class="tag">Not in any group: ${fmt(missing)}</p>`:''}`;
+}
+function trySpill(sp,N){
+  const code=rewriteSpill(M.P,sp,M.fin.IN[0]).join('\n');
+  const {P,errors}=parseProgram(code);
+  if(errors.length)return {err:errors[0]};
+  const T=liveTrace(P,'back'),I=interfTrace(P,T.final,S.mode);
+  const vars=allVars(P),C=colourTrace(vars,[...I.edges.keys()],N);
+  return {failed:C.spilled,used:Math.max(0,...Object.values(C.col),0)};
+}
+function spillCheck(sp){
+  if(!sp.size)return '';
+  const r=trySpill(sp,S.N);
+  if(r.err)return `<div class="box warn">${esc(r.err)}</div>`;
+  const tip=PROGRAMS[S.key].spillTip&&r.failed.length?`<p>${PROGRAMS[S.key].spillTip}</p>`:'';
+  return r.failed.length
+   ?`<div class="box warn"><b>Check: with these spilled and N = ${S.N}, the rewritten program still fails</b> (could not colour ${r.failed.map(esc).join(', ')}). A spill only helps if it removes enough interference; the nodes the algorithm marks are just the ones that failed when popped, not necessarily the best ones to spill.${tip}</div>`
+   :`<div class="box ok"><b>Check: with these spilled, the rewritten program colours with ${r.used} register${r.used===1?'':'s'} (N = ${S.N}).</b> Press the button below to see the full analysis of the rewritten code.</div>`;
+}
+function allVars(P){return srt(uniq(P.flatMap(p=>[...p.gen,...p.kill])))}
+
+/* ============================================================
+   Colouring (Algorithm 8.3)
+   ============================================================ */
+function colourTrace(nodes,edgeKeys,N){
+  const adj={};nodes.forEach(v=>adj[v]=new Set());
+  edgeKeys.forEach(k=>{const[a,b]=k.split('|');adj[a].add(b);adj[b].add(a)});
+  const rem=new Set(nodes),stack=[],steps=[];
+  const deg=v=>[...adj[v]].filter(u=>rem.has(u)).length;
+  while(rem.size){
+    const cand=[...rem].filter(v=>deg(v)<N);
+    const forced=!cand.length;
+    const pool=forced?[...rem]:cand;
+    pool.sort((a,b)=>deg(a)-deg(b)||cmp(a,b));
+    const v=pool[0];
+    const nb=srt([...adj[v]].filter(u=>rem.has(u)));
+    stack.push({v,nb,forced});
+    const remBefore=new Set(rem);
+    rem.delete(v);
+    steps.push({phase:'simplify',v,nb,cand:srt(cand),forced,
+      degs:Object.fromEntries([...remBefore].map(u=>[u,[...adj[u]].filter(w=>remBefore.has(w)).length])),
+      stack:stack.map(s=>({...s})),rem:new Set(rem)});
+  }
+  const col={},spilled=[];
+  for(let k=stack.length-1;k>=0;k--){
+    const {v,nb}=stack[k];
+    const used=new Set(nb.filter(u=>col[u]!==undefined).map(u=>col[u]));
+    let c=1;while(used.has(c)&&c<=N)c++;
+    const spill=c>N;
+    if(spill)spilled.push(v);else col[v]=c;
+    steps.push({phase:'select',v,nb,
+      nbCols:nb.map(u=>[u,col[u]!==undefined?col[u]:(spilled.includes(u)?'spilled':'not on stack')]),
+      used:[...used].sort((a,b)=>a-b),colour:spill?null:c,spill,
+      col:{...col},spilled:[...spilled],left:stack.slice(0,k).map(s=>s.v)});
+  }
+  return {steps,adj,col,spilled,stack};
+}
+function selectTable(sel,title='Select decisions so far (top of stack first)'){
+  if(!sel.length)return '';
+  const rows=sel.map((s,k)=>`<tr><td>${k+1}</td><td>${esc(s.v)}</td><td>${s.nbCols.map(([u,c])=>esc(u)+(typeof c==='number'?' = R'+c:' ('+c+')')).join(', ')||'none'}</td><td>${s.used.length?s.used.map(c=>'R'+c).join(', '):'none'}</td><td><b>${s.spill?'spilled':'R'+s.colour}</b></td></tr>`).join('');
+  return `<h3>${title}</h3><div style="overflow-x:auto"><table class="ref"><thead><tr><th>pop #</th><th>node</th><th>stored neighbours (register)</th><th>registers taken</th><th>gets</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+/* ============================================================
+   Spill rewrite (textbook §8.5)
+   ============================================================ */
+function rewriteSpill(P,spillSet,liveIn0){
+  const out=[],cnt={};
+  srt(spillSet).forEach(x=>{if(liveIn0.includes(x))out.push(`M[#${x}_addr] := ${x}`)});
+  P.forEach(ins=>{
+    const reads=ins.gen.filter(v=>spillSet.has(v)),writes=ins.kill.filter(v=>spillSet.has(v));
+    const vs=uniq([...reads,...writes]);
+    if(!vs.length){out.push(insText(ins));return}
+    const ren={};vs.forEach(v=>{cnt[v]=(cnt[v]||0)+1;ren[v]=v+'_'+cnt[v]});
+    reads.forEach(v=>out.push(`${ren[v]} := M[#${v}_addr]`));
+    out.push(insText(ins,ren));
+    writes.forEach(v=>out.push(`M[#${v}_addr] := ${ren[v]}`));
+  });
+  return out;
+}
+
+/* ============================================================
+   Application state
+   ============================================================ */
+const S={key:'h6a',text:PROGRAMS.h6a.code,stage:1,st:{},order:'back',mode:'def82',N:3,spill:null};
+let M={}; // derived model
+function build(){
+  const {P,errors}=parseProgram(S.text);
+  M={P,errors};
+  if(errors.length&&!P.length){return}
+  M.back=liveTrace(P,'back');
+  M.fwd=liveTrace(P,'fwd');
+  M.fin=M.back.final;
+  M.vars=allVars(P);
+  M.maxLive=Math.max(0,...M.fin.IN.map(s=>s.length),...M.fin.OUT.map(s=>s.length));
+}
+function resetSteps(){S.st={};S.spill=null}
+function step(stage,len){const v=S.st[stage]||0;return Math.min(v,len-1)}
+function setStep(stage,v,len){S.st[stage]=Math.max(0,Math.min(len-1,v));render(true)}
+
+/* ============================================================
+   Shared renderers
+   ============================================================ */
+function masterTable(o){
+  // o.show: which columns have values; o.upto: rows with succ/gen/kill visible up to this row (inclusive), -1 none
+  const P=M.P,show=o.show||{},cols=['i','ins','succ','gen','kill','out','in'];
+  const names={i:'i',ins:'instruction',succ:'succ[i]',gen:'gen[i]',kill:'kill[i]',out:'out[i]',in:'in[i]'};
+  const hl=o.hl||{};
+  let h='<table class="t"><thead><tr>'+cols.map(c=>`<th>${names[c]}</th>`).join('')+'</tr></thead><tbody>';
+  P.forEach((ins,i)=>{
+    const cur=o.cur===i;
+    h+=`<tr class="${ins.kind==='label'?'lab ':''}${cur?'cur':''}">`;
+    cols.forEach(c=>{
+      const cls=[],k=i+':'+c;
+      if(hl[k])cls.push(hl[k]);
+      if(c==='i'){h+=`<td class="i ${cls.join(' ')}">${i+1}</td>`;return}
+      if(c==='ins'){h+=`<td class="ins ${cls.join(' ')}">${insHTML(ins,o.colourIns&&o.colourIns===i)}</td>`;return}
+      let val=null;
+      const lim=o.limit&&o.limit[c]!==undefined?o.limit[c]:(show[c]?Infinity:-1);
+      if(i<=lim||lim===Infinity){
+        if(c==='succ')val=fmtN(ins.succ.map(j=>j+1));
+        else if(c==='gen')val=fmt(ins.gen);
+        else if(c==='kill')val=fmt(ins.kill);
+        else if(c==='out'&&o.snap)val=fmt(o.snap.OUT[i]);
+        else if(c==='in'&&o.snap)val=fmt(o.snap.IN[i]);
+      }
+      if(val===null){h+=`<td class="pend">·</td>`}
+      else h+=`<td class="${cls.join(' ')}">${val}</td>`;
+    });
+    h+='</tr>';
+  });
+  return '<div style="overflow-x:auto">'+h+'</tbody></table></div>';
+}
+function ctl(stage,len,extra){
+  const v=step(stage,len);
+  return `<div class="ctl">
+   <button onclick="setStep(${stage},0,${len})" ${v===0?'disabled':''}>⟲ start</button>
+   <button onclick="setStep(${stage},${v-1},${len})" ${v===0?'disabled':''}>← back</button>
+   <button onclick="setStep(${stage},${v+1},${len})" ${v===len-1?'disabled':''}><b>next →</b></button>
+   <span class="cnt">step ${v+1} / ${len}</span>${extra||''}</div>`;
+}
+function legend(items){return '<div class="legend">'+items.join('')+'</div>'}
+const L_SRC='<span><span class="chip src">cell</span> being <b>read</b> right now</span>';
+const L_DST='<span><span class="chip dst">cell</span> being <b>written</b> right now</span>';
+const L_R='<span><span class="r">x</span> variable the instruction <b>reads</b></span>';
+const L_W='<span><span class="w">x</span> variable it <b>writes</b></span>';
+function graphSVG(o){
+  const nodes=o.nodes,edges=o.edges,W=520,H=440,cx=W/2,cy=H/2,R=Math.min(W,H)/2-44;
+  const pos={};nodes.forEach((v,i)=>{const a=-Math.PI/2+2*Math.PI*i/Math.max(1,nodes.length);pos[v]=[cx+R*Math.cos(a),cy+R*Math.sin(a)]});
+  const PAL=['#e6b8a2','#b7d3a8','#a9c4e4','#e8d38a','#c9b1e0','#9fd3cf','#e0a8c0','#cfcfcf','#f0b060','#a8b8a0','#d8a0a0','#a0a8d8'];
+  let s=`<svg class="g" viewBox="0 0 ${W} ${H}" role="img" aria-label="interference graph">`;
+  edges.forEach(k=>{
+    const[a,b]=k.split('|');if(!pos[a]||!pos[b])return;
+    const gone=o.gone&&(o.gone.has(a)||o.gone.has(b));
+    const cls='e'+(o.newE&&o.newE.has(k)?' new':'')+(gone?' faint':'');
+    s+=`<line class="${cls}" x1="${pos[a][0].toFixed(1)}" y1="${pos[a][1].toFixed(1)}" x2="${pos[b][0].toFixed(1)}" y2="${pos[b][1].toFixed(1)}"/>`;
+  });
+  nodes.forEach(v=>{
+    const c=o.col&&o.col[v],gone=o.gone&&o.gone.has(v);
+    const cls=(o.hot===v?'hot ':'')+(o.spilled&&o.spilled.includes(v)?'sp':'');
+    s+=`<g class="${gone?'gone':''} ${c?'fillc':''}"><circle class="${cls}" cx="${pos[v][0].toFixed(1)}" cy="${pos[v][1].toFixed(1)}" r="17" ${c?`style="fill:${PAL[(c-1)%PAL.length]}"`:''}/><text x="${pos[v][0].toFixed(1)}" y="${pos[v][1].toFixed(1)}">${esc(v)}</text>`;
+    if(c)s+=`<text class="rg" x="${pos[v][0].toFixed(1)}" y="${(pos[v][1]+28).toFixed(1)}">R${c}</text>`;
+    s+='</g>';
+  });
+  return s+'</svg>';
+}
+const PALCSS=['#e6b8a2','#b7d3a8','#a9c4e4','#e8d38a','#c9b1e0','#9fd3cf','#e0a8c0','#cfcfcf','#f0b060','#a8b8a0','#d8a0a0','#a0a8d8'];
+function progList(){
+  return `<table class="t"><tbody>${M.P.map((p,i)=>`<tr class="${p.kind==='label'?'lab':''}"><td class="i">${i+1}</td><td class="ins">${insHTML(p)}</td></tr>`).join('')}</tbody></table>`;
+}
+
+/* ============================================================
+   STAGE 1 — Goal and vocabulary
+   ============================================================ */
+function rowNote(i){
+  const n=(PROGRAMS[S.key].rowNotes||{})[i];
+  return n?`<p><b>In this code:</b> ${esc(n)}</p>`:'';
+}
+function stage1(){
+  const pr=PROGRAMS[S.key];
+  const pipe=[['succ, gen, kill','2–3'],['in / out equations','4'],['fixed point','5'],['interference graph','6'],['stack colouring','7'],['spilling','8'],['answer sheet','9']]
+    .map(([a,b])=>`<span class="s">${a} <small>(stage ${b})</small></span>`).join('→');
+  return `<h2>1 · ${esc(pr.title||pr.name)}</h2>
+  <p class="lede">${esc(pr.lede||pr.note||'')}</p>
+  ${pr.question?`<div class="box eq"><b>The question</b><p>${pr.question}</p></div>`:''}
+  <h3>The code being analysed (the row numbers matter)</h3>
+  ${progList()}
+  ${pr.how?`<div class="box">${pr.how}</div>`:''}
+  <h3>The route through this walkthrough</h3>
+  <div class="pipe">${pipe}</div>
+  <h3>The five columns we fill in, one per stage</h3>
+  <table class="ref"><thead><tr><th>column</th><th>meaning</th><th>how you get it</th></tr></thead><tbody>
+   <tr><td>succ[i]</td><td>which rows can run right after row i</td><td>read row i alone (stage 2)</td></tr>
+   <tr><td>gen[i]</td><td>variables row i <span class="r">reads</span></td><td>read row i alone (stage 3)</td></tr>
+   <tr><td>kill[i]</td><td>variable row i <span class="w">writes</span></td><td>read row i alone (stage 3)</td></tr>
+   <tr><td>out[i]</td><td>live <b>just after</b> row i</td><td>from the <b>in</b> column of the successors (stage 5)</td></tr>
+   <tr><td>in[i]</td><td>live <b>just before</b> row i</td><td>from gen, kill and out of the same row (stage 5)</td></tr>
+  </tbody></table>
+  <p class="tag">A variable is <i>live</i> at a point if its current value might still be read later. Two variables that are live at the same time need different registers; the rest of the chapter is turning that into a graph and colouring it.</p>`;
+}
+
+/* ============================================================
+   STAGE 2 — succ
+   ============================================================ */
+function stage2(){
+  const P=M.P,len=P.length,v=step(2,len),ins=P[v];
+  const hl={};hl[v+':succ']='dst';hl[v+':ins']='src';
+  let why='';
+  const rowOf=j=>`<span class="chip src">row ${j+1}</span>`;
+  if(ins.rule==='1')why=ins.fall!==null?`<b>Rule 1.</b> <code>${esc(insText(ins))}</code> is not a GOTO, IF or RETURN, so control just continues with the next line. Look at the row below: instruction ${ins.fall+1}. So succ[${v+1}] = {${ins.fall+1}}.`:`<b>Rule 1, but</b> this is the last line and it is not a RETURN/GOTO, so nothing follows it.`;
+  if(ins.rule==='2')why=`<b>Rule 2 (GOTO).</b> Control jumps to the line <code>LABEL ${esc(ins.m.l)}</code>. Scan the instruction column for that label: it is ${rowOf(ins.succ[0])}. So succ[${v+1}] = {${ins.succ[0]+1}}.`;
+  if(ins.rule==='3')why=`<b>Rule 3 (IF … THEN … ELSE).</b> Both outcomes are assumed possible. The true branch is <code>LABEL ${esc(ins.m.lt)}</code> (${rowOf(M.P.findIndex(p=>p.kind==='label'&&p.label===ins.m.lt))}), the false branch <code>LABEL ${esc(ins.m.lf)}</code> (${rowOf(M.P.findIndex(p=>p.kind==='label'&&p.label===ins.m.lf))}). So succ[${v+1}] = ${fmtN(ins.succ.map(j=>j+1))}.`;
+  if(ins.rule==='3b')why=`<b>Rule 3 (IF … THEN l, no ELSE).</b> True: jump to <code>LABEL ${esc(ins.m.lt)}</code> (${rowOf(ins.labelRows[0])}). False: fall through to the next line, instruction ${ins.fall===null?'(none)':ins.fall+1}. So succ[${v+1}] = ${fmtN(ins.succ.map(j=>j+1))}.`;
+  if(ins.rule==='4')why=ins.key==='retjump'?`<b>Rule 4 (return).</b> <code>GOTO M[SP]</code> jumps to the return address, which is back in the <i>caller</i>, outside this function. Nothing inside f follows it, so succ[${v+1}] = ∅, just like RETURN.`:`<b>Rule 4 (RETURN).</b> Execution ends here, so nothing can follow: succ[${v+1}] = ∅. RETURN is the only instruction with an empty succ.`;
+  (ins.labelRows||[]).forEach(j=>hl[j+':ins']='src');
+  if(ins.rule==='1'&&ins.fall!==null)hl[ins.fall+':ins']='src';
+  if(ins.rule==='3b'&&ins.fall!==null)hl[ins.fall+':ins']='src';
+  return `<h2>2 · succ[i]: who can run next?</h2>
+  <p class="lede">Only the instruction itself (plus, for jumps, the position of the target LABEL) is needed. Four rules from §8.2.</p>
+  ${legend([L_SRC,L_DST])}
+  ${masterTable({show:{},limit:{succ:v},cur:v,hl})}
+  <div class="box eq"><span class="badge">row ${v+1}</span><code>${esc(insText(ins))}</code>
+   <p>${why}</p>${rowNote(v)}</div>
+  ${ctl(2,len)}
+  <p class="tag">Why both IF outcomes? We can't know which one really happens, and assuming both is the safe direction: at worst we call a variable live when it isn't (wasting a register), never the reverse (overwriting a live value).</p>`;
+}
+
+/* ============================================================
+   STAGE 3 — gen / kill
+   ============================================================ */
+function stage3(){
+  const P=M.P,len=P.length,v=step(3,len),ins=P[v];
+  const hl={};hl[v+':gen']='dst';hl[v+':kill']='dst';hl[v+':ins']='src';
+  const vars=ins.vars||{};
+  const mapping=Object.entries(vars).filter(([k])=>k!=='lt'&&k!=='lf'&&k!=='l').map(([k,val])=>`<span class="chip">${k} = ${esc(val)}</span>`).join(' ');
+  const row=FIG82.find(r=>r[0]===ins.key)||FIG82[0];
+  const ref=`<table class="ref"><thead><tr><th>Instruction form</th><th>gen</th><th>kill</th></tr></thead><tbody>${FIG82.map(r=>`<tr class="${r[0]===ins.key?'hit':''}"><td>${esc(r[1])}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('')}</tbody></table>`;
+  return `<h2>3 · gen[i] and kill[i]: what does this one line touch?</h2>
+  <p class="lede">Again only row i matters. <span class="r">gen</span> = variables <b>read</b>, <span class="w">kill</span> = variable <b>written</b>. Constants and labels are never variables.</p>
+  ${legend([L_SRC,L_DST,L_R,L_W])}
+  <div class="row"><div class="col" style="flex:1.4 1 460px">
+   ${masterTable({show:{succ:true},limit:{gen:v,kill:v},cur:v,hl,colourIns:v})}
+  </div><div class="col"><h3 style="margin-top:0">Textbook Fig 8.2</h3>${ref}</div></div>
+  <div class="box eq"><span class="badge">row ${v+1}</span><code>${insHTML(ins,true)}</code>
+   <p>Matches the form <code>${esc(row[1])}</code> (highlighted in Fig 8.2). Match the pattern: ${mapping||'<span class="tag">no variables</span>'}</p>
+   <div class="eqline">gen[${v+1}]  = ${row[2]}  →  <b>${fmt(ins.gen)}</b></div>
+   <div class="eqline">kill[${v+1}] = ${row[3]}  →  <b>${fmt(ins.kill)}</b></div>
+   ${ins.kind==='binop'&&ins.vars.x&&(ins.gen.includes(ins.vars.x))?`<p class="tag">Note: <code>${esc(ins.vars.x)}</code> is both read and written here (like <code>n := n - 1</code>), so it is in gen <i>and</i> kill. Since in = gen ∪ (out \\ kill), the gen part still keeps it live before this instruction.</p>`:''}
+  ${rowNote(v)}</div>
+  ${ctl(3,len)}`;
+}
+
+/* ============================================================
+   STAGE 4 — equations explained
+   ============================================================ */
+function passSummary(T,curIter){
+  const rows=[];
+  for(let it=1;it<=T.iterations;it++){
+    const ch=T.steps.filter(s=>(s.kind==='out'||s.kind==='in')&&s.iter===it&&s.changed);
+    const last=T.steps.findIndex(s=>s.kind==='endIter'&&s.iter===it);
+    rows.push(`<tr class="${it===curIter?'hit':''}"><td>pass ${it}</td><td>${ch.length?ch.length+' cells changed':'<b>nothing changed</b>'}</td><td>${ch.length?ch.map(s=>`${s.kind}[${s.i+1}]: ${fmt(s.prev)} → ${fmt(s.value)}`).join('<br>'):'fixed point reached'}</td><td><button class="quiet" onclick="setStep(5,${last},${T.steps.length})">view</button></td></tr>`);
+  }
+  return `<h3>What changed in each pass</h3><div style="overflow-x:auto"><table class="ref"><thead><tr><th>pass</th><th></th><th>changes (old → new)</th><th></th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+}
+function passNote(){
+  if(S.key!=='h6a'||S.order!=='back')return '';
+  return `<div class="box warn"><b>Why one pass is not enough here.</b> Row 16 (<code>GOTO L0</code>) needs in[5]. Going backwards, row 16 is processed <i>before</i> row 5, so in[5] is still ∅ at that moment and out[16] comes out as ∅. Rows 13 to 16 are therefore too small after pass 1. In pass 2, in[5] has a value, and the correction flows up through rows 16, 15, 14 and 13 (see the table above). Pass 3 changes nothing: that is the fixed point.</div>`;
+}
+function stage4(){
+  const P=M.P,fin=M.fin,pr=PROGRAMS[S.key];
+  let ex=(pr.ex||[]).filter(i=>i<P.length&&P[i].kind!=='label');
+  if(!ex.length)ex=P.map((p,i)=>i).filter(i=>P[i].kind!=='label').slice(0,3);
+  const boxes=ex.map(i=>{
+    const ins=P[i],o=fin.OUT[i],succ=ins.succ;
+    const outLine=succ.length?`out[${i+1}] = ${succ.map(j=>`in[${j+1}]`).join(' ∪ ')} = ${succ.map(j=>fmt(fin.IN[j])).join(' ∪ ')} = <b>${fmt(o)}</b>`:`out[${i+1}] = ∅ (no successors)`;
+    const diff=o.filter(x=>!ins.kill.includes(x));
+    const dead=ins.kill.filter(x=>!o.includes(x));
+    return `<div class="col"><div class="box"><span class="badge">row ${i+1}</span><code>${esc(insText(ins))}</code><br>
+      succ[${i+1}] = ${fmtN(succ.map(j=>j+1))}<br>${outLine}<br>
+      gen = ${fmt(ins.gen)}, kill = ${fmt(ins.kill)}<br>
+      out \\ kill = ${fmt(o)} \\ ${fmt(ins.kill)} = ${fmt(diff)}<br>
+      <b>in[${i+1}] = ${fmt(ins.gen)} ∪ ${fmt(diff)} = ${fmt(fin.IN[i])}</b>
+      ${dead.length?`<p class="tag">${dead.map(esc).join(', ')} is written but never read afterwards (a dead assignment). It is not in out, but stage 6 still gives it edges.</p>`:''}
+      ${ins.succ.length>1?`<p class="tag">Two successors, so out is the union of two in-sets.</p>`:''}</div></div>`;
+  }).join('');
+  return `<h2>4 · The two equations, evaluated on rows of this code</h2>
+  <p class="lede">These are the only two formulas in the chapter. Stage 5 is just these two lines evaluated again and again.</p>
+  <div class="box eq">
+   <div class="eqline"><b>out[i]</b> = ⋃ in[j]   for every j ∈ succ[i]</div>
+   <p>Live <i>after</i> row i means some row that can run next needs it at its start. Look up the <b>succ</b> cell of row i, go to the <b>in</b> column of each row named there, take the union. A row with no successor has out = ∅.</p>
+  </div>
+  <div class="box eq">
+   <div class="eqline"><b>in[i]</b> = gen[i] ∪ ( out[i] \\ kill[i] )</div>
+   <p>Live <i>before</i> row i is what row i reads itself (<b>gen</b>), plus whatever must still be live afterwards (<b>out</b>), except what row i overwrites (<b>kill</b>). <code>A \\ B</code> means: take A and delete every element that also appears in B.</p>
+  </div>
+  <h3>The finished answers for three rows of this code, worked by hand</h3>
+  <div class="row">${boxes}</div>
+  <p class="tag">These use the final in/out values from stage 5, so each hand-check must reproduce the table. Try the first one yourself before opening stage 5.</p>
+  <h3>Why we iterate</h3>
+  <p>out[i] needs the in-sets of later rows, and in[j] needs out[j]. In straight-line code you can fill the columns from the bottom up in one go. A backward jump (a loop) makes the first rows of the loop depend on the last rows, which depend on the first. So start with every set empty, recompute everything, and repeat until a whole pass changes nothing. Go <b>backwards</b> (last row to first) and compute <b>out before in</b>, since information flows from later rows to earlier ones.</p>`;
+}
+
+/* ============================================================
+   STAGE 5 — fixed-point iteration
+   ============================================================ */
+function stage5(){
+  const T=S.order==='back'?M.back:M.fwd,steps=T.steps,len=steps.length,v=step(5,len),s=steps[v];
+  const P=M.P,hl={};
+  let panel='';
+  if(s.kind==='init'){
+    panel=`<div class="box eq"><b>Start.</b> Every in[i] and out[i] starts as ∅. Then repeat full passes (${S.order==='back'?'row '+P.length+' down to row 1':'row 1 to row '+P.length}, computing <b>out</b> then <b>in</b> for each row) until a pass changes nothing.</div>`;
+  }else if(s.kind==='endIter'){
+    panel=s.changed?`<div class="box warn"><b>End of pass ${s.iter}.</b> Something changed (● marks), so we must do another pass.</div>`
+      :`<div class="box ok"><b>End of pass ${s.iter}: no cell changed.</b> That is the fixed point. All ${P.length} pairs of equations hold at once, and the in/out columns are final. It took <b>${T.iterations}</b> passes, the last one only to confirm.</div>`;
+  }else if(s.kind==='out'){
+    const i=s.i;hl[i+':out']='dst';
+    s.succ.forEach(j=>hl[j+':in']='src');
+    hl[i+':succ']='src';
+    const names=s.succ.map(j=>`in[${j+1}]`);
+    const chips=s.succ.map(j=>`<span class="chip src">in[${j+1}]</span>`).join(' ∪ ')||'(no successors)';
+    const vals=s.succVals.map(a=>fmt(a)).join(' ∪ ')||'∅';
+    panel=`<div class="box eq"><span class="badge">pass ${s.iter}</span><span class="badge">row ${i+1}</span><code>${esc(insText(P[i]))}</code>
+     <div class="eqline"><b>out[${i+1}]</b> = ⋃ in[j] for j ∈ succ[${i+1}]</div>
+     <div class="eqline sub">① Read <span class="chip src">succ[${i+1}]</span> = ${fmtN(s.succ.map(j=>j+1))}. ② For each j named there, read the <b>in</b> column of row j <i>as it currently stands</i>.</div>
+     <div class="eqline">out[${i+1}] = ${names.join(' ∪ ')||'∅'}</div>
+     <div class="eqline">         = ${vals}</div>
+     <div class="eqline">         = <b>${fmt(s.value)}</b></div>
+     <p>${s.changed?`Was ${fmt(s.prev)}. <b>Changed</b>.`:`Was ${fmt(s.prev)}. Unchanged.`}${s.succ.some(j=>j<=i)?' <span class="tag">(A successor with a smaller row number: a backward jump. That in-value may be from the previous pass.)</span>':''}</p></div>`;
+  }else{
+    const i=s.i;hl[i+':in']='dst';hl[i+':gen']='src';hl[i+':kill']='src';hl[i+':out']='src';
+    panel=`<div class="box eq"><span class="badge">pass ${s.iter}</span><span class="badge">row ${i+1}</span><code>${esc(insText(P[i]))}</code>
+     <div class="eqline"><b>in[${i+1}]</b> = gen[${i+1}] ∪ ( out[${i+1}] \\ kill[${i+1}] )</div>
+     <div class="eqline sub">Read three cells <b>in row ${i+1}</b>: <span class="chip src">gen</span> <span class="chip src">kill</span> <span class="chip src">out</span> (out was just computed above).</div>
+     <div class="eqline">in[${i+1}] = ${fmt(P[i].gen)} ∪ ( ${fmt(s.outV)} \\ ${fmt(P[i].kill)} )</div>
+     <div class="eqline">        = ${fmt(P[i].gen)} ∪ ${fmt(s.diff)}</div>
+     <div class="eqline">        = <b>${fmt(s.value)}</b></div>
+     <p>${s.changed?`Was ${fmt(s.prev)}. <b>Changed</b>.`:`Was ${fmt(s.prev)}. Unchanged.`}</p></div>`;
+  }
+  // changed marks: compare with previous step snapshot
+  const prev=steps[Math.max(0,v-1)];
+  if(s.kind==='out'||s.kind==='in'){hl[s.i+':'+s.kind]=(hl[s.i+':'+s.kind]||'dst')+(s.changed?' chg':'')}
+  // iteration boundaries
+  const lastOfIter=it=>{let k=-1;steps.forEach((x,ix)=>{if(x.iter===it)k=ix});return k};
+  const curIter=s.iter||0,endIdx=lastOfIter(curIter);
+  const extra=`<button onclick="setStep(5,${endIdx},${len})" ${v>=endIdx||curIter===0?'disabled':''}>finish pass ${curIter||''}</button>
+   <button onclick="setStep(5,${len-1},${len})" ${v===len-1?'disabled':''}>run to fixed point</button>`;
+  return `<h2>5 · Fixed-point iteration of in / out</h2>
+  <p class="lede">Each step evaluates one equation for one cell. Dashed amber = the cells it <b>reads</b>, solid green = the cell it <b>writes</b>, ● = the value changed.</p>
+  <div class="ctl" style="margin-top:0"><label>Order:
+    <select onchange="S.order=this.value;S.st[5]=0;render()"><option value="back" ${S.order==='back'?'selected':''}>backwards (last row → first)</option><option value="fwd" ${S.order==='fwd'?'selected':''}>forwards (first row → last)</option></select></label>
+    <span class="tag">needs ${M.back.iterations} passes backwards, ${M.fwd.iterations} forwards (counting the final no-change pass)</span></div>
+  ${legend([L_SRC,L_DST])}
+  ${masterTable({show:{succ:1,gen:1,kill:1,out:1,in:1},snap:s,hl,cur:s.i})}
+  ${panel}
+  ${ctl(5,len,extra)}
+  ${passSummary(T,curIter)}
+  ${passNote()}`;
+}
+
+/* ============================================================
+   STAGE 6 — interference
+   ============================================================ */
+function stage6(){
+  const P=M.P,fin=M.fin,I=interfTrace(P,fin,S.mode),len=P.length+1,v=step(6,len);
+  const allEdges=[...I.edges.keys()];
+  const modeSel=`<div class="ctl" style="margin-top:0"><label>Rule:
+    <select onchange="S.mode=this.value;S.st[6]=0;render()">
+      <option value="colive" ${S.mode==='colive'?'selected':''}>Tutorial: both live at the same point</option>
+      <option value="def82" ${S.mode==='def82'?'selected':''}>Textbook Def 8.2: kill[i] × out[i]</option></select></label></div>`;
+  const fullTable=(hl,snap)=>masterTable({show:{succ:1,gen:1,kill:1,out:1,in:1},snap:fin,hl,cur:snap});
+  if(v<P.length){
+    const st=I.steps[v],ins=P[v],hl={};
+    const fresh=new Set(st.fresh);
+    if(S.mode==='colive'){hl[v+':in']='src';hl[v+':out']='src'}else{hl[v+':kill']='src';hl[v+':out']='src'}
+    const edgesUpTo=st.edgesAfter;
+    let explain;
+    if(S.mode==='colive'){
+      explain=`<div class="eqline sub">Rule: any two variables that appear together in <i>the same</i> live set can't share a register. Take <span class="chip src">in[${v+1}]</span> = ${fmt(fin.IN[v])} and <span class="chip src">out[${v+1}]</span> = ${fmt(fin.OUT[v])}, and connect every pair <i>within</i> each set.</div>`;
+    }else{
+      explain=`<div class="eqline sub">Rule (Def 8.2): for each x in <span class="chip src">kill[${v+1}]</span> = ${fmt(ins.kill)} and each y in <span class="chip src">out[${v+1}]</span> = ${fmt(fin.OUT[v])} with y ≠ x, add the edge x—y${ins.kind==='move'?` <b>except</b> y = ${esc(ins.vars.y)}, because this is the copy <code>${esc(insText(ins))}</code> (same value, may share)`:''}. The written variable conflicts with everything live after it, even if it is itself dead.</div>`;
+    }
+    const pairTxt=st.pairs.length?st.pairs.map(([a,b])=>`${esc(a)}—${esc(b)}`).join(', '):'(none)';
+    const freshTxt=st.fresh.length?st.fresh.map(k=>k.replace('|','—')).join(', '):'none new';
+    return `<h2>6 · Interference: who can't share?</h2>
+    <p class="lede">Now we read the finished in / out columns and build an undirected graph. Pick the rule you were taught; they differ slightly (see the end).</p>
+    ${modeSel}${legend([L_SRC,'<span><span style="color:var(--write);font-weight:700">red edge</span> = added at this step</span>'])}
+    <div class="row"><div class="col" style="flex:1.2 1 480px">${fullTable(hl,v)}</div><div class="col">${graphSVG({nodes:M.vars,edges:edgesUpTo,newE:fresh})}</div></div>
+    <div class="box eq"><span class="badge">row ${v+1}</span><code>${esc(insText(ins))}</code>${explain}${gridHTML(st,ins,v)}
+     <div class="eqline">pairs here:  ${pairTxt}</div><div class="eqline">new edges:   <b>${freshTxt}</b></div></div>
+    ${ctl(6,len)}`;
+  }
+  // summary step
+  const adj={};M.vars.forEach(x=>adj[x]=new Set());
+  I.edges.forEach(e=>{adj[e.a].add(e.b);adj[e.b].add(e.a)});
+  const other=interfTrace(P,fin,S.mode==='colive'?'def82':'colive').edges;
+  const onlyHere=[...I.edges.keys()].filter(k=>!other.has(k)),onlyOther=[...other.keys()].filter(k=>!I.edges.has(k));
+  const dn=k=>k.replace('|','—');
+  return `<h2>6 · Interference: the finished graph</h2>
+  ${modeSel}
+  <div class="row"><div class="col"><table class="t"><thead><tr><th>variable</th><th>interferes with</th><th>#</th></tr></thead><tbody>${M.vars.map(x=>`<tr><td>${esc(x)}</td><td>${fmt(adj[x])}</td><td>${adj[x].size}</td></tr>`).join('')}</tbody></table></div>
+  <div class="col">${graphSVG({nodes:M.vars,edges:allEdges})}</div></div>
+  ${exemptBox(I)}
+  <div class="box ${onlyHere.length||onlyOther.length?'warn':'ok'}"><b>${S.mode==='colive'?'Tutorial rule':'Def 8.2'} vs ${S.mode==='colive'?'Def 8.2':'tutorial rule'} on this program.</b>
+   <p>Edges only in the current rule: ${onlyHere.length?onlyHere.map(dn).join(', '):'none'}.<br>Edges only in the other rule: ${onlyOther.length?onlyOther.map(dn).join(', '):'none'}.</p>
+   <p class="tag">Two real differences: (1) Def 8.2 exempts a copy <code>x := y</code> (x and y hold the same value, so they may share; e.g. <code>t5 := u2</code> in the H6 callee), which the tutorial rule doesn't. (2) Def 8.2 adds edges for dead assignments (a written variable that is never read still gets a register, so it mustn't clobber a live one). It does <i>not</i> by itself connect variables that are merely live-in together, like several inputs. The tutorial rule does, because it looks at the in-sets as well. Ask which one your lecturer marks.</p></div>
+  ${ctl(6,len)}`;
+}
+
+/* ============================================================
+   STAGE 7 — colouring
+   ============================================================ */
+function curI(){return interfTrace(M.P,M.fin,S.mode)}
+function maxClique(nodes,edgeKeys){
+  const adj={};nodes.forEach(v=>adj[v]=new Set());
+  edgeKeys.forEach(k=>{const[a,b]=k.split('|');adj[a].add(b);adj[b].add(a)});
+  let best=[];
+  (function go(cur,cand){
+    if(cur.length>best.length)best=[...cur];
+    if(cur.length+cand.length<=best.length)return;
+    for(let i=0;i<cand.length;i++){const v=cand[i];go([...cur,v],cand.slice(i+1).filter(u=>adj[v].has(u)))}
+  })([],[...nodes]);
+  return srt(best);
+}
+function stage7(){
+  const P=M.P,fin=M.fin,I=curI(),edgeKeys=[...I.edges.keys()];
+  const N=S.N,C=colourTrace(M.vars,edgeKeys,N),cs=C.steps;
+  const len=cs.length+2,v=step(7,len);
+  const clique=maxClique(M.vars,edgeKeys),bound=clique.length;
+  const nCtl=`<div class="ctl" style="margin-top:0"><span>Registers N =</span>
+    <button class="quiet" onclick="S.N=Math.max(1,S.N-1);S.st[7]=0;S.spill=null;render()">−</button>
+    <b class="mono">${N}</b>
+    <button class="quiet" onclick="S.N=S.N+1;S.st[7]=0;S.spill=null;render()">+</button>
+    <span class="tag">Rule: ${S.mode==='colive'?'tutorial':'Def 8.2'} interference. Lower bound (largest clique): ${bound}.</span></div>`;
+  const hdr=`<h2>7 · Colouring: assign registers</h2>`;
+  if(v===0){
+    const hl={};
+    if(S.mode==='colive'){
+      M.fin.IN.forEach((a,i)=>{if(a.length===M.maxLive)hl[i+':in']='bnd'});
+      M.fin.OUT.forEach((a,i)=>{if(a.length===M.maxLive)hl[i+':out']='bnd'});
+    }
+    const boundTxt=S.mode==='colive'
+      ?`<b>Lower bound (tutorial rule).</b> The largest live set has <b>${M.maxLive}</b> variables (highlighted). Under this rule everything live together interferes, so those variables are a clique and need ${M.maxLive} different registers. The graph's largest clique is ${fmt(clique)}, size <b>${bound}</b>, so the minimum is <b>at least ${bound}</b>.`
+      :`<b>Lower bound (Def 8.2).</b> Here two variables conflict only when one is <i>written</i> while the other is live, and a plain copy <code>x := y</code> is exempt. So a big live set is <b>not</b> automatically a bound: inputs that are merely live together never conflict, because nobody writes them. The bound comes from the graph itself: its largest clique is ${fmt(clique)}, size <b>${bound}</b>, so you need <b>at least ${bound}</b> registers. (The largest live set has ${M.maxLive}, which can be bigger.)`;
+    return `${hdr}<p class="lede">First a quick sanity bound, then Algorithm 8.3 (simplify, then select).</p>${nCtl}
+     ${masterTable({show:{succ:1,gen:1,kill:1,out:1,in:1},snap:fin,hl})}
+     <div class="box eq">${boundTxt} The colouring below shows whether that many suffice.</div>
+     ${graphSVG({nodes:M.vars,edges:edgeKeys})}
+     ${ctl(7,len)}`;
+  }
+  if(v===len-1){
+    const used=Math.max(0,...Object.values(C.col));
+    const byReg={};Object.entries(C.col).forEach(([x,c])=>(byReg[c]=byReg[c]||[]).push(x));
+    const rows=Object.keys(byReg).map(Number).sort((a,b)=>a-b).map(c=>`<tr><td><span class="swatch" style="background:${PALCSS[(c-1)%PALCSS.length]}"></span>R${c}</td><td>${fmt(byReg[c])}</td></tr>`).join('');
+    return `${hdr}${nCtl}
+     <div class="row"><div class="col">
+     <div class="box ${C.spilled.length?'warn':'ok'}"><b>${C.spilled.length?'Colouring failed for: '+C.spilled.map(esc).join(', ')+'.':'Coloured with '+used+' of '+N+' registers.'}</b>
+      ${C.spilled.length?'<p>Those variables are marked <b>spilled</b>: they live in memory. Continue to stage 8 to rewrite the program, then redo the analysis.</p>':`<p>${used===bound?'This matches the clique lower bound ('+bound+'), so it is optimal.':'The clique bound was '+bound+'. This heuristic does not always find the minimum; try other N.'}</p>`}</div>
+     <table class="t"><thead><tr><th>register</th><th>variables</th></tr></thead><tbody>${rows}</tbody></table></div>
+     <div class="col">${graphSVG({nodes:M.vars,edges:edgeKeys,col:C.col,spilled:C.spilled})}</div></div>
+     ${selectLog(cs)}${studentCheck(edgeKeys)}
+     ${ctl(7,len)}`;
+  }
+  const s=cs[v-1];
+  if(s.phase==='simplify'){
+    const gone=new Set(M.vars.filter(x=>!s.rem.has(x)));gone.delete(s.v);
+    const goneNow=new Set(M.vars.filter(x=>!s.rem.has(x)));
+    const degTxt=Object.entries(s.degs).sort((a,b)=>cmp(a[0],b[0])).map(([x,d])=>`${esc(x)}:${d}`).join('  ');
+    return `${hdr}${nCtl}
+     <div class="row"><div class="col">
+     <div class="box eq"><span class="badge">simplify</span>
+      <div class="eqline sub">Rule: if some remaining node has <b>fewer than N = ${N}</b> neighbours, remove it, push it on the stack with its current neighbour list. If none does, pick one anyway (optimistic colouring). <i>Why fewer than N:</i> such a node's neighbours can use at most N−1 registers, so one is always free when it is coloured.</div>
+      <div class="eqline">degrees now: ${degTxt}</div>
+      <div class="eqline">nodes with degree &lt; ${N}: ${s.cand.length?fmt(s.cand):'<b>none</b>'}</div>
+      <p>${s.forced?`No node qualifies, so I pick <b>${esc(s.v)}</b> (fewest neighbours, ${s.nb.length}) as an optimistic guess. It <i>may</i> fail in select.`:`Pick <b>${esc(s.v)}</b> (lowest degree, ${s.nb.length}; ties alphabetical, any choice is legal). Push (${esc(s.v)}, ${fmt(s.nb)}).`}</p></div>
+     <h3>Stack (bottom → top)</h3>
+     <div class="stack">${s.stack.map((x,k)=>`<div class="${k===s.stack.length-1?'top':''}">${esc(x.v)} <small>nbrs ${fmt(x.nb)}${x.forced?' · optimistic':''}</small></div>`).join('')}</div>
+     </div><div class="col">${graphSVG({nodes:M.vars,edges:edgeKeys,gone:goneNow,hot:s.v})}</div></div>
+     ${ctl(7,len)}`;
+  }
+  const col=s.col,goneSel=new Set(); // not hiding in select
+  const nbTxt=s.nbCols.map(([u,c])=>`${esc(u)}${typeof c==='number'?' = R'+c:' ('+c+')'}`).join(', ')||'(none)';
+  return `${hdr}${nCtl}
+   <div class="row"><div class="col">
+   <div class="box eq"><span class="badge">select</span>
+    <div class="eqline sub">Pop the top of the stack, look at the neighbour list <i>stored with it</i> (the nodes still in the graph when it was removed; they are all coloured by now), and give it the lowest register none of them uses.</div>
+    <div class="eqline">pop ${esc(s.v)}, stored neighbours: ${nbTxt}</div>
+    <div class="eqline">registers forbidden: ${s.used.length?'{'+s.used.map(c=>'R'+c).join(', ')+'}':'∅'}</div>
+    <p>${s.spill?`All ${N} registers are taken. <b>${esc(s.v)} is marked spilled</b> (and ignored when colouring the rest).`:`Lowest free: <b>R${s.colour}</b>.`}</p></div>
+   <h3>Stack still to pop (top first)</h3>
+   <div class="mono">${s.left.length?[...s.left].reverse().map(esc).join(' , '):'(empty, done)'}</div>
+   </div><div class="col">${graphSVG({nodes:M.vars,edges:edgeKeys,col,hot:s.v,spilled:s.spilled})}</div></div>
+   ${selectTable(cs.slice(0,v).filter(st=>st.phase==='select'))}
+   ${ctl(7,len)}`;
+}
+
+/* ============================================================
+   STAGE 8 — spilling
+   ============================================================ */
+function stage8(){
+  const I=curI(),C=colourTrace(M.vars,[...I.edges.keys()],S.N);
+  if(S.spill===null)S.spill=new Set(C.spilled);
+  const sp=S.spill,liveIn0=M.fin.IN[0];
+  const checks=M.vars.map(x=>`<label style="margin-right:12px"><input type="checkbox" ${sp.has(x)?'checked':''} onchange="toggleSpill('${x}')"> <code>${esc(x)}</code></label>`).join('');
+  const out=sp.size?rewriteSpill(M.P,sp,liveIn0):[];
+  const orig=M.P.map(p=>insText(p));
+  return `<h2>8 · Spilling: when colouring fails</h2>
+  <p class="lede">With N = ${S.N} registers, colouring ${C.spilled.length?'<b>failed</b> for '+C.spilled.map(esc).join(', ')+'.':'<b>succeeded</b>, so nothing has to spill. Use the buttons below to lower N and watch a variable spill.'}</p>
+  <div class="ctl" style="margin-top:0"><span>Registers N = <b class="mono">${S.N}</b></span><button class="quiet" onclick="setN(S.N-1)">− 1</button><button class="quiet" onclick="setN(S.N+1)">+ 1</button><span class="tag">(this also changes stage 7)</span></div>
+  <div class="box eq"><b>The five-step rewrite (§8.5)</b> for each spilled variable x:
+   <ol class="rules"><li>Choose a memory address <code>#x_addr</code>.</li>
+   <li>In every instruction that reads or writes x, rename x <i>locally</i> to a fresh x<sub>j</sub>.</li>
+   <li>Before an instruction that <span class="r">reads</span> x: insert <code>x_j := M[#x_addr]</code>.</li>
+   <li>After an instruction that <span class="w">writes</span> x: insert <code>M[#x_addr] := x_j</code>.</li>
+   <li>If x is an input parameter (live at row 1), add <code>M[#x_addr] := x</code> at the very start, using the original name.</li></ol>
+   Then redo liveness and colouring: x is now many short-lived variables.</div>
+  <p>Variables to spill (pre-ticked from stage 7, you can change them): ${checks}</p>
+  ${spillCheck(sp)}
+  ${sp.size?`<div class="row"><div class="col"><h3 style="margin-top:0">Before</h3><table class="t"><tbody>${orig.map((t,i)=>`<tr><td class="i">${i+1}</td><td class="ins">${esc(t)}</td></tr>`).join('')}</tbody></table></div>
+   <div class="col"><h3 style="margin-top:0">After</h3><table class="t"><tbody>${out.map((t,i)=>`<tr><td class="i">${i+1}</td><td class="ins">${esc(t)}</td></tr>`).join('')}</tbody></table></div></div>
+   <div class="ctl"><button onclick="loadRewritten()"><b>Run the whole analysis on the rewritten program →</b></button></div>`:'<p class="tag">Tick a variable to see the rewrite.</p>'}`;
+}
+function toggleSpill(x){if(S.spill.has(x))S.spill.delete(x);else S.spill.add(x);render()}
+function setN(n){S.N=Math.max(1,n);S.spill=null;S.st[7]=0;render()}
+function loadRewritten(){
+  const out=rewriteSpill(M.P,S.spill,M.fin.IN[0]);
+  const N=S.N,mode=S.mode;
+  PROGRAMS.rewritten={name:'After the spill rewrite',N:N,mode:mode,title:'The program after the spill rewrite',
+    lede:'This is the program from stage 8 after inserting loads and stores for the spilled variables. Run the whole analysis again: the spilled variable has become several short-lived ones.',
+    rowNotes:{},code:out.join('\n')};
+  const sel=document.getElementById('progSel');
+  if(![...sel.options].some(o=>o.value==='rewritten'))sel.add(new Option(PROGRAMS.rewritten.name,'rewritten'));
+  sel.value='rewritten';
+  S.key='rewritten';S.text=PROGRAMS.rewritten.code;S.N=N;S.mode=mode;
+  resetSteps();build();S.stage=5;render();
+}
+
+/* ============================================================
+   STAGE 9 — cribbook sheet
+   ============================================================ */
+function minRegs(){
+  const edgeKeys=[...curI().edges.keys()];
+  let k=Math.max(1,maxClique(M.vars,edgeKeys).length);
+  while(colourTrace(M.vars,edgeKeys,k).spilled.length&&k<M.vars.length+1)k++;
+  return {k,edgeKeys,C:colourTrace(M.vars,edgeKeys,k)};
+}
+function rescueBlock(){
+  if(S.key!=='h6bc')return '';
+  const rows=M.P.map((ins,i)=>({ins,i})).filter(o=>o.ins.kind==='call').map(({ins,i},n)=>{
+    const o=M.fin.OUT[i],res=ins.kill,resc=o.filter(x=>!res.includes(x));
+    return `<tr><td>${n+1}${n===0?'st':'nd'} call (row ${i+1})</td><td>${fmt(o)}</td><td>${fmt(res)}</td><td><b>${fmt(resc)}</b></td><td><b>${resc.length}</b></td></tr>`;
+  }).join('');
+  const call2=M.P.findIndex((p,i)=>p.kind==='call'&&i>3);
+  const t2dead=call2>=0&&!M.fin.OUT[call2].includes('t2');
+  return `<h3>Part (b): what must be rescued around each call</h3>
+  <p>f flushes the registers, so every caller variable that is still live <i>after</i> the call, apart from the value the call itself returns, has to be saved before the call and restored after it. That set is <b>out[call] \\ kill[call]</b>, and k is its size.</p>
+  <div style="overflow-x:auto"><table class="ref"><thead><tr><th>call</th><th>out[call] (live after)</th><th>kill (result)</th><th>must be rescued</th><th>k</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <p>${t2dead?'t2 is handed over to the 2nd call but is not in out of that call, so it is <b>not</b> needed afterwards and does <b>not</b> need rescuing.':''}</p>`;
+}
+function stage9(){
+  const pr=PROGRAMS[S.key],{k,edgeKeys,C}=minRegs();
+  const byReg={};Object.entries(C.col).forEach(([x,c])=>(byReg[c]=byReg[c]||[]).push(x));
+  const rows=Object.keys(byReg).map(Number).sort((a,b)=>a-b).map(c=>`<tr><td><span class="swatch" style="background:${PALCSS[(c-1)%PALCSS.length]}"></span>R${c}</td><td>${fmt(byReg[c])}</td></tr>`).join('');
+  const clique=maxClique(M.vars,edgeKeys);
+  return `<h2>9 · The answer sheet for this question</h2>
+  <p class="lede">What you would hand in, and the same steps as a checklist for the crib book. Interference rule used: ${S.mode==='colive'?'tutorial (both live together)':'textbook Def 8.2 (kill × out, copies exempt)'}.</p>
+  <div class="box ok"><b>Minimum registers needed: ${k}.</b> The largest clique is ${fmt(clique)} (size ${clique.length}), so fewer than ${clique.length} is impossible, and the stack algorithm colours the graph with ${k}.</div>
+  <div class="row"><div class="col">${graphSVG({nodes:M.vars,edges:edgeKeys,col:C.col})}</div>
+  <div class="col"><table class="t"><thead><tr><th>register</th><th>variables</th></tr></thead><tbody>${rows}</tbody></table>
+   <p class="tag">Any legal grouping is acceptable. What is marked is the number of colours and that no connected pair shares one.</p></div></div>
+  ${rescueBlock()}
+  <h3>The method in eight lines</h3>
+  <div class="box"><ol class="rules">
+   <li><b>Number the rows.</b> LABEL lines count.</li>
+   <li><b>succ[i]:</b> normal → {i+1}; GOTO l → {row of LABEL l}; IF … THEN lt ELSE lf → {row lt, row lf}; RETURN (or a jump out of the function) → ∅.</li>
+   <li><b>gen[i]</b> = variables read; <b>kill[i]</b> = variable written.</li>
+   <li><b>Iterate</b> last row → first, out before in, until a whole pass changes nothing:<br><code>out[i] = ⋃ in[j], j ∈ succ[i]</code><br><code>in[i] = gen[i] ∪ (out[i] \\ kill[i])</code></li>
+   <li><b>Interference (Def 8.2):</b> for each x ∈ kill[i], y ∈ out[i], y ≠ x, add the edge x—y, <i>except</i> when row i is the copy x := y.</li>
+   <li><b>Lower bound:</b> the largest clique of the graph. Try that many registers first.</li>
+   <li><b>Stack:</b> simplify (remove a node with fewer than N neighbours, push it with its neighbours; if stuck, push any node optimistically); select (pop, give the lowest register not used by its stored neighbours; none free → spill).</li>
+   <li><b>Spill:</b> memory slot, load before every read, store after every write, fresh name each time, then redo the analysis.</li>
+  </ol></div>`;
+}
+
+/* ============================================================
+   Shell
+   ============================================================ */
+const STAGES=[
+ ['The question',stage1],['succ',stage2],['gen & kill',stage3],['The equations',stage4],
+ ['Fixed point',stage5],['Interference',stage6],['Colouring',stage7],['Spilling',stage8],['Answer sheet',stage9]
+];
+function render(preserveScroll=false){
+  const scrollY=window.scrollY;
+  const nav=document.getElementById('nav');
+  nav.innerHTML=STAGES.map((s,i)=>`<a class="${S.stage===i+1?'on':''}" onclick="go(${i+1})"><b>${i+1}</b>${s[0]}</a>`).join('');
+  const main=document.getElementById('main');
+  if(M.errors&&M.errors.length&&!M.back){
+    main.innerHTML=`<h2>Program problem</h2><p class="err">${M.errors.map(esc).join('<br>')}</p>`;
+    window.scrollTo(0,preserveScroll?scrollY:0);return;
+  }
+  const warn=M.errors.length?`<div class="box warn"><span class="err">${M.errors.map(esc).join('<br>')}</span></div>`:'';
+  main.innerHTML=warn+STAGES[S.stage-1][1]();
+  window.scrollTo(0,preserveScroll?scrollY:0);
+}
+function go(n){S.stage=n;render()}
+function loadProgram(key){
+  const pr=PROGRAMS[key];
+  S.key=key;S.text=pr.code;S.N=pr.N;S.mode=pr.mode||'def82';
+  resetSteps();build();render();
+}
+function init(){
+  const sel=document.getElementById('progSel');
+  sel.innerHTML=Object.entries(PROGRAMS).map(([k,p])=>`<option value="${k}">${esc(p.name)}</option>`).join('');
+  sel.onchange=()=>loadProgram(sel.value);
+  document.getElementById('themeBtn').onclick=()=>{
+    const r=document.documentElement,cur=r.getAttribute('data-theme');
+    const dark=cur?cur==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;
+    r.setAttribute('data-theme',dark?'light':'dark');
+  };
+  document.addEventListener('keydown',e=>{
+    if(/textarea|input|select/i.test(e.target.tagName))return;
+    const lens={2:M.P.length,3:M.P.length,5:(S.order==='back'?M.back:M.fwd).steps.length,6:M.P.length+1};
+    if(e.key==='ArrowRight'||e.key==='ArrowLeft'){
+      const st=S.stage;let len=lens[st];
+      if(st===7){const C=colourTrace(M.vars,[...curI().edges.keys()],S.N);len=C.steps.length+2}
+      if(!len)return;
+      setStep(st,(S.st[st]||0)+(e.key==='ArrowRight'?1:-1),len);
+    }
+  });
+  build();render();
+}
+init();
+</script>
+</body>
+</html>
