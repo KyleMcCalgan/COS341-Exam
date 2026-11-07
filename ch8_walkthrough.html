@@ -31,6 +31,8 @@ body{background:var(--paper);color:var(--ink);font:17px/1.65 var(--sans)}
 code,.mono{font-family:var(--mono);font-size:.92em}
 header{border-bottom:1px solid var(--rule);padding:16px 24px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:baseline;background:var(--panel)}
 header h1{font-size:21px;margin:0;font-weight:700}
+header .index-link{color:var(--muted);text-decoration:none;border:1px solid var(--rule);padding:2px 8px;font-size:14px;white-space:nowrap}
+header .index-link:hover{color:var(--ink);background:var(--paper)}
 header .sub{color:var(--muted);font-size:14px}
 header .spacer{flex:1}
 select,button,textarea,input{font:inherit;color:var(--ink)}
@@ -127,7 +129,7 @@ kbd{font-family:var(--mono);border:1px solid var(--rule);padding:0 4px;font-size
     <select id="progSel"></select>
   </label>
   <button class="quiet" id="editBtn">Edit program</button>
-  <button class="quiet" id="themeBtn">Theme</button>
+  <a class="index-link" href="index.html">← Index</a><button class="quiet" id="themeBtn">Theme</button>
 </header>
 <div id="editor" style="display:none;padding:12px 20px;border-bottom:1px solid var(--rule)">
   <p class="sub" style="margin:0 0 6px;color:var(--muted);font-size:14px">One instruction per line. Forms: <code>x := y</code>, <code>x := 5</code>, <code>x := y + z</code> (any binop), <code>x := -y</code>, <code>x := M[y]</code>, <code>M[x] := y</code>, <code>LABEL l</code>, <code>GOTO l</code>, <code>IF x &lt; y THEN l1 ELSE l2</code> (ELSE optional: falls through), <code>x := CALL f(a, b)</code>, <code>RETURN x</code>. Constants are numbers or <code>#name</code>. Line numbers and <code>//</code> comments are ignored.</p>

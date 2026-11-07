@@ -1,0 +1,361 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>COS341 Chapter 5 Type Checking</title><style>:root{--bg:#fbfaf7;--fg:#1d1d1b;--mut:#6b6a63;--card:#fff;--bd:#dedbd0;--acc:#1f5fbf;--acc2:#e8f0fd;--ok:#1a7f45;--okbg:#e6f5ec;--bad:#b42318;--badbg:#fdecea;--warn:#8a5a00;--warnbg:#fff4d6;--code:#f1efe8}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#17171a;--fg:#ececea;--mut:#a09f98;--card:#202024;--bd:#3a3a40;--acc:#7aa8ff;--acc2:#222c42;--ok:#59c98a;--okbg:#17301f;--bad:#ff8b80;--badbg:#3a1d1a;--warn:#f0c264;--warnbg:#3a2f12;--code:#2a2a2f}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:16px}
+h1{font-size:1.6rem;margin:.2em 0}h2{font-size:1.3rem;margin:1.2em 0 .4em}h3{font-size:1.05rem;margin:1.1em 0 .3em}
+p,li{max-width:80ch}.mut{color:var(--mut)}
+nav{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5;border-bottom:1px solid var(--bd)}
+nav button,.btn{border:1px solid var(--bd);background:var(--card);color:var(--fg);padding:6px 12px;border-radius:8px;cursor:pointer;font:inherit;font-size:.92rem}
+nav button.on,.btn.pri{background:var(--acc);color:#fff;border-color:var(--acc)}
+.btn:disabled{opacity:.4;cursor:default}
+section.stage{display:none}section.stage.on{display:block}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin:12px 0}
+.card.ok{background:var(--okbg);border-color:var(--ok)}.card.bad{background:var(--badbg);border-color:var(--bad)}.card.warn{background:var(--warnbg);border-color:var(--warn)}
+code,pre,.mono,textarea{font-family:ui-monospace,Menlo,Consolas,monospace}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:.9em}
+pre{background:var(--code);padding:10px 12px;border-radius:8px;overflow:auto;font-size:.88rem;margin:6px 0}
+textarea{width:100%;min-height:110px;background:var(--card);color:var(--fg);border:1px solid var(--bd);border-radius:8px;padding:8px;font-size:.92rem}
+input[type=text]{background:var(--card);color:var(--fg);border:1px solid var(--bd);border-radius:8px;padding:6px 8px;font:inherit;width:100%;max-width:460px}
+select{background:var(--card);color:var(--fg);border:1px solid var(--bd);border-radius:8px;padding:6px}
+table{border-collapse:collapse;margin:8px 0;font-size:.9rem;display:block;overflow-x:auto;max-width:100%}
+th,td{border:1px solid var(--bd);padding:4px 9px;text-align:left;vertical-align:top;white-space:nowrap}
+th{background:var(--acc2)}td.wrap,th.wrap{white-space:normal}
+tr.hl td{background:var(--warnbg)}tr.cur td{background:var(--acc2);font-weight:600}
+td.cf{background:var(--badbg);color:var(--bad);font-weight:700}td.s{color:var(--acc)}td.r{color:var(--ok)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+.tag{display:inline-block;font-size:.75rem;padding:1px 7px;border-radius:10px;background:var(--acc2);color:var(--acc);border:1px solid var(--bd);margin-left:6px}
+.step{border-left:4px solid var(--acc);padding:6px 12px;margin:8px 0;background:var(--card);border-radius:0 8px 8px 0}
+.step.new{background:var(--warnbg);border-color:var(--warn)}
+svg text{fill:var(--fg);font-family:system-ui,sans-serif}svg .ln{stroke:var(--mut);fill:none}svg .nd{fill:var(--card);stroke:var(--acc)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.items div{font-family:ui-monospace,Menlo,monospace;font-size:.9rem;padding:1px 0}
+.items .add{color:var(--mut)}
+@media(max-width:600px){.wrap{padding:12px}}
+.nb{fill:var(--card);stroke:var(--bd);stroke-width:1.5}
+.tn{fill:#e3eefc;stroke:#1f5fbf}.tb{fill:#efe5fa;stroke:#7a3fc0}.ts{fill:#dff3ef;stroke:#13806e}.tc{fill:#e0f3e6;stroke:#1a7f45}.te{fill:#fbe3df;stroke:#b42318}.tu{fill:var(--card);stroke:var(--bd);stroke-dasharray:4 3}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .tn{fill:#1d2c47}:root:not([data-theme=light]) .tb{fill:#2c2140}:root:not([data-theme=light]) .ts{fill:#153531}:root:not([data-theme=light]) .tc{fill:#17301f}:root:not([data-theme=light]) .te{fill:#3a1d1a}}
+.cur rect{stroke-width:3.5}
+svg .lbl{font-size:11.5px}svg .tt{font-size:12.5px;font-weight:700}
+.legend span{display:inline-block;padding:1px 8px;border-radius:10px;margin-right:6px;font-size:.82rem;border:1px solid var(--bd)}
+pre.rule{white-space:pre;font-size:.84rem;margin:0;padding:6px 8px}#rtB{display:table;width:100%}#rtB td{vertical-align:top}#rtB td.wrap,#rtB th.wrap{min-width:260px;white-space:normal}#rtB td:nth-child(3){min-width:470px}#rtB pre{overflow:visible}
+.dir{font-size:.78rem;padding:1px 6px;border-radius:8px;border:1px solid var(--bd);margin-left:6px}
+.treebox{overflow:auto;border:1px solid var(--bd);border-radius:10px;background:var(--card);padding:6px}
+/* Match the clean, readable type and neutral palette used by the other guides. */
+:root{--bg:#f5f7fa;--fg:#18212f;--mut:#526071;--card:#fff;--bd:#d4dbe4;--acc:#1756a9;--acc2:#eaf1fa;--ok:#28713d;--okbg:#e4f1e7;--bad:#a83228;--badbg:#f8e8e5;--warn:#8a4b00;--warnbg:#fff0bf;--code:#edf1f5}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#151b24;--fg:#edf2f8;--mut:#aab6c5;--card:#1e2632;--bd:#3a4655;--acc:#a7c9ff;--acc2:#26364b;--ok:#8fd17c;--okbg:#23432e;--bad:#ff9b91;--badbg:#482b2b;--warn:#e5a55c;--warnbg:#493b1d;--code:#283341}}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:17px/1.65 Arial,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1240px;padding:26px 32px 64px}
+.home{display:inline-block;margin-bottom:14px;color:var(--mut);font-size:14px;text-decoration:none;border:1px solid var(--bd);padding:2px 8px}.home:hover{color:var(--fg);background:var(--card)}
+.home:hover{color:var(--acc);text-decoration:underline}
+h1{font-size:26px;line-height:1.25;margin:0 0 8px}
+h2{font-size:22px;line-height:1.3;margin:1.2em 0 .45em}
+h3{font-size:17px;line-height:1.4;margin:1.35em 0 .4em}
+p,li{max-width:75ch}
+nav{gap:8px;margin:16px 0 20px;padding:10px 0;background:var(--bg)}
+nav button,.btn{border-radius:0;padding:6px 12px}
+nav button.on,.btn.pri{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.card{border-radius:6px;padding:16px 20px}
+table{font-size:15px}
+th,td{padding:6px 9px}
+th{background:var(--card);font-weight:700}
+code{border-radius:2px}
+pre{border-radius:4px;line-height:1.5}
+.treebox{border-radius:4px}
+svg text{font-family:Arial,"Segoe UI",Roboto,sans-serif}
+.tn{fill:#d9e8fb;stroke:#1756a9}.tb{fill:#e8ddf2;stroke:#76519a}.ts{fill:#d9f0eb;stroke:#28776d}.tc{fill:#d9f0df;stroke:#28713d}.te{fill:#f7d7cb;stroke:#a83228}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .tn{fill:#1e3a5c}:root:not([data-theme=light]) .tb{fill:#3d3150}:root:not([data-theme=light]) .ts{fill:#153b37}:root:not([data-theme=light]) .tc{fill:#23432e}:root:not([data-theme=light]) .te{fill:#482b2b}}
+@media(max-width:700px){.wrap{padding:20px 16px 48px}}
+.legend span:not(.tu){color:#18212f}
+</style></head><body><div class="wrap"><a class="home" href="index.html">← Index</a><h1>COS341 Chapter 5 — Type Checking: every question style, one method</h1>
+<p class="mut">Built from your Tutorial 5 exercise, Semester Test 2 Task 1, Homework 4 and the textbook's Chapter 5. The annotator in tab B and the inference in tab C are real implementations of the rules shown.</p>
+<nav id="nav"></nav><section class="stage" id="s0"></section><section class="stage" id="sA"></section><section class="stage" id="sB"></section><section class="stage" id="sC"></section><section class="stage" id="sD"></section><section class="stage" id="sE"></section></div>
+<script>// ===== Part B engine: Sem-Test-2 Task 1 language =====
+const RULES_B={
+1:{lhs:'ALGO₀',rhs:'INSTR ; ALGO₁',txt:'if typeOf(INSTR) is c and typeOf(ALGO₁) is c\nthen let typeOf(ALGO₀) be c\nelse let typeOf(ALGO₀) be e'},
+2:{lhs:'ALGO',rhs:'ε',txt:'let typeOf(ALGO) be c'},
+3:{lhs:'INSTR',rhs:'ASSIGN',txt:'let typeOf(INSTR) be typeOf(ASSIGN)      // c or e travels up'},
+4:{lhs:'INSTR',rhs:'LOOP',txt:'let typeOf(INSTR) be typeOf(LOOP)'},
+5:{lhs:'ASSIGN',rhs:'VAR := TERM',txt:'if typeOf(TERM) is e\nthen let typeOf(ASSIGN) be e\nelse if typeOf(VAR) is u\n     then let typeOf(VAR) be typeOf(TERM)   // first assignment fixes the variable (every VAR with this name)\n          let typeOf(ASSIGN) be c\n     else if typeOf(VAR) is typeOf(TERM)\n          then let typeOf(ASSIGN) be c\n          else let typeOf(ASSIGN) be e'},
+6:{lhs:'LOOP',rhs:'while ( TERM ) do { ALGO }',txt:'if typeOf(TERM) is b and typeOf(ALGO) is c\nthen let typeOf(LOOP) be c\nelse let typeOf(LOOP) be e'},
+7:{lhs:'VAR',rhs:'nameToken',txt:'if this name already received a type from an earlier assignment\nthen let typeOf(VAR) be that type\nelse leave typeOf(VAR) as u'},
+8:{lhs:'TERM',rhs:'VAR',txt:'if typeOf(VAR) is n, b or s\nthen let typeOf(TERM) be typeOf(VAR)\nelse let typeOf(TERM) be e        // variable read before it was ever assigned'},
+9:{lhs:'TERM',rhs:'numberToken',txt:'let typeOf(TERM) be n'},
+10:{lhs:'TERM',rhs:'"textToken"',txt:'let typeOf(TERM) be s'},
+11:{lhs:'TERM₀',rhs:'( TERM₁ OP TERM₂ )',txt:'if typeOf(TERM₁) is e or typeOf(TERM₂) is e then let typeOf(TERM₀) be e\nelse if OP is +  and both are n          then let typeOf(TERM₀) be n\nelse if OP is >  and both are n, or both are s   then let typeOf(TERM₀) be b\nelse if OP is ^  and both are b          then let typeOf(TERM₀) be b\nelse if OP is @  and both are s          then let typeOf(TERM₀) be s\nelse let typeOf(TERM₀) be e'},
+12:{lhs:'OP',rhs:'+',txt:'let typeOf(OP) be n          // the result type this operator produces (rule 11 checks the operands)'},
+13:{lhs:'OP',rhs:'>',txt:'let typeOf(OP) be b'},
+14:{lhs:'OP',rhs:'^',txt:'let typeOf(OP) be b'},
+15:{lhs:'OP',rhs:'@',txt:'let typeOf(OP) be s'}};
+function tokB(src){const t=src.match(/"[^"]*"|:=|[A-Za-z_]\w*|\d+|[(){};+>^@]/g);if(!t)throw new Error('empty program');return t}
+function parseB(src){const t=tokB(src);let p=0;const peek=()=>t[p],eat=x=>{if(t[p]!==x)throw new Error(`expected "${x}" but found "${t[p]??'end'}"`);p++};
+  const N=(nt,rule,l,c)=>({nt,rule,l,c:c||[],hist:[]});
+  function ALGO(){if(p>=t.length||peek()==='}')return N('ALGO',2,'ALGO ε');const i=INSTR();eat(';');const r=ALGO();return N('ALGO',1,'ALGO',[i,r])}
+  function INSTR(){if(peek()==='while'){const l=LOOP();return N('INSTR',4,'INSTR',[l])}const a=ASSIGN();return N('INSTR',3,'INSTR',[a])}
+  function VAR(){const n=t[p++];if(!/^[A-Za-z_]\w*$/.test(n)||n==='while'||n==='do')throw new Error('bad variable name '+n);const v=N('VAR',7,'VAR '+n);v.name=n;return v}
+  function ASSIGN(){const v=VAR();eat(':=');const e=TERM();return N('ASSIGN',5,'ASSIGN',[v,e])}
+  function LOOP(){eat('while');eat('(');const e=TERM();eat(')');eat('do');eat('{');const a=ALGO();eat('}');return N('LOOP',6,'LOOP',[e,a])}
+  function TERM(){const x=peek();if(x===undefined)throw new Error('unexpected end');
+    if(/^\d+$/.test(x)){p++;return N('TERM',9,'TERM '+x)}
+    if(x[0]==='"'){p++;return N('TERM',10,'TERM '+x)}
+    if(x==='('){p++;const a=TERM();const o=t[p++];const R={'+':12,'>':13,'^':14,'@':15}[o];if(!R)throw new Error('bad operator '+o);const op=N('OP',R,'OP '+o);op.op=o;const b=TERM();eat(')');return N('TERM',11,'TERM ( )',[a,op,b])}
+    const v=VAR();return N('TERM',8,'TERM',[v])}
+  const r=ALGO();if(p<t.length)throw new Error('unexpected "'+t[p]+'"');return r}
+function annotateB(root){const env={};const steps=[];const vars=[];
+  const setT=(n,ty,k)=>{n.hist.push({step:k,t:ty});n.t=ty};
+  function go(n){n.c.forEach(go);const k=steps.length;let read='',res='',t='u',upd=null;
+    const T=x=>x.t;
+    switch(n.rule){
+    case 1:{const [i,r]=n.c;read=`INSTR is ${T(i)}, ALGO₁ is ${T(r)}`;t=T(i)==='c'&&T(r)==='c'?'c':'e';break}
+    case 2:t='c';read='ε: nothing to check';break;
+    case 3:case 4:t=T(n.c[0]);read=`child is ${T(n.c[0])}`;break;
+    case 5:{const [v,e]=n.c;read=`TERM is ${T(e)}, VAR is ${T(v)}`;
+      if(T(e)==='e'){t='e'}
+      else if(T(v)==='u'){t='c';env[v.name]=T(e);setT(v,T(e),k);upd=`VAR ${v.name} was u ⇒ now ${T(e)} (this is the variable's type from here on)`;
+        // update every earlier VAR with this name that is still u is NOT needed (none can have been read as non-error)
+      }
+      else if(T(v)===T(e))t='c';else t='e';break}
+    case 6:{const [e,a]=n.c;read=`TERM is ${T(e)}, ALGO is ${T(a)}`;t=T(e)==='b'&&T(a)==='c'?'c':'e';break}
+    case 7:{if(env[n.name]){t=env[n.name];read=`name ${n.name} already has type ${t}`}else{t='u';read=`name ${n.name} has no type yet`}break}
+    case 8:{const v=n.c[0];read=`VAR is ${T(v)}`;t=['n','b','s'].includes(T(v))?T(v):'e';break}
+    case 9:t='n';read='number constant';break;
+    case 10:t='s';read='text constant';break;
+    case 11:{const [a,o,b]=n.c;read=`TERM₁ is ${T(a)}, OP is ${o.op}, TERM₂ is ${T(b)}`;
+      const x=T(a),y=T(b);
+      if(x==='e'||y==='e')t='e';
+      else if(o.op==='+')t=x==='n'&&y==='n'?'n':'e';
+      else if(o.op==='>')t=(x==='n'&&y==='n')||(x==='s'&&y==='s')?'b':'e';
+      else if(o.op==='^')t=x==='b'&&y==='b'?'b':'e';
+      else t=x==='s'&&y==='s'?'s':'e';break}
+    case 12:t='n';read='operator +';break;case 13:t='b';read='operator >';break;case 14:t='b';read='operator ^';break;case 15:t='s';read='operator @';break}
+    setT(n,t,k);n.step=k;steps.push({n,rule:n.rule,read,t,upd});}
+  go(root);return steps}
+const typeAt=(n,k)=>{let t='u';for(const h of n.hist)if(h.step<k)t=h.t;return t};
+// ===== Part C engine: H4 inference =====
+function H4tree(){let id=0;const N=(k,l,c,extra)=>Object.assign({id:id++,k,l,c:c||[],t:'u'},extra||{});
+  const dig=(d)=>N('TERMd','TERM',[N('DIGIT','DIGIT',[N('leaf',d)])]);
+  const vr=(nm)=>N('TERMv','TERM',[N('VAR','VAR '+nm)]);
+  const add=(a,b)=>N('add','TERM add( , )',[a,b]),and=(a,b)=>N('and','TERM and( , )',[a,b]);
+  const root=add(add(vr('₁'),add(dig('1'),dig('1'))),add(and(vr('₂'),dig('0')),vr('₃')));let q=0;(function w(n){n.id=q++;n.c.forEach(w)})(root);return root}
+function inferH4(root,order){const log=[];let conflict=null;const nodes=[];(function w(n){nodes.push(n);n.c.forEach(w)})(root);
+  const label=n=>n.l+(n.k=='leaf'?'':'')+` #${n.id}`;
+  function set(n,ty,why,pass){if(conflict)return false;if(n.t==='u'){n.t=ty;log.push({pass,n,from:'u',to:ty,why});return true}
+    if(n.t===ty)return false;conflict={n,had:n.t,wanted:ty,why};n.t='e';log.push({pass,n,from:conflict.had,to:'CONFLICT',why:why+` — but this node is already ${conflict.had}`});return true}
+  function apply(n,pass){
+    if(n.k==='add'){set(n,'n','add always yields a number',pass);n.c.forEach(c=>set(c,'n','add needs numeric operands (pushed down from the add node)',pass))}
+    else if(n.k==='and'){set(n,'b','and always yields a boolean',pass);n.c.forEach(c=>set(c,'b','and needs boolean operands (pushed down from the and node)',pass))}
+    else if(n.k==='TERMv'){const v=n.c[0];if(n.t!=='u')set(v,n.t,'TERM→VAR: the variable has the type of the TERM (inherited, down)',pass);if(v.t!=='u')set(n,v.t,'TERM→VAR: the TERM has the type of the variable (synthesised, up)',pass)}
+    else if(n.k==='TERMd'){const d=n.c[0];if(n.t!=='u')set(d,n.t,'TERM→DIGIT: pass the TERM\'s type down to the DIGIT',pass);if(d.t!=='u')set(n,d.t,'TERM→DIGIT: copy the DIGIT\'s type up',pass)}
+    else if(n.k==='DIGIT'){const l=n.c[0];if(n.t!=='u')set(l,n.t,`DIGIT→${l.l}: the digit is ${n.t==='b'?'boolean':'a number'} because its DIGIT node is`,pass)}
+  }
+  const pre=[],post=[];(function w(n){pre.push(n);n.c.forEach(w);post.push(n)})(root);
+  const seq=order==='up'?post:pre;let pass=0;
+  for(;;){pass++;const before=log.length;seq.forEach(n=>apply(n,pass));if(conflict||log.length===before||pass>20)break}
+  return {log,conflict,nodes}}
+var _x={parseB,annotateB,typeAt,H4tree,inferH4,RULES_B};
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const TN={n:'numeric',b:'boolean',s:'string',c:'correct',e:'wrong',u:'unknown'};
+function legend(){return `<div class="legend"><span class="tn" style="background:#e3eefc">n numeric</span><span style="background:#efe5fa">b boolean</span><span style="background:#dff3ef">s string</span><span style="background:#e0f3e6">c correct</span><span style="background:#fbe3df">e wrong</span><span>u unknown</span></div>`}
+// ---- generic tree drawing: node {l, c, hist|step,t} ----
+function drawTree(root,k,tyAt,curStep){const W=112,H=78,BW=104,BH=42;let x=0,maxd=0;
+  (function lay(n,d){n.d=d;maxd=Math.max(maxd,d);if(!n.c.length){n.x=x;x+=W;return}n.c.forEach(c=>lay(c,d+1));n.x=(n.c[0].x+n.c[n.c.length-1].x)/2})(root,0);
+  let ln='',bx='';
+  (function dr(n){const cx=n.x+BW/2+4,cy=n.d*H+4;n.c.forEach(c=>{ln+=`<line class="ln" x1="${cx}" y1="${cy+BH}" x2="${c.x+BW/2+4}" y2="${c.d*H+4}"/>`;dr(c)});
+    const t=tyAt(n,k);const cur=curStep!==undefined&&n.stepNo===curStep-1;
+    let l=n.l;if(l.length>17)l=l.slice(0,16)+'…';
+    bx+=`<g class="${cur?'cur':''}"><rect class="t${t}" x="${n.x+4}" y="${cy}" width="${BW}" height="${BH}" rx="7"/><text class="lbl" x="${cx}" y="${cy+16}" text-anchor="middle">${esc(l)}</text><text class="tt" x="${cx}" y="${cy+33}" text-anchor="middle">${t==='u'?'T: unknown':'T: '+TN[t]}</text></g>`})(root);
+  return `<div class="treebox"><svg width="${Math.max(x,W)+10}" height="${(maxd+1)*H+8}">${ln}${bx}</svg></div>`}
+function stepper(host,total,render,start){let k=start===undefined?0:start;const box=document.createElement('div');host.appendChild(box);
+  function r(){box.innerHTML=`<div class="row"><button class="btn" data-a="p">◀ Back</button><button class="btn pri" data-a="n">Next ▶</button><button class="btn" data-a="e">Jump to end</button><button class="btn" data-a="r">Reset</button><span class="mut">step ${k} / ${total}</span></div><div class="out"></div>`;
+    box.querySelector('.out').innerHTML=render(k);
+    box.querySelectorAll('button').forEach(b=>b.onclick=()=>{const a=b.dataset.a;if(a=='n')k=Math.min(total,k+1);if(a=='p')k=Math.max(0,k-1);if(a=='e')k=total;if(a=='r')k=0;r()})}
+  r()}
+// ================= PART A data =================
+function mk(l,c,t,why,rule){return{l,c:c||[],t,why,rule}}
+function treeA(){
+ const L=(l,t,why,rule)=>mk(l,[],t,why,rule);
+ const root=mk('PROGRAM',[
+  mk('VAR-DECL',[L('int n','n','The declaration "int n" introduces n and records it in the table as numeric. From now on every occurrence of n (same scope) is numeric.','declaration: table[n] := numeric')],'c','The declaration itself has nothing to disagree with, so it is correct.','all parts correct ⇒ correct'),
+  mk('ALGO',[mk('LOOP',[
+    L('while','c','A keyword carries no value and has nothing to check: correct.','keyword'),
+    mk('TERM',[L('n>1','b','n is numeric (table), 1 is numeric. ">" needs both sides the same kind and produces a truth value.','comparison: both numeric ⇒ boolean')],'b','TERM just passes its child\'s type up.','copy child'),
+    mk('ALGO',[mk('BRANCH',[
+      L('if','c','Keyword: correct.','keyword'),
+      mk('TERM',[mk('FUNCTIONCALL',[
+        L('is_odd_number','c','The function name is looked up in the function table. It exists and has type numeric → boolean, so the name is fine.','look up the name in ftable'),
+        mk('PARAMETER',[L('n','n','n is declared numeric (variable table).','variable use: look up')],'n','Parameter list: types of its arguments, here (numeric).','collect argument types')],
+        'b','Argument type numeric matches the expected parameter type numeric, so the call is correct and its result type is the declared return type: boolean.','call: args match ⇒ result = return type')],'b','Copy up: the condition is boolean.','copy child'),
+      mk('ASSIGN',[L('n','n','Left-hand variable n: numeric (declared).','variable use: look up'),
+        mk('TERM',[L('n ++ "hello"','e','n is numeric, "hello" is a string. "++" needs both operands of the same type, but they differ ⇒ wrong.','operator: operands differ ⇒ wrong')],'e','TERM copies the wrong from below. Errors travel upward.','copy child')],
+        'e','Assignment needs the right-hand side to have n\'s type, but the right-hand side is wrong, so the assignment cannot be valid ⇒ wrong.','assign: rhs wrong ⇒ wrong'),
+      L('else','c','The else keyword does no check itself; it just marks the alternative branch: correct.','keyword'),
+      mk('ASSIGN',[L('n','n','n: numeric (declared).','variable use: look up'),
+        mk('TERM',[L('n/2','n','n numeric, 2 numeric, "/" on numbers gives numeric.','arithmetic: both numeric ⇒ numeric')],'n','Copy up.','copy child')],
+        'c','Right-hand side numeric = n\'s declared type, so the assignment is correct.','assign: types agree ⇒ correct')],
+      'e','The branch has a boolean condition (fine) but one of its two assignments is wrong, and any wrong part makes the whole branch wrong.','if: cond boolean AND all parts correct ⇒ correct, else wrong')],'e','The block contains the wrong BRANCH ⇒ wrong.','all parts correct ⇒ correct, else wrong')],
+    'e','"while" and "n>1" are fine, but the loop body (ALGO) is wrong ⇒ the whole loop is wrong.','loop: cond boolean AND body correct ⇒ correct')],'e','Contains the wrong LOOP ⇒ wrong.','all parts correct ⇒ correct, else wrong')],
+  'e','A declaration part that is correct plus an algorithm that is wrong ⇒ the program is wrong.','all parts correct ⇒ correct, else wrong');
+ let i=0;(function po(n){n.c.forEach(po);n.stepNo=i++;n.step=n.stepNo})(root);
+ return root}
+function stage0(){$('s0').innerHTML=`<h2>One method that answers every Chapter 5 question</h2>
+<div class="card"><b>What Chapter 5 really is.</b> A tree already exists (the parser built it). Type analysis walks that tree and gives <b>every node an attribute</b> (its type, or a verdict like correct/wrong). The whole chapter is: <i>which rule decides each node's attribute, and in what order do the rules run?</i> Four question styles, one engine:
+<table><tr><th>Style</th><th>You are asked to…</th><th>Seen in</th><th>Tab</th></tr>
+<tr><td>ANNOTATE</td><td class="wrap">Given a tree, fill in every node's attribute and say where it goes wrong.</td><td>Tutorial 5 "past exam question"</td><td>A</td></tr>
+<tr><td>WRITE RULES</td><td class="wrap">Given a grammar, write an if/then/else attribution rule for each production.</td><td>Sem Test 2 Task 1, H4 Sub-task A</td><td>B, C</td></tr>
+<tr><td>INFER</td><td class="wrap">Some types are unknown; work out who forces whom, up and down the tree, until it settles or conflicts.</td><td>H4 Sub-task B</td><td>C</td></tr>
+<tr><td>TEXTBOOK CODE</td><td class="wrap">Write or trace <code>CheckExp(e, vtable, ftable)</code> and friends; classify attributes as inherited/synthesised.</td><td>Tutorial 5, textbook 5.2–5.6</td><td>D</td></tr></table></div>
+<h3>The algorithm (works whatever the question looks like)</h3>
+<div class="step"><b>Step 1 · Write down the attribute alphabet.</b> What values can a node carry and what does each mean? In the test: <code>u e c n b s</code>. Then split the node kinds into two groups: <b>value nodes</b> (expressions: they end as n / b / s, or e) and <b>verdict nodes</b> (statements, sequences, programs: they end as c or e). The test says it outright: <i>c may only be carried if there is no error anywhere underneath.</i></div>
+<div class="step"><b>Step 2 · For each production ask three questions.</b>
+ <ol><li><b>Read</b>: which children (↑), which table (↔), which parent expectation (↓) do I need?</li><li><b>Check</b>: what must be true for this node to be legal?</li><li><b>Write</b>: what attribute does this node get when the check passes? (and when it fails: always <code>e</code>)</li></ol></div>
+<div class="step"><b>Step 3 · Write it in the template.</b> <pre>if  ⟨checks on what I read⟩
+then let typeOf(node) be ⟨result⟩
+else let typeOf(node) be e</pre> Errors propagate because every rule begins by treating an <code>e</code> child as failure.</div>
+<div class="step"><b>Step 4 · Pick the order.</b> Leaves first. Anything that fills a table (declarations, first assignments) must run <b>before</b> the nodes that read it, so go left to right through statements. A statement sequence is just: do the first instruction, then the rest.</div>
+<div class="step"><b>Step 5 · If some types start unknown (inference).</b> Do a <b>downward pass</b> (parents hand expected types to children), then an <b>upward pass</b> (children hand their types to parents). Repeat until nothing changes. A <b>conflict</b> is the moment some node would receive a second, different type.</div>
+<div class="step"><b>Step 6 · Read the answer at the root.</b> Root = c ⇒ the whole program is type-correct. Root = e ⇒ follow the e's downward to the <i>lowest</i> e: that node is the real mistake; everything above it is just inheriting the error.</div>
+<h3>Rule templates for every kind of node you will meet</h3>
+<table><tr><th>Node kind</th><th>Read</th><th>Template</th></tr>
+<tr><td>constant (number, text)</td><td>—</td><td class="wrap"><code>let typeOf(node) be n</code> / <code>s</code></td></tr>
+<tr><td>variable use</td><td>↔ table</td><td class="wrap">if the name has a type then that type, else <code>e</code> (undeclared / no value yet)</td></tr>
+<tr><td>declaration</td><td>—</td><td class="wrap">record name → type in the table; node is <code>c</code></td></tr>
+<tr><td>operator on operands</td><td>↑ both children + which operator</td><td class="wrap">if both operands have the types this operator demands then its result type else <code>e</code></td></tr>
+<tr><td>comparison</td><td>↑ both</td><td class="wrap">if both sides have the same type then <code>b</code> else <code>e</code></td></tr>
+<tr><td>assignment</td><td>↑ variable, ↑ right side</td><td class="wrap">if right side isn't <code>e</code> and the types agree then <code>c</code> else <code>e</code> (with no declarations: the first assignment fixes the variable's type)</td></tr>
+<tr><td>if / while</td><td>↑ condition, ↑ bodies</td><td class="wrap">if condition is <code>b</code> and every body is <code>c</code> then <code>c</code> else <code>e</code></td></tr>
+<tr><td>sequence / block / program</td><td>↑ all parts</td><td class="wrap">if every part is <code>c</code> then <code>c</code> else <code>e</code>; empty ⇒ <code>c</code></td></tr>
+<tr><td>function call</td><td>↔ ftable, ↑ arguments</td><td class="wrap">if the name exists, argument count and types match then the return type else <code>e</code></td></tr>
+<tr><td>keyword / punctuation leaf</td><td>—</td><td class="wrap"><code>c</code> (nothing to check)</td></tr></table>
+<div class="card warn"><b>Three slips to avoid.</b> (1) Forgetting the <code>else … e</code> branch, so errors do not travel up. (2) Giving a statement a value type (n/b/s) or an expression the verdict c. (3) Running a use of a variable before the assignment that gives it a type.</div>
+<div class="mut">Everything in tabs A–C below was run by code: the annotator in tab B and the inference in tab C are real implementations of the rules shown, not hand-drawn.</div>`}
+function stageA(){const root=treeA();const steps=[];(function po(n){n.c.forEach(po);steps.push(n)})(root);
+ $('sA').innerHTML=`<h2>A · Tutorial 5: "Carl Clumsy's attributed syntax tree"</h2>
+<div class="card"><b>The question.</b> Every node starts with <code>T: unknown</code>. Decide each node's T-attribute from: numeric, boolean, string, correct, wrong. <b>Algorithm = Step 4–6 of the method:</b> start at the leaves whose type is known (the declaration <code>int n</code> makes <code>n</code> numeric <i>everywhere</i> in its scope), then move up one node at a time, applying that node's rule to its children. Press Next and watch.</div>
+${legend()}<div id="aStep"></div>
+<div class="card"><b>The result, read as a story.</b> The loop condition <code>n&gt;1</code> and the call <code>is_odd_number(n)</code> are fine. The only real mistake is the lowest wrong node: <code>n ++ "hello"</code> (numeric next to a string). Its parent <code>TERM</code>, then <code>ASSIGN</code>, then <code>BRANCH</code>, then the inner <code>ALGO</code>, <code>LOOP</code>, outer <code>ALGO</code> and <code>PROGRAM</code> are wrong <i>only because they inherit the error</i>. The other assignment <code>n := n/2</code> is correct, and it stays correct even though its sibling is wrong.</div>
+<div class="card warn"><b>Exam wording.</b> If asked "which node is the cause?" name the lowest wrong node. If asked to fill the tree, remember every node gets a value, including keywords (<code>if</code>, <code>else</code>, <code>while</code> = correct) and the declaration. The slide shows the leaf <code>is_odd_number</code> only as the function name, so don't spend time on exactly which word your lecturer writes there; saying "found in the function table" earns the idea.</div>`;
+ stepper($('aStep'),steps.length,k=>{const s=k>0?steps[k-1]:null;const tyAt=(n,kk)=>n.step<kk?n.t:'u';
+  let d=s?`<div class="card ${s.t==='e'?'bad':s.t==='c'?'ok':''}"><b>Step ${k}: node “${esc(s.l)}” → T: ${TN[s.t]}</b><div class="mut" style="font-size:.9rem">rule used: ${esc(s.rule)}</div><p style="margin:.4em 0 0">${esc(s.why)}</p></div>`:'<div class="card">All nodes unknown. Press Next: we start at the leftmost leaf.</div>';
+  return d+drawTree(root,k,tyAt,k)},0)}
+function stageB(){
+ $('sB').innerHTML=`<h2>B · Semester Test 2, Task 1 (15 rules + the annotator)</h2>
+<div class="card"><b>The question.</b> Grammar with ALGO as start symbol, 15 numbered rules. "For each of these fifteen syntax rules, provide a semantic attribution rule for type analysis, using <code>if… then… else…</code> and <code>typeOf(node)</code> in reading mode (<code>if typeOf(node) is …</code>) or update mode (<code>let typeOf(node) be …</code>). Attributes: u unknown (default for every node), e error, c correct (only if nothing underneath is wrong), n, b, s."</div>
+<h3>Step 1 · Sort the non-terminals</h3>
+<table><tr><th>Group</th><th>Non-terminals</th><th>Ends as</th></tr><tr><td>verdict</td><td>ALGO, INSTR, ASSIGN, LOOP</td><td>c or e</td></tr><tr><td>value</td><td>TERM, OP (result type of the operator), VAR (the variable's type)</td><td>n, b, s (or e / u)</td></tr></table>
+<h3>Step 2 · The key design question the test leaves open</h3>
+<div class="card warn">There are <b>no declarations</b> in this language, so a variable's type has to come from somewhere. The only sensible source is the <b>assignment</b>: the first <code>x := TERM</code> gives x the type of TERM, and from then on every VAR named x carries that type (the tutorial's "every occurrence, same variable throughout"). A variable read before any assignment has no type: error. <b>Write this assumption in your answer</b> in one sentence. Statements are processed left to right, which is exactly why <code>ALGO → INSTR ; ALGO</code> works: the first instruction runs before the rest.</div>
+<h3>Step 3 · Write each rule (answer in the form the test asks for)</h3>
+<div style="overflow-x:auto"><table id="rtB"><tr><th>#</th><th>Production</th><th>Attribution rule</th><th class="wrap">Why</th></tr></table></div>
+<div class="mut">Rules 12–15 give the operator its <i>result</i> type; rule 11 looks at which operator it is for the operand check. A cleaner alternative, also fine: let each of 12–15 be <code>c</code> and do everything in rule 11. This is my draft of a model answer, not your lecturer's marked one.</div>
+<h3>Step 4 · Run the rules on a program (this is the annotation algorithm)</h3>
+<div class="row"><select id="bpre"></select><button class="btn pri" id="bgo">Annotate</button></div>
+<textarea id="bsrc" spellcheck="false" style="min-height:70px"></textarea>
+<div class="mut" style="font-size:.85rem">Write it with spaces between tokens: <code>x := 5 ; while ( ( x &gt; 1 ) ) do { x := ( x + 1 ) ; } ;</code> Each instruction ends with <code>;</code>.</div><div id="berr" class="card bad" style="display:none"></div>${legend()}<div id="bStep"></div>`;
+ const why={1:'A sequence is only correct if both the first instruction and everything after it are.',2:'Empty sequence: nothing can be wrong.',3:'Statements carry verdicts; pass it up unchanged.',4:'Same: the loop\'s verdict goes up.',5:'First assignment fixes the variable\'s type; later ones must agree. An error on the right side blocks it.',6:'Condition must be boolean, body must be error-free.',7:'Reads the shared attribute of this name; leaves u if nothing has been assigned yet.',8:'Using a variable that has no type yet is an error.',9:'Constant.',10:'Constant.',11:'The workhorse: operand types must fit the operator; result type comes from the operator.',12:'+ makes numbers.',13:'> makes booleans (it compares numbers or lengths of strings).',14:'^ makes booleans (logical AND).',15:'@ makes strings (concatenation).'};
+ for(let i=1;i<=15;i++){const r=RULES_B[i];$('rtB').insertAdjacentHTML('beforeend',`<tr><td>${i}</td><td class="mono">${esc(r.lhs)} → ${esc(r.rhs)}</td><td><pre class="rule" style="margin:0">${esc(r.txt)}</pre></td><td class="wrap">${esc(why[i])}</td></tr>`)}
+ const PRE={'Good program':'x := 5 ;\ny := ( x + 3 ) ;\nwhile ( ( y > 2 ) ) do { y := ( y + 1 ) ; } ;\ns := "hi" ;\nt := ( s @ s ) ;\nf := ( ( x > 1 ) ^ ( y > 2 ) ) ;',
+ 'Assignment disagrees with earlier type':'a := 1 ;\na := "no" ;','Wrong operand types':'a := ( 1 + "x" ) ;','Variable read before assigned':'a := ( b + 1 ) ;',
+ 'While condition not boolean':'x := 1 ;\nwhile ( x ) do { x := 2 ; } ;','Error hidden inside a loop body':'x := 1 ;\nwhile ( ( x > 0 ) ) do { y := "a" ; x := y ; } ;','String lengths compared (legal)':'s := "ab" ;\nc := ( s > "abc" ) ;'};
+ $('bpre').innerHTML=Object.keys(PRE).map(k=>`<option>${esc(k)}</option>`).join('');
+ const run=()=>{$('berr').style.display='none';$('bStep').innerHTML='';let root,st;try{root=parseB($('bsrc').value);st=annotateB(root)}catch(e){$('berr').textContent=e.message;$('berr').style.display='block';return}
+  (function w(n){n.stepNo=n.step;n.c.forEach(w)})(root);
+  stepper($('bStep'),st.length,k=>{const s=k>0?st[k-1]:null;let d='';
+   if(s){const R=RULES_B[s.rule];d=`<div class="card ${s.t==='e'?'bad':s.t==='c'?'ok':''}"><b>Step ${k}: ${esc(s.n.l)} → ${TN[s.t]}</b> <span class="tag">rule ${s.rule}: ${esc(R.lhs)} → ${esc(R.rhs)}</span><pre class="rule">${esc(R.txt)}</pre><b>Reading:</b> ${esc(s.read)}${s.upd?`<br><b>Update:</b> ${esc(s.upd)}`:''}<br><b>Result:</b> typeOf = ${s.t} (${TN[s.t]})</div>`}
+   else d='<div class="card">Press Next. Order = leaves first, left to right, so earlier assignments fill the variable table before later uses.</div>';
+   return d+drawTree(root,k,(n,kk)=>typeAt(n,kk),k)+(k==st.length?`<div class="card ${root.t==='c'?'ok':'bad'}"><b>Root: ${TN[root.t]}.</b> ${root.t==='c'?'The program is type-correct.':'The program has a type error: follow the wrong nodes down to the lowest one.'}</div>`:'')},0)};
+ $('bpre').onchange=()=>{$('bsrc').value=PRE[$('bpre').value];run()};$('bgo').onclick=run;$('bsrc').value=PRE['Good program'];run()}
+function stageC(){
+ $('sC').innerHTML=`<h2>C · Homework 4 (all of it): type <i>inference</i></h2>
+<div class="card"><b>The difference from checking.</b> Here the digits 0 and 1 can be numeric <i>or</i> boolean, and variables have no declared type. So types are not just computed bottom-up: they are <b>discovered</b>, flowing <b>down</b> from parents that demand something (<i>inherited</i>) and <b>up</b> from children that know something (<i>synthesised</i>), until a conflict shows up.
+<pre>1. TERM → VAR        2. TERM → DIGIT     3. TERM → and( TERM , TERM )
+4. TERM → add( TERM , TERM )     5. DIGIT → 0      6. DIGIT → 1</pre></div>
+<h3>Sub-task A · the six marked rules</h3>
+<table><thead><tr><th>#</th><th>Rule</th><th class="wrap">Marked answer (full marks, 0.2 each)</th></tr></thead><tbody>
+<tr><td>1</td><td class="mono">TERM → VAR</td><td class="wrap">IF the type of TERM is known, THEN the VAR has the same type.<br>ELSE IF the type of VAR is known, THEN TERM has the same type.<br>ELSE the type of both is unknown.</td></tr>
+<tr><td>2</td><td class="mono">TERM → DIGIT</td><td class="wrap">IF the type of TERM is known, THEN the DIGIT has the same type.<br>ELSE IF the type of DIGIT is known, THEN TERM has the same type.<br>ELSE the type of both is unknown.</td></tr>
+<tr><td>3</td><td class="mono">TERM → and(TERM₁, TERM₂)</td><td class="wrap">IF the outer TERM is of type Boolean, THEN TERM₁ and TERM₂ must both be of type Boolean.<br>ELSE IF TERM₁ and TERM₂ are both Boolean, THEN the outer TERM is Boolean.<br>ELSE IF the outer TERM is number, OR either argument is known to be number, THEN there is a type conflict.<br>ELSE the types are still unknown.</td></tr>
+<tr><td>4</td><td class="mono">TERM → add(TERM₁, TERM₂)</td><td class="wrap">IF the outer TERM is of type number, THEN TERM₁ and TERM₂ must both be of type number.<br>ELSE IF TERM₁ and TERM₂ are both numbers, THEN the outer TERM is number.<br>ELSE IF the outer TERM is Boolean, OR either argument is known to be Boolean, THEN there is a type conflict.<br>ELSE the types are still unknown.</td></tr>
+<tr><td>5</td><td class="mono">DIGIT → 0</td><td class="wrap">IF DIGIT is Boolean, THEN 0 is Boolean.<br>ELSE IF DIGIT is number, THEN 0 is number.<br>ELSE the type of 0 is unknown.</td></tr>
+<tr><td>6</td><td class="mono">DIGIT → 1</td><td class="wrap">IF DIGIT is Boolean, THEN 1 is Boolean.<br>ELSE IF DIGIT is number, THEN 1 is number.<br>ELSE the type of 1 is unknown.</td></tr>
+</tbody></table>
+<p class="mut"><b>Direction note.</b> Rules 1–4 can push a known type down from the outer node or pull it up from the children. Rules 5–6 only pass a known DIGIT type down to the literal.</p>
+<div class="card warn"><b>Why Sub-task B needs a starting point.</b> With exactly these rules, nothing fires when every node starts unknown: no rule can produce a type unless the outer TERM or an argument is already known. Sub-task B therefore needs a starting point, which is the revision the homework hints at. The interactive tree below uses my added assumption that <code>and</code> always yields Boolean and <code>add</code> always yields number. That assumption is not on the marked sheet, so check how your lecturer expects Sub-task B to be answered.</div>
+<h3>Sub-task B · the term, and how the types flow until the conflict</h3>
+<p class="mut"><b>Seeding note:</b> The interactive tree starts with my added assumption that <code>and</code> yields Boolean and <code>add</code> yields number.</p>
+<div class="card"><code>add( add(VAR, add(1,1)) , add( and(VAR,0), VAR ) )</code> <span class="mut">(the printed homework has one extra <code>)</code> at the end; I use the balanced term it obviously means.)</span> Every node starts <b>unknown</b>. The tree below uses the real grammar, so each digit is TERM → DIGIT → 1 and each variable TERM → VAR. I treat the three VARs as three different variables; I come back to that below.</div>
+<div class="row"><b>Order of the passes:</b><button class="btn pri" id="cDown">top-down first (parents push)</button><button class="btn" id="cUp">bottom-up first (children report)</button></div>${legend()}<div id="cStep"></div>
+<div class="card"><b>Model explanation for the answer sheet.</b> <ol>
+<li>The root <code>add</code> is numeric (rule 4), so it pushes <i>numeric</i> into both operands; its right operand <code>add(and(…),VAR)</code> is numeric too and pushes numeric into <code>and(VAR,0)</code> and into its own <code>VAR</code>.</li>
+<li>The left subtree settles quietly: <code>VAR₁</code> becomes numeric, and the two <code>1</code>s become numbers via rules 6 and 2.</li>
+<li>Now the node <code>and(VAR,0)</code> has been told "you must be numeric", but rule 3 says an <code>and</code> is Boolean. Two different types would be assigned to the same node: <b>type conflict</b>. The inference stops here.</li>
+<li>Reading it bottom-up gives the same conflict, found one step later: <code>and</code> reports Boolean to its parent, but the <code>add</code> above it requires numeric.</li></ol>
+<b>Why the three VARs don't rescue it, and don't change the answer:</b> if they were the same variable it would be forced numeric by the <code>add</code>s and Boolean by the <code>and</code>, a second route to a conflict.</div>`;
+ const go=order=>{$('cStep').innerHTML='';const t=H4tree();const r=inferH4(t,order);const nodes=r.nodes;nodes.forEach(n=>{n.hist=[];n.stepNo=-1});
+  r.log.forEach((e,i)=>{e.n.hist.push({step:i,t:e.to==='CONFLICT'?'e':e.to});e.n.stepNo=i});
+  stepper($('cStep'),r.log.length,k=>{const e=k>0?r.log[k-1]:null;
+   const d=e?`<div class="card ${e.to==='CONFLICT'?'bad':''}"><b>Step ${k} · pass ${e.pass}${e.pass===1?(order==='down'?' (top-down)':' (bottom-up)'):''}:</b> node “${esc(e.n.l)}” <span class="mut">(#${e.n.id})</span>: ${e.from} → ${e.to==='CONFLICT'?'<b>CONFLICT</b>':e.to}<br><span class="mut">${esc(e.why)}</span></div>`:'<div class="card">Everything unknown. Press Next.</div>';
+   return d+drawTree(t,k,(n,kk)=>typeAt(n,kk),k)+(k===r.log.length&&r.conflict?`<div class="card bad"><b>Conflict detected</b> at node “${esc(r.conflict.n.l)}” (#${r.conflict.n.id}): it already carries ${TN[r.conflict.had]} but this rule wants ${TN[r.conflict.wanted]}. The term is not type-correct.</div>`:'')},0)};
+ $('cDown').onclick=()=>go('down');$('cUp').onclick=()=>go('up');go('down')}
+function stageD(){$('sD').innerHTML=`<h2>D · The textbook style, and every other Chapter 5 question I can see</h2>
+<h3>1 · The textbook machinery (5.2–5.6)</h3>
+<div class="card"><b>Two tables.</b> <code>vtable</code>: variable → type. <code>ftable</code>: function → (argument types) → result type. They are <b>inherited</b> attributes (passed down into every sub-call). The type returned by each call is <b>synthesised</b> (passed up). <code>CheckExp(exp, vtable, ftable)</code> returns the type, or reports an error and returns a <b>guessed</b> type so checking can continue (so only the first error message is reliable).</div>
+<table><tr><th>Expression</th><th>Rule inside CheckExp</th></tr>
+<tr><td class="mono">number</td><td class="wrap">returns int</td></tr>
+<tr><td class="mono">variable x</td><td class="wrap">lookup(vtable, x); not found ⇒ error, guess int</td></tr>
+<tr><td class="mono">e₁ + e₂</td><td class="wrap">t₁ = CheckExp(e₁), t₂ = CheckExp(e₂); both must be int; result int</td></tr>
+<tr><td class="mono">e₁ &lt; e₂ (or =)</td><td class="wrap">t₁ must equal t₂; result bool</td></tr>
+<tr><td class="mono">if c then e₁ else e₂</td><td class="wrap">c must be bool; e₁, e₂ same type; result that type (guess: the then-type)</td></tr>
+<tr><td class="mono">f(args)</td><td class="wrap">lookup(ftable, f); number and types of arguments (CheckExps) must match; result = declared result type</td></tr>
+<tr><td class="mono">let x = e₁ in e₂</td><td class="wrap">t₁ = CheckExp(e₁); check e₂ with vtable extended by x : t₁; result type of e₂; no check of its own</td></tr></table>
+<p><b>Trace (Tutorial 5):</b> <code>if x &lt; 5 then x + 1 else 0</code>, with vtable {x: int}.</p>
+<table><tr><th>Call</th><th>Returns</th><th>Why</th></tr>
+<tr><td class="mono">CheckExp(x, …)</td><td>int</td><td class="wrap">lookup(vtable, "x")</td></tr><tr><td class="mono">CheckExp(5, …)</td><td>int</td><td class="wrap">number</td></tr>
+<tr><td class="mono">CheckExp(x &lt; 5, …)</td><td>bool</td><td class="wrap">both sides int, so same type</td></tr>
+<tr><td class="mono">CheckExp(x, …), CheckExp(1, …)</td><td>int, int</td><td class="wrap">lookup / number</td></tr><tr><td class="mono">CheckExp(x + 1, …)</td><td>int</td><td class="wrap">both int</td></tr>
+<tr><td class="mono">CheckExp(0, …)</td><td>int</td><td class="wrap">number</td></tr>
+<tr><td class="mono">CheckExp(whole if, …)</td><td>int</td><td class="wrap">condition bool, branches int = int</td></tr></table>
+<div class="card"><b>Functions and programs.</b> <code>CheckFun</code>: build a <code>vtable</code> from the parameters (rejecting duplicate parameter names), check the body with it, and require <i>body type = declared result type</i>; it returns nothing, it only reports errors. <code>CheckProgram</code> needs <b>two passes</b>: functions can call each other, so pass 1 (<code>GetFuns</code>) builds <code>ftable</code> for <i>all</i> functions and rejects duplicate function names; pass 2 (<code>CheckFuns</code>) checks every body using the complete table. Finally <code>main</code> must exist and take one int and return int.</div>
+<h3>2 · Question styles you might be missing</h3>
+<table><tr><th>Style</th><th class="wrap">What to do</th><th>Evidence</th></tr>
+<tr><td class="wrap">Write the attribution rules for a grammar</td><td class="wrap">Tab B/C method.</td><td>Sem Test 2 T1, H4 A ✔ seen</td></tr>
+<tr><td class="wrap">Annotate a given tree / find the first error</td><td class="wrap">Tab A method.</td><td>Tut 5 ✔ seen</td></tr>
+<tr><td class="wrap">Explain how types flow through a term until a conflict</td><td class="wrap">Tab C method; always say ↓ then ↑ and name the conflicting node.</td><td>H4 B ✔ seen</td></tr>
+<tr><td class="wrap">Trace <code>CheckExp</code> on an expression</td><td class="wrap">Table above: one row per recursive call.</td><td>Tut 5 ✔ seen</td></tr>
+<tr><td class="wrap">Classify attributes: inherited vs synthesised</td><td class="wrap">Symbol tables and "expected type from the parent" go down; a node's own type and verdict go up. A table built in one pass and used in another is synthesised then inherited (5.2).</td><td>Tut 5, textbook ✔</td></tr>
+<tr><td class="wrap">Extend <code>CheckExp</code> with a new construct (while, assignment, not, &amp;&amp;)</td><td class="wrap">Add a case: say what you read, what must hold, what you return, and what you guess on error. Assignment: rhs type must equal the variable's declared type.</td><td>possible (5.7)</td></tr>
+<tr><td class="wrap">Why two passes over the program? / duplicate names / main</td><td class="wrap">Mutual recursion (see CheckProgram above).</td><td>possible (5.6)</td></tr>
+<tr><td class="wrap">Error recovery</td><td class="wrap">Report, then return a guessed type; later errors may be spurious.</td><td>possible (5.4)</td></tr>
+<tr><td class="wrap">Static vs dynamic, strong vs weak typing</td><td class="wrap">Static = checked before running; dynamic = while running. Strong = operations only applied to arguments they are defined for. Examples: C is static and somewhat weak; JavaScript is dynamic and weak (silently converts strings to numbers).</td><td>possible (5.1)</td></tr>
+<tr><td class="wrap">Overloading / type conversion</td><td class="wrap">Overloading with disjoint argument types: try each case. Otherwise pass the <b>expected type down</b> (inherited). Implicit conversion: if operand types don't fit, try converting one; may report "unresolved overloading".</td><td>possible (5.7)</td></tr></table>
+<div class="mut">"Seen" = appears in your files. "Possible" = in the textbook chapter but I have no past paper or tutorial showing it asked, so I'd rank it below the first four.</div>`}
+function stageE(){$('sE').innerHTML=`<h2>E · Crib-book page for Chapter 5</h2>
+<div class="card"><pre>ATTRIBUTE ALPHABET: u unknown · n b s value types · c correct (no error below) · e error
+VALUE nodes (TERM, OP, VAR) end as n/b/s/e      VERDICT nodes (ALGO, INSTR, ASSIGN, LOOP, PROGRAM) end as c/e
+
+RULE TEMPLATE   if ⟨checks on children / table⟩  then let typeOf(node) be ⟨result⟩  else let typeOf(node) be e
+
+constant            → its type                     variable use  → table lookup, else e
+operator (a op b)   → both children right type ⇒ result, else e
+comparison          → same type both sides ⇒ b
+assignment          → rhs ≠ e and types agree ⇒ c   (no declarations: 1st assignment fixes the type)
+if / while          → cond b AND bodies c ⇒ c
+sequence / program  → all parts c ⇒ c ; empty ⇒ c
+call                → name in ftable, args match ⇒ return type
+keyword leaf        → c
+
+ORDER  leaves first · left to right (tables fill as you go) · root: c = correct, e = follow e's down to the LOWEST e
+INFERENCE (H4)  ↓ pass: parent pushes expected type to unknown children   ↑ pass: child reports known type to unknown parent
+                repeat until no change · CONFLICT = a node would get a 2nd, different type
+                digits 0/1: receive a type, never decide one · and → boolean · add → numeric
+TEXTBOOK  CheckExp(exp, vtable, ftable) returns type · vtable/ftable INHERITED (down) · type SYNTHESISED (up)
+          error ⇒ report + return a guessed type · CheckProgram: pass 1 build ftable (dups?), pass 2 check bodies, main(int):int
+          static vs dynamic = when checked · strong vs weak = whether bad operations are prevented</pre></div>`}
+
+
+(function(){const names=['0 · Method','A · Tutorial tree','B · Sem Test 1','C · Homework 4','D · Textbook & other styles','E · Crib sheet'];const ids=['s0','sA','sB','sC','sD','sE'];
+$('nav').innerHTML=names.map((n,i)=>`<button data-i="${i}">${n}</button>`).join('');
+const show=i=>{ids.forEach((id,k)=>$(id).classList.toggle('on',k==i));$('nav').querySelectorAll('button').forEach((b,k)=>b.classList.toggle('on',k==i));window.scrollTo(0,0);try{localStorage.setItem('c5st',i)}catch(e){}};
+$('nav').querySelectorAll('button').forEach(b=>b.onclick=()=>show(+b.dataset.i));
+stage0();stageA();stageB();stageC();stageD();stageE();let s=0;try{s=+localStorage.getItem('c5st')||0}catch(e){}show(s)})();</script></body></html>

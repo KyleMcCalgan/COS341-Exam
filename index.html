@@ -26,6 +26,9 @@ a.page:focus-visible{outline:3px solid var(--link);outline-offset:3px}
 .page h2{margin:0 0 4px;font-size:21px;line-height:1.3}
 .page p{margin:0;color:var(--muted)}
 .page .open{display:inline-block;margin-top:12px;color:var(--link);font-weight:700}
+.homework{margin-top:38px;padding-top:28px;border-top:1px solid var(--rule)}
+.homework h2{margin:0 0 4px;font-size:22px;line-height:1.3}
+.homework p{margin:0 0 16px;color:var(--muted)}
 @media(max-width:600px){main{padding:40px 0}.intro{margin-bottom:24px}a.page{padding:17px}}
 @media(prefers-reduced-motion:reduce){a.page{transition:none}a.page:hover{transform:none}}
 </style>
@@ -34,8 +37,13 @@ a.page:focus-visible{outline:3px solid var(--link);outline-offset:3px}
 <main>
   <p class="eyebrow">COS341 · EXAM REVISION</p>
   <h1>Walkthroughs</h1>
-  <p class="intro">Choose an interactive walkthrough to follow the liveness analysis, interference graph, register colouring, and spilling steps.</p>
-  <nav class="pages" aria-label="Walkthrough pages">
+  <p class="intro">Choose an interactive walkthrough for compiler construction topics, from type checking through register allocation and procedure calls.</p>
+  <nav class="pages" aria-label="Chapter guides and walkthroughs">
+    <a class="page" href="ch5_type_checking.html">
+      <h2>Chapter 5 type checking</h2>
+      <p>Work through type checking with attributed trees, semantic rules, and inference examples.</p>
+      <span class="open">Open Chapter 5 →</span>
+    </a>
     <a class="page" href="ch6_9_walkthrough.html">
       <h2>Chapters 6 &amp; 9 walkthrough</h2>
       <p>Follow the tree method and textbook translation tables for expressions, statements, and procedure calls.</p>
@@ -51,12 +59,18 @@ a.page:focus-visible{outline:3px solid var(--link);outline-offset:3px}
       <p>Work through the concepts and algorithms using tutorial and textbook examples.</p>
       <span class="open">Open Chapter 8 →</span>
     </a>
-    <a class="page" href="h6_walkthrough.html">
-      <h2>Homework 6 walkthrough</h2>
-      <p>Apply the Chapter 8 methods to the homework code and inspect its register allocation.</p>
-      <span class="open">Open Homework 6 →</span>
-    </a>
   </nav>
+  <section class="homework" aria-labelledby="homework-title">
+    <h2 id="homework-title">Homework walkthroughs</h2>
+    <p>Apply the chapter methods to specific homework problems.</p>
+    <nav class="pages" aria-label="Homework walkthroughs">
+      <a class="page" href="h6_walkthrough.html">
+        <h2>Homework 6</h2>
+        <p>Apply the Chapter 8 methods to the homework code and inspect its register allocation.</p>
+        <span class="open">Open Homework 6 →</span>
+      </a>
+    </nav>
+  </section>
 </main>
 </body>
 </html>
