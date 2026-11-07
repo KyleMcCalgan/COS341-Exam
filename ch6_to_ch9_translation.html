@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>COS341 Chapter 6 → 9 translation walkthrough</title>
+<style>
+:root{--bg:#f5f7fa;--fg:#18212f;--mut:#526071;--card:#fff;--bd:#d4dbe4;--acc:#1756a9;--code:#edf1f5;--warn:#fff0bf;--warnbd:#8a4b00;
+--c-save:#fff0bf;--c-reserve:#dbe9fb;--c-args:#d9f0df;--c-ret:#e8ddf2;--c-goto:#e4e8ee;--c-fetch:#d9f0eb;--c-free:#dbe9fb;--c-restore:#fff0bf;--c-pro:#fde2d4;--c-epi:#fde2d4;--c-plain:transparent}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#151b24;--fg:#edf2f8;--mut:#aab6c5;--card:#1e2632;--bd:#3a4655;--acc:#a7c9ff;--code:#283341;--warn:#493b1d;--warnbd:#e5a55c;
+--c-save:#4a3d1c;--c-reserve:#1f3550;--c-args:#1f4130;--c-ret:#3a2f4d;--c-goto:#323b48;--c-fetch:#17403b;--c-free:#1f3550;--c-restore:#4a3d1c;--c-pro:#4d3022;--c-epi:#4d3022}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.6 Arial,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:22px 16px 64px}
+h1{font-size:25px;line-height:1.25;margin:0 0 6px}h2{font-size:21px;margin:1.1em 0 .4em}h3{font-size:17px;margin:1.2em 0 .35em}
+p,li{max-width:78ch}.mut{color:var(--mut)}
+nav{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 18px;padding:8px 0;position:sticky;top:0;background:var(--bg);z-index:5;border-bottom:1px solid var(--bd)}
+button,.btn{font:inherit;font-size:.92rem;border:1px solid var(--bd);background:var(--card);color:var(--fg);padding:6px 12px;cursor:pointer;border-radius:0}
+button.on,.btn.pri{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+section.stage{display:none}section.stage.on{display:block}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:14px 18px;margin:12px 0}
+.card.warn{background:var(--warn);border-color:var(--warnbd)}
+code,pre,.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+code{background:var(--code);padding:1px 5px;border-radius:2px;font-size:.9em}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+table{border-collapse:collapse;margin:8px 0;font-size:15px;max-width:100%}
+th,td{border:1px solid var(--bd);padding:6px 10px;text-align:left;vertical-align:top}
+th{background:var(--card)}
+.scroll{overflow-x:auto}
+.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.88rem}
+.ln{display:block;padding:1px 8px;border-left:5px solid transparent;white-space:pre}
+.ln.save{background:var(--c-save);border-color:#c79a00}.ln.reserve{background:var(--c-reserve);border-color:#1756a9}
+.ln.args{background:var(--c-args);border-color:#28713d}.ln.ret{background:var(--c-ret);border-color:#76519a}
+.ln.goto{background:var(--c-goto);border-color:#6b7684}.ln.fetch{background:var(--c-fetch);border-color:#28776d}
+.ln.free{background:var(--c-free);border-color:#1756a9}.ln.restore{background:var(--c-restore);border-color:#c79a00}
+.ln.pro,.ln.epi{background:var(--c-pro);border-color:#c0602a}.ln.plain{border-color:var(--bd)}
+.ln.dim{opacity:.55}
+.legend span{display:inline-block;padding:1px 9px;margin:0 6px 6px 0;font-size:.82rem;border:1px solid var(--bd)}
+.legend .save{background:var(--c-save)}.legend .reserve{background:var(--c-reserve)}.legend .args{background:var(--c-args)}.legend .ret{background:var(--c-ret)}
+.legend .goto{background:var(--c-goto)}.legend .fetch{background:var(--c-fetch)}.legend .pro{background:var(--c-pro)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+.box{border:1px solid var(--bd);background:var(--card);padding:8px 0}
+.box .t{padding:0 10px 6px;font-weight:700;font-size:.9rem}
+ol.m li{margin:.35em 0}
+input[type=text]{font:inherit;font-size:.9rem;background:var(--card);color:var(--fg);border:1px solid var(--bd);padding:5px 8px;width:11em;max-width:100%}
+tr.cur td{background:var(--c-reserve);font-weight:700}
+.sticky-h th{position:sticky;top:0}
+.stack{display:grid;grid-template-columns:70px 1fr;gap:6px;max-width:560px}
+.stack .sp{align-self:center;text-align:right;font-weight:700;color:var(--acc);font-size:.9rem}
+.cell{border:2px solid var(--fg);padding:9px 12px;min-height:44px;background:var(--card)}
+.cell.off{border:1px dashed var(--bd);color:var(--mut);background:transparent}
+.cell.ghost{border:2px dashed var(--mut);color:var(--mut);background:transparent}
+.cell.save{background:var(--c-save)}.cell.args{background:var(--c-args)}.cell.ret{background:var(--c-ret)}.cell.pro{background:var(--c-pro)}.cell.fetch{background:var(--c-fetch)}.cell.old{background:var(--c-goto)}.cell.empty{background:var(--card)}
+@media(max-width:700px){.wrap{padding:16px 14px 48px}}
+header{border-bottom:1px solid var(--bd);padding:16px 24px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:baseline;background:var(--card)}
+header h1{font-size:21px;line-height:1.25;margin:0;font-weight:700}
+header .sub{color:var(--mut);font-size:14px}
+header .spacer{flex:1}
+header .index-link{color:var(--mut);text-decoration:none;border:1px solid var(--bd);padding:2px 8px;font-size:14px;white-space:nowrap}
+header .index-link:hover{color:var(--fg);background:var(--bg)}
+@media(max-width:700px){header{padding:14px 16px;gap:8px 14px}}</style></head><body><header><h1>Chapter 6 → Chapter 9 translation</h1><span class="sub">How the call sequence becomes stack instructions, step by step</span><span class="spacer"></span><a class="index-link" href="index.html">← Index</a></header><div class="wrap">
+
+<p class="mut">Worked on your in-class Fibonacci exercise. Every code listing on this page is produced by the same small algorithm that the page explains, and that algorithm was checked by running its output on a simulated stack machine.</p>
+<nav id="nav"></nav>
+<section class="stage" id="s0"></section><section class="stage" id="s1"></section><section class="stage" id="s2"></section>
+<section class="stage" id="s3"></section><section class="stage" id="s4"></section><section class="stage" id="s5"></section>
+</div>
+<script>
+/*ENGINE*/
+const VARRE=/^(?:v\d+|p\d+|rf)$/;
+const numCmp=(a,b)=>a.localeCompare(b,undefined,{numeric:true});
+function parse(line){let m;
+ if(m=line.match(/^LABEL (\w+)$/))return{k:'label',name:m[1],def:[],use:[]};
+ if(m=line.match(/^GOTO (\w+)$/))return{k:'goto',to:m[1],def:[],use:[]};
+ if(m=line.match(/^IF (\w+) (=|<|>) (\w+) THEN (\w+) ELSE (\w+)$/))return{k:'if',to:[m[4],m[5]],def:[],use:[m[1],m[3]].filter(x=>VARRE.test(x))};
+ if(m=line.match(/^RETURN (\w+)$/))return{k:'return',res:m[1],def:[],use:[m[1]].filter(x=>VARRE.test(x))};
+ if(m=line.match(/^FUNCTION (\w+)\((.*)\)$/)){const ps=m[2].split(',').map(s=>s.trim()).filter(Boolean);return{k:'header',f:m[1],params:ps,def:ps,use:[]}}
+ if(m=line.match(/^(\w+) := CALL (\w+)\((.*)\)$/)){const as=m[3].split(',').map(s=>s.trim()).filter(Boolean);return{k:'call',res:m[1],f:m[2],args:as,def:[m[1]],use:as.filter(x=>VARRE.test(x))}}
+ if(m=line.match(/^(\w+) := (\w+) ([-+*]) (\w+)$/))return{k:'op',def:[m[1]],use:[m[2],m[4]].filter(x=>VARRE.test(x))};
+ if(m=line.match(/^(\w+) := (\w+)$/))return{k:'copy',def:[m[1]],use:[m[2]].filter(x=>VARRE.test(x))};
+ throw new Error('cannot parse: '+line)}
+function liveness(lines){const P=lines.map(parse),lab={};P.forEach((p,i)=>{if(p.k==='label')lab[p.name]=i});
+ const succ=P.map((p,i)=>p.k==='goto'?[lab[p.to]]:p.k==='if'?p.to.map(l=>lab[l]):p.k==='return'?[]:(i+1<P.length?[i+1]:[]));
+ let inn=P.map(()=>new Set()),out=P.map(()=>new Set()),ch=true;
+ const same=(a,b)=>a.size===b.size&&[...a].every(v=>b.has(v));
+ while(ch){ch=false;for(let i=P.length-1;i>=0;i--){const o=new Set();succ[i].forEach(s=>inn[s].forEach(v=>o.add(v)));
+  const n=new Set(o);P[i].def.forEach(d=>n.delete(d));P[i].use.forEach(u=>n.add(u));
+  if(!same(n,inn[i])){inn[i]=n;ch=true}if(!same(o,out[i])){out[i]=o;ch=true}}}
+ return P.map((p,i)=>({line:lines[i],p,in:inn[i],out:out[i]}))}
+function callSeq(call,save,ret){const n=call.args.length,fr=4*(n+1),L=[];
+ save.forEach((v,i)=>L.push({txt:'M[SP'+(i?'+'+4*i:'')+'] := '+v,ph:'save'}));
+ L.push({txt:'SP := SP - '+fr,ph:'reserve'});
+ call.args.forEach((a,i)=>L.push({txt:'M[SP+'+4*(i+1)+'] := '+a,ph:'args'}));
+ L.push({txt:'M[SP] := '+ret,ph:'ret'});
+ L.push({txt:'GOTO '+call.f,ph:'goto'},{txt:'LABEL '+ret,ph:'goto'});
+ L.push({txt:call.res+' := M[SP+4]',ph:'fetch'},{txt:'SP := SP + '+fr,ph:'free'});
+ save.forEach((v,i)=>L.push({txt:v+' := M[SP'+(i?'+'+4*i:'')+']',ph:'restore'}));
+ return L}
+function transform(prog,saveAll){let mx=-1;
+ prog.forEach(f=>f.lines.forEach(l=>{const m=l.match(/\bL(\d+)\b/g);if(m)m.forEach(x=>mx=Math.max(mx,+x.slice(1)))}));let nl=mx+1;
+ const fns=prog.map(f=>{const lv=liveness(f.lines),calls=[];
+  f.lines.forEach((l,i)=>{const p=lv[i].p;if(p.k==='call'){
+   const save=saveAll?f.locals.filter(v=>v!==p.res):[...lv[i].out].filter(v=>v!==p.res).sort(numCmp);
+   calls.push({fn:f.name,idx:i,line:l,p,save,ret:'L'+(nl++),live:lv[i].out})}});
+  const framesize=4*Math.max(0,...calls.map(c=>c.save.length));
+  const out=[];
+  f.lines.forEach((l,i)=>{const p=lv[i].p;
+   if(p.k==='call'){const c=calls.find(c=>c.idx===i);c.seq=callSeq(p,c.save,c.ret);c.seq.forEach(s=>out.push({...s,src:i}))}
+   else if(p.k==='header'){out.push({txt:'LABEL '+p.f,ph:'pro',src:i});p.params.forEach((q,j)=>out.push({txt:q+' := M[SP+'+4*(j+1)+']',ph:'pro',src:i}));out.push({txt:'SP := SP - '+framesize,ph:'pro',src:i})}
+   else if(p.k==='return'){out.push({txt:'SP := SP + '+framesize,ph:'epi',src:i},{txt:'M[SP+4] := '+p.res,ph:'epi',src:i},{txt:'GOTO M[SP]',ph:'epi',src:i})}
+   else out.push({txt:l,ph:'plain',src:i})});
+  return{name:f.name,locals:f.locals,lines:f.lines,lv,calls,framesize,out,hasHeader:f.lines.some(l=>l.startsWith('FUNCTION'))}});
+ return{fns}}
+const PROGRAM=[
+ {name:'MAIN',locals:['v0','v1'],lines:['v4 := 17','v0 := v4','v6 := v0','v5 := CALL f(v6)','v1 := v5']},
+ {name:'fibo',locals:['p1','v2','v3','rf'],lines:['FUNCTION f(p1)','v7 := p1','v8 := 0','IF v7 = v8 THEN L0 ELSE L1','LABEL L0','v9 := 0','rf := v9','LABEL L1','v10 := p1','v11 := 1','IF v10 = v11 THEN L2 ELSE L3','LABEL L2','v12 := 1','rf := v12','GOTO L4','LABEL L3','v15 := p1','v16 := 1','v14 := v15 - v16','v13 := CALL f(v14)','v2 := v13','v19 := p1','v20 := 2','v18 := v19 - v20','v17 := CALL f(v18)','v3 := v17','v22 := v2','v23 := v3','v21 := v22 + v23','rf := v21','LABEL L4','RETURN rf']}];
+/*END*/
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const fmt=s=>esc(s).replace(/ - /g,' − ');
+const set=a=>{a=[...a].sort(numCmp);return a.length?'{'+a.join(', ')+'}':'∅ (nothing)'};
+let OPT={all:false},T=transform(PROGRAM,false),SEL=0;
+const allCalls=()=>T.fns.flatMap(f=>f.calls);
+
+const PH={
+ save:{t:'1 · Save',does:'The caller stores every variable it still needs after the call, in its own frame. The callee may overwrite them.',how:'Save set = variables live after the call, minus the call’s result variable (the call overwrites that one anyway). One line each: M[SP] := first, M[SP+4] := second, M[SP+8] := third …'},
+ reserve:{t:'2 · Reserve the call frame',does:'Make room on the stack for the call frame: one word for the return address plus one word per argument.',how:'SP := SP − 4·(n+1), where n is the number of arguments.'},
+ args:{t:'3 · Fill in the arguments',does:'Write each argument where the callee will look for it.',how:'Argument number i goes to M[SP+4·i], for i = 1 … n.'},
+ ret:{t:'3 · Write the return address',does:'Store the address to continue at once the callee is done.',how:'M[SP] := a fresh label. The same label is placed right after the GOTO in the next step.'},
+ goto:{t:'4 · Jump and come back',does:'Jump into the function. When the callee returns, execution carries on at the return label.',how:'GOTO f, then LABEL (the same fresh label you just stored).'},
+ fetch:{t:'5 · Fetch the result',does:'The callee left its result in the first argument slot.',how:'result := M[SP+4].'},
+ free:{t:'5 · Free the call frame',does:'Throw the call frame away again.',how:'SP := SP + 4·(n+1), the same amount you reserved.'},
+ restore:{t:'5 · Restore',does:'Load back what step 1 saved.',how:'Same offsets as the saves: first := M[SP], second := M[SP+4], … This comes after SP has moved back.'}};
+const ORDER=['save','reserve','args','ret','goto','fetch','free','restore'];
+
+function legend(){return '<div class="legend"><span class="save">save / restore</span><span class="reserve">reserve / free</span><span class="args">arguments</span><span class="ret">return address</span><span class="goto">jump and return label</span><span class="fetch">fetch result</span><span class="pro">prologue / epilogue</span></div>'}
+function lines(arr,dimFrom){return '<div class="code">'+arr.map((s,i)=>'<span class="ln '+s.ph+(dimFrom!==undefined&&i>=dimFrom?' dim':'')+'">'+fmt(s.txt)+'</span>').join('')+'</div>'}
+function stepper(host,total,render){let k=0;const box=document.createElement('div');host.appendChild(box);
+ function r(){box.innerHTML='<div class="row"><button class="btn" data-a="p">◀ Back</button><button class="btn pri" data-a="n">Next ▶</button><button class="btn" data-a="e">Jump to end</button><button class="btn" data-a="r">Reset</button><span class="mut">step '+k+' / '+total+'</span></div><div class="out">'+render(k)+'</div>';
+  box.querySelectorAll('button').forEach(b=>b.onclick=()=>{const a=b.dataset.a;if(a==='n')k=Math.min(total,k+1);if(a==='p')k=Math.max(0,k-1);if(a==='e')k=total;if(a==='r')k=0;r()})}
+ r()}
+
+/* ---------- tab 0 ---------- */
+function stage0(){$('s0').innerHTML=`<h2>The idea</h2>
+<div class="card">Chapter 6 turns the source program into simple intermediate code, but it leaves <b>three kinds of single-line placeholders</b>. Chapter 9 replaces each placeholder with a fixed pattern of lines. <b>Every other line is copied unchanged.</b></div>
+<div class="scroll"><table><tr><th>Placeholder from Chapter 6</th><th>Chapter 9 replaces it with</th><th>Whose job</th></tr>
+<tr><td class="mono">res := CALL f(a₁ … aₙ)</td><td>a <b>call sequence</b>: save · reserve · arguments · return address · jump · fetch result · free · restore</td><td><b>Caller</b> (any code that makes a call: MAIN, and also fibo itself, because it calls itself)</td></tr>
+<tr><td class="mono">FUNCTION f(p₁ … pₘ)</td><td>the <b>prologue</b>: label · read the parameters · reserve the function’s own frame</td><td><b>Callee</b></td></tr>
+<tr><td class="mono">RETURN r</td><td>the <b>epilogue</b>: free the own frame · put the result in the frame · jump back</td><td><b>Callee</b></td></tr></table></div>
+<div class="card">A function that both makes calls and is called, like fibo, plays <b>both roles</b>: it gets a prologue and epilogue (callee) and a call sequence at each of its own calls (caller).</div>
+${legend()}
+<h3>The three tools of the method</h3>
+<ol class="m"><li><b>Liveness (Chapter 8)</b> decides what the caller must save at each call.</li>
+<li><b>Frame arithmetic</b> decides how many bytes to reserve: 4·(n+1) for the call frame, and <i>framesize</i> for the function’s own frame.</li>
+<li><b>A fresh return label</b> for every call.</li></ol>
+<div class="card warn"><b>What is my assumption, not from your lecturer’s materials</b>
+<ul><li><b>Caller-save with liveness:</b> only variables still live after the call are saved. This follows the textbook and your Chapter 6/9 guide. The 2025 exam said “simply save all local variables”. Tick the box below to see that version.</li>
+<li><b>Notation:</b> I write the Chapter 6 function wrapper as <code>FUNCTION f(p₁)</code> and <code>RETURN rf</code>, and I number new labels after the highest Chapter 6 label.</li>
+<li><b>MAIN</b> has no prologue. If MAIN saves something, I assume the stack has room for it.</li></ul></div>
+<label class="row"><input type="checkbox" id="saveall"> <span>Save <b>all</b> local variables at every call (the 2025 exam rule) instead of only live ones</span></label>`;
+ $('saveall').onchange=e=>{OPT.all=e.target.checked;T=transform(PROGRAM,OPT.all);SEL=Math.min(SEL,allCalls().length-1);renderAll(false)}}
+
+/* ---------- tab 1: caller ---------- */
+function stage1(){const calls=allCalls(),c=calls[SEL],fn=T.fns.find(f=>f.name===c.fn),n=c.p.args.length,fr=4*(n+1);
+ $('s1').innerHTML=`<h2>Caller side: one <code>CALL</code> line becomes a call sequence</h2>
+<div class="card"><b>The method, step by step</b>
+<ol class="m"><li>Find the call line <code>res := CALL f(a₁ … aₙ)</code>.</li>
+<li><b>Liveness:</b> work out which variables are live <i>after</i> that line (Chapter 8 table).</li>
+<li><b>Save set</b> = those live variables, <b>minus</b> <code>res</code>. Sort them and give them offsets 0, 4, 8, …</li>
+<li><b>Call frame size</b> = 4·(n+1), where n is the number of arguments. Here n = ${n}, so ${fr} bytes.</li>
+<li>Take a <b>fresh return label</b> (the next unused one).</li>
+<li>Write the lines in this order: <b>save → reserve → arguments → return address → GOTO and LABEL → fetch result → free → restore</b>.</li>
+<li>Remember the caller’s own frame must be large enough for its save set (this sets its <i>framesize</i>, see the callee tab).</li></ol></div>
+<h3>Pick a call from the exercise</h3>
+<div class="row" id="callPick">${calls.map((x,i)=>`<button class="${i===SEL?'on':''}" data-i="${i}">${esc(x.fn)}: <span class="mono">${esc(x.line)}</span></button>`).join('')}</div>
+<h3>Steps 2 and 3: what is live after this call?</h3>
+<p class="mut">The table is the Chapter 8 liveness result for the whole ${esc(fn.name)} code. The chosen call is highlighted. “Live after” is the out-set of that line.</p>
+<div class="scroll" style="max-height:330px;overflow-y:auto"><table class="sticky-h"><tr><th>#</th><th>Chapter 6 line</th><th>live after this line</th></tr>
+${fn.lv.map((r,i)=>`<tr class="${i===c.idx?'cur':''}"><td>${i}</td><td class="mono">${fmt(r.line)}</td><td class="mono">${set(r.out)}</td></tr>`).join('')}</table></div>
+<div class="card">Live after the call = <code>${set(c.live)}</code>. Minus the result <code>${esc(c.p.res)}</code> ⇒ ${OPT.all?'but with “save all” the save set is every local variable of '+esc(fn.name)+' (except the result): ':'save set = '}<b>${set(c.save)}</b>.</div>
+<h3>Steps 4 to 6: build the call sequence, one phase at a time</h3>
+${legend()}<div id="callStep"></div>
+<h3>Try it with your own numbers</h3>
+<div class="card"><div class="row"><label>result <input type="text" id="t_res" value="v9"></label><label>function <input type="text" id="t_f" value="f"></label><label>arguments <input type="text" id="t_args" value="v4, v5"></label><label>save set <input type="text" id="t_save" value="v1, v2"></label><label>return label <input type="text" id="t_ret" value="L9"></label></div>
+<p class="mut" style="margin:.3em 0">Separate lists with commas. An empty save set is allowed.</p><div id="tryOut"></div></div>`;
+ $('callPick').querySelectorAll('button').forEach(b=>b.onclick=()=>{SEL=+b.dataset.i;stage1()});
+ stepper($('callStep'),ORDER.length,k=>{const shown=ORDER.slice(0,k);const seq=c.seq.filter(s=>shown.includes(s.ph));
+  const left=`<div class="box"><div class="t">Chapter 6 gives one line</div><div class="code"><span class="ln plain">${fmt(c.line)}</span></div></div>`;
+  const right=`<div class="box"><div class="t">Chapter 9 call sequence so far</div>${seq.length?lines(seq):'<div class="code"><span class="ln dim plain">(nothing yet)</span></div>'}</div>`;
+  let info;if(k===0)info=`<div class="card">Start: <code>${esc(c.line)}</code> with ${n} argument${n===1?'':'s'}, so the call frame is ${fr} bytes. Press Next to build the sequence.</div>`;
+  else{const p=PH[ORDER[k-1]];const empty=ORDER[k-1]==='save'&&!c.save.length||ORDER[k-1]==='restore'&&!c.save.length;
+   info=`<div class="card"><b>${p.t}</b><br>${p.does}<br><b>How:</b> ${p.how}${empty?'<br><i>Here the save set is empty, so this phase writes no lines.</i>':''}</div>`}
+  return `<div class="cols">${left}${right}</div>${info}`});
+ const doTry=()=>{const sp=s=>s.split(',').map(x=>x.trim()).filter(Boolean);
+  const call={res:$('t_res').value.trim()||'x',f:$('t_f').value.trim()||'f',args:sp($('t_args').value)};
+  const seq=callSeq(call,sp($('t_save').value),$('t_ret').value.trim()||'L9');
+  $('tryOut').innerHTML='<div class="cols"><div class="box"><div class="t">Chapter 6</div><div class="code"><span class="ln plain">'+fmt(call.res+' := CALL '+call.f+'('+call.args.join(', ')+')')+'</span></div></div><div class="box"><div class="t">Chapter 9</div>'+lines(seq)+'</div></div>'};
+ ['t_res','t_f','t_args','t_save','t_ret'].forEach(id=>$(id).oninput=doTry);doTry()}
+
+/* ---------- tab 2: callee ---------- */
+function stage2(){const fb=T.fns.find(f=>f.hasHeader),h=fb.lines.find(l=>l.startsWith('FUNCTION')),pr=fb.out.filter(o=>o.ph==='pro'),ep=fb.out.filter(o=>o.ph==='epi'),fs=fb.framesize;
+ $('s2').innerHTML=`<h2>Callee side: the header and the return</h2>
+<div class="card"><b>The method, step by step</b>
+<ol class="m"><li><b>Work out <i>framesize</i>.</b> It is the room the function needs for its own saves: 4 × (the largest save set at any call it makes). A function that makes no calls has framesize 0.</li>
+<li><b>Header → prologue.</b> <code>LABEL f</code>, then one line per parameter <code>pᵢ := M[SP+4·i]</code>, then <code>SP := SP − framesize</code>.</li>
+<li><b>Body</b> stays as Chapter 6 made it, except that each of its own calls becomes a call sequence (the caller tab).</li>
+<li><b>RETURN r → epilogue.</b> <code>SP := SP + framesize</code>, then <code>M[SP+4] := r</code>, then <code>GOTO M[SP]</code>.</li></ol></div>
+${legend()}
+<h3>Step 1: framesize for ${esc(fb.name)}</h3>
+<div class="scroll"><table><tr><th>Call inside ${esc(fb.name)}</th><th>save set</th><th>words</th></tr>
+${fb.calls.map(c=>`<tr><td class="mono">${esc(c.line)}</td><td class="mono">${set(c.save)}</td><td>${c.save.length}</td></tr>`).join('')}
+<tr><td colspan="2"><b>framesize</b> = 4 × largest = 4 × ${fs/4}</td><td><b>${fs}</b> bytes</td></tr></table></div>
+<p class="mut">MAIN is not a callee here, so it has no prologue or epilogue. ${OPT.all?'With “save all”, MAIN saves '+set(T.fns[0].calls[0].save)+' at its call.':'With liveness, nothing is live across MAIN’s call, so it saves nothing.'}</p>
+<h3>Steps 2 and 4: header and return, part by part</h3>
+<div class="scroll"><table><tr><th>Chapter 6</th><th>Chapter 9 (coloured)</th><th>Why this line</th></tr>
+<tr><td class="mono">${fmt(h)}</td><td>${lines(pr)}</td><td class="wrapc"><b>LABEL f:</b> entry point, where the caller’s <code>GOTO f</code> lands.<br><b>p₁ := M[SP+4]:</b> the caller left argument 1 in that slot. Copy it into the parameter variable.<br><b>SP := SP − ${fs}:</b> reserve the function’s own frame (room for its saves).</td></tr>
+<tr><td class="mono">RETURN rf</td><td>${lines(ep)}</td><td class="wrapc"><b>SP := SP + ${fs}:</b> release the own frame, so SP points at the return address again.<br><b>M[SP+4] := rf:</b> put the result in the first argument slot. The caller fetches it from there.<br><b>GOTO M[SP]:</b> jump to the return address the caller stored.</td></tr></table></div>
+<div class="card warn"><b>Two slips to avoid.</b> (1) <i>framesize</i> counts only the function’s own saves, never the return address and arguments (those belong to the call frame, 4·(n+1)). (2) The epilogue must give back <code>framesize</code> <i>before</i> it writes the result, otherwise the result lands in the wrong cell.</div>`}
+
+/* ---------- tab 3: stack picture ---------- */
+const ROWS=['earlier frames','fibo’s own frame (framesize 4)','call frame: M[SP+4] (argument, later the result)','call frame: M[SP] (return address)','callee’s own frame (framesize 4)'];
+const STK=[
+ {cells:[['old','… frames of fibo’s caller …'],['empty','free: room for 1 saved word'],['off',''],['off',''],['off','']],sp:1,code:[],note:'fibo is running and SP points at the start of its own frame. It is about to call fibo(n−1).'},
+ {cells:[['old','… frames of fibo’s caller …'],['save','saved p1'],['off',''],['off',''],['off','']],sp:1,code:[{ph:'save',txt:'M[SP] := p1'}],note:'<b>Save.</b> p1 (n) is needed again for n−2, and the callee is fibo too, so it will overwrite p1.'},
+ {cells:[['old','… frames of fibo’s caller …'],['save','saved p1'],['empty','(empty)'],['empty','(empty)'],['off','']],sp:3,code:[{ph:'reserve',txt:'SP := SP - 8'}],note:'<b>Reserve.</b> One word for the argument, one for the return address. SP now points at the return-address cell.'},
+ {cells:[['old','… frames of fibo’s caller …'],['save','saved p1'],['args','argument = v14'],['ret','return address = L6'],['off','']],sp:3,code:[{ph:'args',txt:'M[SP+4] := v14'},{ph:'ret',txt:'M[SP] := L6'}],note:'<b>Fill in.</b> The argument goes at M[SP+4], the return address at M[SP].'},
+ {cells:[['old','… frames of fibo’s caller …'],['save','saved p1'],['args','argument = v14'],['ret','return address = L6'],['pro','callee’s own frame']],sp:4,code:[{ph:'goto',txt:'GOTO f'},{ph:'pro',txt:'LABEL f'},{ph:'pro',txt:'p1 := M[SP+4]'},{ph:'pro',txt:'SP := SP - 4'}],note:'<b>The callee starts.</b> The prologue copies the argument into p1 and reserves the callee’s own frame. The callee now runs its whole body (it may even repeat this picture one level deeper).'},
+ {cells:[['old','… frames of fibo’s caller …'],['save','saved p1'],['fetch','result = rf'],['ret','return address = L6'],['ghost','(freed)']],sp:3,code:[{ph:'epi',txt:'SP := SP + 4'},{ph:'epi',txt:'M[SP+4] := rf'},{ph:'epi',txt:'GOTO M[SP]'}],note:'<b>The callee returns.</b> The epilogue frees its own frame, overwrites the argument cell with the result, and jumps to the return address L6.'},
+ {cells:[['old','… frames of fibo’s caller …'],['save','saved p1 (restored into p1)'],['ghost','(freed)'],['ghost','(freed)'],['off','']],sp:1,code:[{ph:'goto',txt:'LABEL L6'},{ph:'fetch',txt:'v13 := M[SP+4]'},{ph:'free',txt:'SP := SP + 8'},{ph:'restore',txt:'p1 := M[SP]'}],note:'<b>Back in the caller.</b> Read the result first, then free the call frame, then restore p1. SP is back where it started.'}];
+function stage3(){$('s3').innerHTML=`<h2>Stack picture: one call, from save to restore</h2>
+<p>This follows the first recursive call in fibo, <code>v13 := CALL f(v14)</code>, with the liveness rule (save p1). The stack grows <b>downward</b>: the lower the row, the lower the address.</p>${legend()}<div id="stkStep"></div>`;
+ stepper($('stkStep'),STK.length-1,k=>{const s=STK[k];
+  const rows=s.cells.map((c,i)=>`<div class="sp">${i===s.sp?'SP ▶':''}</div><div class="cell ${c[0]}">${c[1]?esc(c[1]):`<span class="mut">${esc(ROWS[i])} (not in use)</span>`}</div>`).join('');
+  return `<div class="cols"><div class="stack">${rows}</div><div><div class="card">${s.note}</div>${s.code.length?'<div class="box"><div class="t">Lines run in this step</div>'+lines(s.code)+'</div>':''}</div></div>`})}
+
+/* ---------- tab 4: whole example ---------- */
+function stage4(){$('s4').innerHTML=`<h2>The whole example: Chapter 6 on the left, Chapter 9 on the right</h2>
+<p class="mut">Coloured lines in the Chapter 9 column are the ones that replaced a placeholder. Uncoloured lines were copied unchanged. ${OPT.all?'<b>“Save all” is on.</b>':''}</p>${legend()}
+${T.fns.map(f=>`<h3>${esc(f.name)}${f.hasHeader?' (caller and callee)':' (caller only)'}${f.framesize?' · framesize '+f.framesize:''}</h3>
+<div class="cols"><div class="box"><div class="t">Chapter 6</div>${lines(f.lines.map(l=>({txt:l,ph:/CALL|^FUNCTION|^RETURN/.test(l)?'goto':'plain'})))}</div>
+<div class="box"><div class="t">Chapter 9</div>${lines(f.out)}</div></div>`).join('')}
+<div class="card warn">Label and temporary numbers are just unique names. Your numbering may differ from mine, as long as no name is used twice. <b>One thing about the source itself:</b> as written in the exercise, the first <code>if</code> has no <code>else</code>, so after setting the result to 0 for n = 0 the code falls through into the second <code>if</code> and recurses on −1. Run literally, it ends for n = 1 but not for n = 0 or n ≥ 2. The translation above follows the source literally, because Chapter 6 → 9 is mechanical. With an <code>else</code> (or a <code>GOTO</code> to the end) after the first branch, the code gives correct Fibonacci numbers, and I checked this on a simulated stack machine for n = 1, 2, 3, 6, 10, in both save modes (SP back to its start value each time).</div>`}
+
+/* ---------- tab 5: crib ---------- */
+function stage5(){$('s5').innerHTML=`<h2>Crib page</h2>
+<h3>Caller: <code>res := CALL f(a₁ … aₙ)</code></h3>
+<table><tr><th>Order</th><th>Line(s)</th><th>Rule</th></tr>
+<tr><td>1 save</td><td class="mono">M[SP] := x₀ · M[SP+4] := x₁ · …</td><td>live after the call, minus <i>res</i></td></tr>
+<tr><td>2 reserve</td><td class="mono">SP := SP − 4(n+1)</td><td>n = number of arguments</td></tr>
+<tr><td>3 arguments</td><td class="mono">M[SP+4] := a₁ · M[SP+8] := a₂ · …</td><td>argument i at 4·i</td></tr>
+<tr><td>4 return address</td><td class="mono">M[SP] := Lret</td><td>fresh label</td></tr>
+<tr><td>5 jump</td><td class="mono">GOTO f · LABEL Lret</td><td>same label</td></tr>
+<tr><td>6 fetch</td><td class="mono">res := M[SP+4]</td><td>read before SP moves</td></tr>
+<tr><td>7 free</td><td class="mono">SP := SP + 4(n+1)</td><td>same size as reserve</td></tr>
+<tr><td>8 restore</td><td class="mono">x₀ := M[SP] · x₁ := M[SP+4] · …</td><td>same offsets as the saves</td></tr></table>
+<h3>Callee: header and return</h3>
+<table><tr><th>Chapter 6</th><th>Chapter 9</th></tr>
+<tr><td class="mono">FUNCTION f(p₁ … pₘ)</td><td class="mono">LABEL f · p₁ := M[SP+4] · … · pₘ := M[SP+4m] · SP := SP − framesize</td></tr>
+<tr><td class="mono">RETURN r</td><td class="mono">SP := SP + framesize · M[SP+4] := r · GOTO M[SP]</td></tr></table>
+<p><b>framesize</b> = 4 × (largest save set at any call inside the function). Zero if it makes no calls.</p>
+<h3>Checklist</h3><ol class="m"><li>Is <i>res</i> left out of the save set?</li><li>Do the restore offsets match the save offsets?</li><li>Is the return label fresh, and the same in <code>M[SP] := …</code> and <code>LABEL …</code>?</li><li>Do reserve and free use the same number?</li><li>Did the epilogue use the same framesize as the prologue?</li><li>Did every other line stay exactly as Chapter 6 made it?</li></ol>`}
+
+function renderAll(keepTab){stage0();stage1();stage2();stage3();stage4();stage5();
+ if(!keepTab){}}
+(function(){const names=['0 · The idea','1 · Caller side','2 · Callee side','3 · Stack picture','4 · Whole example','5 · Crib page'];
+ $('nav').innerHTML=names.map((n,i)=>`<button data-i="${i}">${n}</button>`).join('');
+ const show=i=>{for(let k=0;k<6;k++)$('s'+k).classList.toggle('on',k===i);$('nav').querySelectorAll('button').forEach((b,k)=>b.classList.toggle('on',k===i));window.scrollTo(0,0);try{localStorage.setItem('c69tab',i)}catch(e){}};
+ $('nav').querySelectorAll('button').forEach(b=>b.onclick=()=>show(+b.dataset.i));
+ renderAll();let s=0;try{s=+localStorage.getItem('c69tab')||0}catch(e){}show(s)})();
+</script></body></html>
