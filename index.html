@@ -26,9 +26,9 @@ a.page:focus-visible{outline:3px solid var(--link);outline-offset:3px}
 .page h2{margin:0 0 4px;font-size:21px;line-height:1.3}
 .page p{margin:0;color:var(--muted)}
 .page .open{display:inline-block;margin-top:12px;color:var(--link);font-weight:700}
-.homework{margin-top:38px;padding-top:28px;border-top:1px solid var(--rule)}
+.chapter-groups{display:grid;gap:26px}.chapter-group{padding-top:22px;border-top:1px solid var(--rule)}.chapter-group h2{margin:0 0 10px;font-size:22px;line-height:1.3}.chapter-group .pages{gap:12px}.homework{margin-top:36px;padding-top:26px;border-top:2px solid var(--rule)}
 .homework h2{margin:0 0 4px;font-size:22px;line-height:1.3}
-.homework p{margin:0 0 16px;color:var(--muted)}
+.homework>p{margin:0 0 16px;color:var(--muted)}
 @media(max-width:600px){main{padding:40px 0}.intro{margin-bottom:24px}a.page{padding:17px}}
 @media(prefers-reduced-motion:reduce){a.page{transition:none}a.page:hover{transform:none}}
 </style>
@@ -37,50 +37,75 @@ a.page:focus-visible{outline:3px solid var(--link);outline-offset:3px}
 <main>
   <p class="eyebrow">COS341 · EXAM REVISION</p>
   <h1>Walkthroughs</h1>
-  <p class="intro">Choose an interactive walkthrough for compiler construction topics, from type checking through register allocation and procedure calls.</p>
-  <nav class="pages" aria-label="Chapter guides and walkthroughs">
-    <a class="page" href="ch5_type_checking.html">
-      <h2>Chapter 5 type checking</h2>
-      <p>Work through type checking with attributed trees, semantic rules, and inference examples.</p>
-      <span class="open">Open Chapter 5 →</span>
-    </a>
-    <a class="page" href="ch6_trees.html">
-      <h2>Chapter 6 translation trees</h2>
-      <p>Explore the syntax trees for each construct and see how the translation rules produce intermediate code.</p>
-      <span class="open">Open translation trees →</span>
-    </a>
-    <a class="page" href="ch6_to_ch9_translation.html">
-      <h2>Chapter 6 → 9 translation walkthrough</h2>
-      <p>Follow how the Chapter 6 call sequence becomes Chapter 9 stack instructions, step by step.</p>
-      <span class="open">Open translation walkthrough →</span>
-    </a>
-    <a class="page" href="ch6_9_walkthrough.html">
-      <h2>Chapters 6 &amp; 9 walkthrough</h2>
-      <p>Work the Semester Test 2 problem with the tree method and textbook translation tables side by side.</p>
-      <span class="open">Open Chapters 6 &amp; 9 →</span>
-    </a>
-    <a class="page" href="ch9_guide.html">
-      <h2>Chapter 9 guide</h2>
-      <p>Compare call sequences and inlining, and follow how procedure calls use the stack.</p>
-      <span class="open">Open Chapter 9 →</span>
-    </a>
-    <a class="page" href="ch8_walkthrough.html">
-      <h2>Chapter 8 walkthrough</h2>
-      <p>Work through the concepts and algorithms using tutorial and textbook examples.</p>
-      <span class="open">Open Chapter 8 →</span>
-    </a>
-  </nav>
-  <section class="homework" aria-labelledby="homework-title">
-    <h2 id="homework-title">Homework walkthroughs</h2>
-    <p>Apply the chapter methods to specific homework problems.</p>
-    <nav class="pages" aria-label="Homework walkthroughs">
-      <a class="page" href="h6_walkthrough.html">
-        <h2>Homework 6</h2>
-        <p>Apply the Chapter 8 methods to the homework code and inspect its register allocation.</p>
-        <span class="open">Open Homework 6 →</span>
+  <p class="intro">Browse the guides by chapter. Homework examples are grouped separately below.</p>
+  <div class="chapter-groups">
+  <section class="chapter-group" aria-labelledby="chapter-5-title">
+    <h2 id="chapter-5-title">Chapter 5</h2>
+    <nav class="pages" aria-label="Chapter 5 guides">
+      <a class="page" href="ch5_type_checking.html">
+        <h2>Type checking</h2>
+        <p>Work through attributed trees, semantic rules, and type inference examples.</p>
+        <span class="open">Open guide →</span>
       </a>
     </nav>
   </section>
+  <section class="chapter-group" aria-labelledby="chapter-6-title">
+    <h2 id="chapter-6-title">Chapter 6</h2>
+    <nav class="pages" aria-label="Chapter 6 guides">
+      <a class="page" href="ch6_trees.html">
+        <h2>Translation trees</h2>
+        <p>Explore syntax trees for each construct and see how translation rules produce intermediate code.</p>
+        <span class="open">Open guide →</span>
+      </a>
+    </nav>
+  </section>
+  <section class="chapter-group" aria-labelledby="chapter-6-9-title">
+    <h2 id="chapter-6-9-title">Chapters 6 &amp; 9</h2>
+    <nav class="pages" aria-label="Chapters 6 and 9 guides">
+      <a class="page" href="ch6_to_ch9_translation.html">
+        <h2>Translation walkthrough</h2>
+        <p>Follow how the Chapter 6 call sequence becomes Chapter 9 stack instructions, step by step.</p>
+        <span class="open">Open guide →</span>
+      </a>
+      <a class="page" href="ch6_9_walkthrough.html">
+        <h2>Semester Test 2 walkthrough</h2>
+        <p>Work through the exam problem using the tree method and textbook translation tables side by side.</p>
+        <span class="open">Open guide →</span>
+      </a>
+    </nav>
+  </section>
+  <section class="chapter-group" aria-labelledby="chapter-8-title">
+    <h2 id="chapter-8-title">Chapter 8</h2>
+    <nav class="pages" aria-label="Chapter 8 guides">
+      <a class="page" href="ch8_walkthrough.html">
+        <h2>Liveness and register allocation</h2>
+        <p>Work through liveness, interference, colouring, and spilling with tutorial and textbook examples.</p>
+        <span class="open">Open guide →</span>
+      </a>
+    </nav>
+  </section>
+  <section class="chapter-group" aria-labelledby="chapter-9-title">
+    <h2 id="chapter-9-title">Chapter 9</h2>
+    <nav class="pages" aria-label="Chapter 9 guides">
+      <a class="page" href="ch9_guide.html">
+        <h2>Call sequences and inlining</h2>
+        <p>Compare the methods and follow how procedure calls use the stack.</p>
+        <span class="open">Open guide →</span>
+      </a>
+    </nav>
+  </section>
+</div>
+<section class="homework" aria-labelledby="homework-title">
+  <h2 id="homework-title">Homework walkthroughs</h2>
+  <p>Apply chapter methods to specific homework problems.</p>
+  <nav class="pages" aria-label="Homework walkthroughs">
+    <a class="page" href="h6_walkthrough.html">
+      <h2>Homework 6 · liveness to spilling</h2>
+      <p>Apply the Chapter 8 methods to the homework code and inspect its register allocation.</p>
+      <span class="open">Open homework guide →</span>
+    </a>
+  </nav>
+</section>
 </main>
 </body>
 </html>
