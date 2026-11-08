@@ -101,6 +101,25 @@ $$('.pdfnav button')[aria-selected=true]{background:var(--ink);color:var(--bg);b
 .source-viewer a{color:var(--acc)}
 .pdf-frame{display:block;width:100%;height:min(78vh,980px);min-height:440px;border:1px solid var(--line);background:var(--bg)}
 @media(max-width:700px){.top{padding:14px 16px 0}main{padding:20px 16px 48px}.pdf-frame{height:70vh;min-height:380px}}
+
+.parse-trees{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.parse-figure{min-width:0;margin:0}
+.parse-figure h5{margin:10px 0 6px;font-size:.95rem;color:var(--ink)}
+.parse-key{font-size:.82rem;color:var(--mute);margin:4px 0 8px}
+.parse-key .key-node,.parse-key .key-terminal,.parse-key .key-binding{display:inline-block;padding:1px 7px;margin-right:5px;border:1px solid var(--line);border-radius:4px}
+.parse-key .key-node{background:var(--card)}.parse-key .key-terminal{background:var(--ok-bg);border-color:var(--ok)}.parse-key .key-binding{background:var(--flag-bg);border-color:var(--flag-line)}
+.parse-svg{display:block;width:100%;height:auto;background:var(--card);border:1px solid var(--line);border-radius:8px}
+.parse-svg .edge{fill:none;stroke:var(--mute);stroke-width:1.5;stroke-opacity:.75}
+.parse-svg .edge.binding{stroke:var(--flag-line);stroke-width:2.7;stroke-opacity:1}
+.parse-svg .node-box{fill:var(--card);stroke:var(--acc);stroke-width:1.4}
+.parse-svg .node-text{font:600 12px Arial,"Segoe UI",sans-serif;fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+.parse-svg .terminal-box{fill:var(--ok-bg);stroke:var(--ok);stroke-width:1.3}
+.parse-svg .terminal-text{font:600 12px ui-monospace,Consolas,monospace;fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+.parse-svg .empty-box{fill:var(--code-bg);stroke:var(--line);stroke-dasharray:3 2}
+.parse-svg .binding .node-box,.parse-svg .binding .terminal-box{fill:var(--flag-bg);stroke:var(--flag-line);stroke-width:2.6}
+.parse-svg .binding .node-text,.parse-svg .binding .terminal-text{font-weight:700}
+.parse-svg .empty{opacity:.68}
+@media(max-width:760px){.parse-trees{grid-template-columns:1fr}}
 </style></head><body>
 <header class="top"><div class="top-inner"><div class="title-row"><h1>COS341 Compiler Construction · exam answers</h1><a class="index-link" href="index.html">← Index</a><button class="themebtn" id="themeToggle" type="button">Light / dark</button></div>
 <p class="sub">Past exam questions and worked answers for 2023, 2024 and 2025. Pick a year, then a question.</p>
@@ -610,22 +629,7 @@ LABEL L2</pre><p class="small">Run in an interpreter with s = 0 before: the loop
 </g>
 </g>
 </svg>
-<div class="legend"><span><i style="background:#f4a3a3"></i>RED: a, b, c, d, v, w</span><span><i style="background:#9cc4f0"></i>BLUE: r</span><span><i style="background:#a6dba0"></i>GREEN: u, z</span><span><i style="background:#f2dc82"></i>YELLOW: x, y</span></div></div><p>4 colours are needed and enough. r, u, v, x form a clique (each pair interferes), so 3 colours cannot work. Colours are written as words so a single pen is enough.</p><details><summary>The rough work: liveness table (not marked)</summary><div class="tw"><table class=""><thead><tr><th>Line i</th><th>succ[i]</th><th>gen[i]</th><th>kill[i]</th><th>out[i]</th><th>in[i]</th></tr></thead><tbody><tr><td>1</td><td>{2}</td><td>∅</td><td>{r}</td><td>{a, b, c, d, r, x, y}</td><td>{a, b, c, d, x, y}</td></tr><tr><td>2</td><td>{3}</td><td>{a, c}</td><td>{u}</td><td>{b, d, r, u, x, y}</td><td>{a, b, c, d, r, x, y}</td></tr><tr><td>3</td><td>{4}</td><td>{b, d}</td><td>{v}</td><td>{r, u, v, x, y}</td><td>{b, d, r, u, x, y}</td></tr><tr><td>4</td><td>{5}</td><td>{u, v}</td><td>{w}</td><td>{r, w, x, y}</td><td>{r, u, v, x, y}</td></tr><tr><td>5</td><td>{6}</td><td>{x, y}</td><td>{z}</td><td>{r, w, z}</td><td>{r, w, x, y}</td></tr><tr><td>6</td><td>{7, 8}</td><td>{w, z}</td><td>∅</td><td>{r}</td><td>{r, w, z}</td></tr><tr><td>7</td><td>{8}</td><td>∅</td><td>{r}</td><td>{r}</td><td>∅</td></tr><tr><td>8</td><td>{9}</td><td>∅</td><td>∅</td><td>{r}</td><td>{r}</td></tr><tr><td>9</td><td>∅</td><td>{r}</td><td>∅</td><td>∅</td><td>{r}</td></tr></tbody></table></div><p class="small">Line 6 jumps to line 8 (<code>LABEL e</code>) or falls through to line 7. a, b, c, d, x, y are program inputs: they are never assigned, so under Definition 8.2 they only interfere with variables assigned while they are live.</p></details><details open><summary>Edges (Definition 8.2: assigned variable vs out[i])</summary><div class="tw"><table class=""><thead><tr><th>Line</th><th>Assigns</th><th>out[i]</th><th>New edges</th></tr></thead><tbody><tr><td>1</td><td>r</td><td>{a,b,c,d,r,x,y}</td><td>r–a, r–b, r–c, r–d, r–x, r–y</td></tr><tr><td>2</td><td>u</td><td>{b,d,r,u,x,y}</td><td>u–b, u–d, u–r, u–x, u–y</td></tr><tr><td>3</td><td>v</td><td>{r,u,v,x,y}</td><td>v–r, v–u, v–x, v–y</td></tr><tr><td>4</td><td>w</td><td>{r,w,x,y}</td><td>w–r, w–x, w–y</td></tr><tr><td>5</td><td>z</td><td>{r,w,z}</td><td>z–r, z–w</td></tr><tr><td>7</td><td>r</td><td>{r}</td><td>none</td></tr></tbody></table></div></details><div class="note flag"><b>Flag:</b> I follow the textbook definition exactly (edges only from assignments). Then the six inputs do not interfere with each other. If your lecturer also wants inputs that are live together at program start to interfere (a "physical" reading), the graph gets a clique on a, b, c, d, x, y and needs more colours. The textbook definition is what the course examines, and what the 2025 marked solution matches.</div></div></section></div><div class="pane" id="p25" hidden><p class="intro">Final exam 10 November 2025 · 55 points · A (12) · B (12) · C (13) · D (13) · E (5). In the paper the tasks are printed in the order A, C, D, E, B.</p><div class="qnav" data-year="25"><button data-q="y25-A1">A.1</button><button data-q="y25-A2">A.2</button><button data-q="y25-B">B</button><button data-q="y25-C">C</button><button data-q="y25-D1">D.1</button><button data-q="y25-D2">D.2</button><button data-q="y25-E">E</button></div><section class="q" id="y25-A1" hidden><header><h3>Task A.1 · ambiguity proof</h3><div class="meta"><span class="pts">3 points</span><span class="chip ok">checked against marked script</span></div></header><div class="ask">Give one string from L(G) with two structurally different syntax trees, root ALGO.</div><div class="ans"><p><b>String:</b> <code>i t i f c e c</code>  (an “if t, if f, c, else c”: the classic dangling else.)</p><div class="two"><div><h5>Tree 1: else belongs to the inner if</h5><pre class="code">ALGO
-└ COMMAND
-  └ IF ELSE
-    ├ IF: i  BOOL(t)  ALGO
-    │        └ COMMAND
-    │          └ IF  ELSE
-    │            ├ i  BOOL(f)  ALGO(COMMAND(c))
-    │            └ e  ALGO(COMMAND(c))
-    └ ELSE → ε</pre></div><div><h5>Tree 2: else belongs to the outer if</h5><pre class="code">ALGO
-└ COMMAND
-  └ IF ELSE
-    ├ IF: i  BOOL(t)  ALGO
-    │        └ COMMAND
-    │          └ IF  ELSE(ε)
-    │            └ i  BOOL(f)  ALGO(COMMAND(c))
-    └ ELSE: e  ALGO(COMMAND(c))</pre></div></div><p>Same string, two different trees, so G is ambiguous. (This is the string the lecturer marked as a "good string", 3/3.)</p><p class="small">A shorter proof also works: <code>i t c c</code>. The IF's ALGO can be <code>c c</code> (ELSE = ε), or just <code>c</code> with the second <code>c</code> being the next COMMAND of the outer ALGO. That is a second source of ambiguity: the sequence rule ALGO → COMMAND ALGO.</p></div></section><section class="q" id="y25-A2" hidden><header><h3>Task A.2 · SLR parsing table</h3><div class="meta"><span class="pts">9 points</span><span class="chip ver">verified in code</span></div></header><div class="ask">Present the grammar's SLR parsing table and boldly highlight all conflicts.</div><div class="ans"><h4>Numbered grammar (rule 0 added)</h4><pre class="code">0.  S&#x27; → ALGO $
+<div class="legend"><span><i style="background:#f4a3a3"></i>RED: a, b, c, d, v, w</span><span><i style="background:#9cc4f0"></i>BLUE: r</span><span><i style="background:#a6dba0"></i>GREEN: u, z</span><span><i style="background:#f2dc82"></i>YELLOW: x, y</span></div></div><p>4 colours are needed and enough. r, u, v, x form a clique (each pair interferes), so 3 colours cannot work. Colours are written as words so a single pen is enough.</p><details><summary>The rough work: liveness table (not marked)</summary><div class="tw"><table class=""><thead><tr><th>Line i</th><th>succ[i]</th><th>gen[i]</th><th>kill[i]</th><th>out[i]</th><th>in[i]</th></tr></thead><tbody><tr><td>1</td><td>{2}</td><td>∅</td><td>{r}</td><td>{a, b, c, d, r, x, y}</td><td>{a, b, c, d, x, y}</td></tr><tr><td>2</td><td>{3}</td><td>{a, c}</td><td>{u}</td><td>{b, d, r, u, x, y}</td><td>{a, b, c, d, r, x, y}</td></tr><tr><td>3</td><td>{4}</td><td>{b, d}</td><td>{v}</td><td>{r, u, v, x, y}</td><td>{b, d, r, u, x, y}</td></tr><tr><td>4</td><td>{5}</td><td>{u, v}</td><td>{w}</td><td>{r, w, x, y}</td><td>{r, u, v, x, y}</td></tr><tr><td>5</td><td>{6}</td><td>{x, y}</td><td>{z}</td><td>{r, w, z}</td><td>{r, w, x, y}</td></tr><tr><td>6</td><td>{7, 8}</td><td>{w, z}</td><td>∅</td><td>{r}</td><td>{r, w, z}</td></tr><tr><td>7</td><td>{8}</td><td>∅</td><td>{r}</td><td>{r}</td><td>∅</td></tr><tr><td>8</td><td>{9}</td><td>∅</td><td>∅</td><td>{r}</td><td>{r}</td></tr><tr><td>9</td><td>∅</td><td>{r}</td><td>∅</td><td>∅</td><td>{r}</td></tr></tbody></table></div><p class="small">Line 6 jumps to line 8 (<code>LABEL e</code>) or falls through to line 7. a, b, c, d, x, y are program inputs: they are never assigned, so under Definition 8.2 they only interfere with variables assigned while they are live.</p></details><details open><summary>Edges (Definition 8.2: assigned variable vs out[i])</summary><div class="tw"><table class=""><thead><tr><th>Line</th><th>Assigns</th><th>out[i]</th><th>New edges</th></tr></thead><tbody><tr><td>1</td><td>r</td><td>{a,b,c,d,r,x,y}</td><td>r–a, r–b, r–c, r–d, r–x, r–y</td></tr><tr><td>2</td><td>u</td><td>{b,d,r,u,x,y}</td><td>u–b, u–d, u–r, u–x, u–y</td></tr><tr><td>3</td><td>v</td><td>{r,u,v,x,y}</td><td>v–r, v–u, v–x, v–y</td></tr><tr><td>4</td><td>w</td><td>{r,w,x,y}</td><td>w–r, w–x, w–y</td></tr><tr><td>5</td><td>z</td><td>{r,w,z}</td><td>z–r, z–w</td></tr><tr><td>7</td><td>r</td><td>{r}</td><td>none</td></tr></tbody></table></div></details><div class="note flag"><b>Flag:</b> I follow the textbook definition exactly (edges only from assignments). Then the six inputs do not interfere with each other. If your lecturer also wants inputs that are live together at program start to interfere (a "physical" reading), the graph gets a clique on a, b, c, d, x, y and needs more colours. The textbook definition is what the course examines, and what the 2025 marked solution matches.</div></div></section></div><div class="pane" id="p25" hidden><p class="intro">Final exam 10 November 2025 · 55 points · A (12) · B (12) · C (13) · D (13) · E (5). In the paper the tasks are printed in the order A, C, D, E, B.</p><div class="qnav" data-year="25"><button data-q="y25-A1">A.1</button><button data-q="y25-A2">A.2</button><button data-q="y25-B">B</button><button data-q="y25-C">C</button><button data-q="y25-D1">D.1</button><button data-q="y25-D2">D.2</button><button data-q="y25-E">E</button></div><section class="q" id="y25-A1" hidden><header><h3>Task A.1 · ambiguity proof</h3><div class="meta"><span class="pts">3 points</span><span class="chip ok">checked against marked script</span></div></header><div class="ask">Give one string from L(G) with two structurally different syntax trees, root ALGO.</div><div class="ans"><p><b>String:</b> <code>i t i f c e c</code>  (an “if t, if f, c, else c”: the classic dangling else.)</p><p class="parse-key"><span class="key-node">grammar node</span><span class="key-terminal">terminal leaf</span><span class="key-binding">amber = ELSE owns the printed e</span></p><div class="parse-trees"><figure class="parse-figure"><h5>Tree 1: else belongs to the inner if</h5><div id="y25A1Tree1"></div></figure><figure class="parse-figure"><h5>Tree 2: else belongs to the outer if</h5><div id="y25A1Tree2"></div></figure></div><p>Same string, two different trees, so G is ambiguous. (This is the string the lecturer marked as a "good string", 3/3.)</p><p class="small">A shorter proof also works: <code>i t c c</code>. The IF's ALGO can be <code>c c</code> (ELSE = ε), or just <code>c</code> with the second <code>c</code> being the next COMMAND of the outer ALGO. That is a second source of ambiguity: the sequence rule ALGO → COMMAND ALGO.</p></div></section><section class="q" id="y25-A2" hidden><header><h3>Task A.2 · SLR parsing table</h3><div class="meta"><span class="pts">9 points</span><span class="chip ver">verified in code</span></div></header><div class="ask">Present the grammar's SLR parsing table and boldly highlight all conflicts.</div><div class="ans"><h4>Numbered grammar (rule 0 added)</h4><pre class="code">0.  S&#x27; → ALGO $
 1.  ALGO → COMMAND
 2.  ALGO → COMMAND ALGO
 3.  COMMAND → c
@@ -844,6 +848,33 @@ function drawTree(){
   $('#treeLegend').innerHTML=['numeric','boolean','string','correct','wrong'].map(function(k){return '<span><i style="background:'+C[k][0]+'"></i>'+k+'</span>'}).join('');
 }
 function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function renderAmbiguityTree(hostId,outerElseBinds){
+ const leaf=(label,empty=false)=>({label,terminal:true,empty,children:[]});
+ const node=(label,children=[],binding=false,empty=false)=>({label,children,binding,empty});
+ const commandBody=()=>node('ALGO',[node('COMMAND',[leaf('c')])]);
+ const innerIf=node('IF',[leaf('i'),node('BOOL',[leaf('f')]),commandBody()]);
+ const innerElse=outerElseBinds?node('ELSE',[leaf('ε',true)],false,true):node('ELSE',[leaf('e'),commandBody()],true);
+ const innerCommand=node('COMMAND',[innerIf,innerElse]);
+ const outerIf=node('IF',[leaf('i'),node('BOOL',[leaf('t')]),node('ALGO',[innerCommand])]);
+ const outerElse=outerElseBinds?node('ELSE',[leaf('e'),commandBody()],true):node('ELSE',[leaf('ε',true)],false,true);
+ const root=node('ALGO',[node('COMMAND',[outerIf,outerElse])]);
+ const leaves=[];
+ function place(n,depth){n.depth=depth;if(!n.children.length){n.x=40+leaves.length*70;leaves.push(n.x)}else{n.children.forEach(c=>place(c,depth+1));n.x=(n.children[0].x+n.children[n.children.length-1].x)/2}}
+ place(root,0);
+ const all=[];let maxDepth=0;function collect(n){all.push(n);maxDepth=Math.max(maxDepth,n.depth);n.children.forEach(collect)}collect(root);
+ const width=leaves.length*70+10,height=28+maxDepth*46+42,nodeH=28;
+ let edges='',nodes='';
+ function size(n){if(n.terminal)return n.label==='ε'?42:38;if(n.label==='COMMAND')return 82;if(n.label==='BOOL')return 64;if(n.label==='ELSE')return 64;return 58}
+ function draw(n){n.children.forEach(c=>{const y1=18+n.depth*46+nodeH,y2=18+c.depth*46,bend=(y1+y2)/2;edges+='<path class="edge'+(c.binding?' binding':'')+'" d="M'+n.x+' '+y1+' C'+n.x+' '+bend+', '+c.x+' '+bend+', '+c.x+' '+y2+'"/>';draw(c)});
+  const w=size(n),y=18+n.depth*46,x=n.x-w/2,classes=[n.terminal?'terminal':'node',n.binding?'binding':'',n.empty?'empty':''].filter(Boolean).join(' '),box=n.terminal?(n.empty?'terminal-box empty-box':'terminal-box'):'node-box',txt=n.terminal?'terminal-text':'node-text';
+  nodes+='<g class="'+classes+'"><title>'+n.label+(n.binding?' — this is where else attaches':'')+'</title><rect class="'+box+'" x="'+x+'" y="'+y+'" width="'+w+'" height="'+nodeH+'" rx="6"/><text class="'+txt+'" x="'+n.x+'" y="'+(y+nodeH/2+0.5)+'">'+n.label+'</text></g>'}
+ draw(root);
+ const description=outerElseBinds?'The outer ELSE expands to e and a command; the inner ELSE expands to epsilon.':'The inner ELSE expands to e and a command; the outer ELSE expands to epsilon.';
+ document.getElementById(hostId).innerHTML='<svg class="parse-svg" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="'+description+'"><title>'+description+'</title><desc>Connected grammar nodes descend to terminal leaves. Amber highlights the ELSE production that consumes the printed e.</desc>'+edges+nodes+'</svg>';
+}
+renderAmbiguityTree('y25A1Tree1',false);renderAmbiguityTree('y25A1Tree2',true);
+
 var h=(location.hash||'').slice(1),y=/^y(\d\d)-/.exec(h);
 show(h==='sources'?'src':(y?y[1]:'25'),y?h:null);
 })();
