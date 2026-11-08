@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>COS341 Chapter 6: translation trees</title>
+<style>
+:root{--bg:#f5f7fa;--fg:#18212f;--mut:#526071;--card:#fff;--bd:#d4dbe4;--acc:#1756a9;--code:#edf1f5;--warn:#fff0bf;--warnbd:#8a4b00;--hl:#fff3c4;
+--k-stat-f:#eef0f3;--k-stat-s:#394555;--k-cond-f:#ece3f6;--k-cond-s:#6b3fa0;--k-exp-f:#dbe9fb;--k-exp-s:#1756a9;--k-leaf-f:#d9f0df;--k-leaf-s:#28713d;--k-exps-f:#fff0bf;--k-exps-s:#8a5a00;--k-id-f:#f1f1f1;--k-id-s:#777;--k-ph-s:#7b8794;
+--pill:#28713d;--pillhl:#1b5a2e;--badge:#1756a9;--edge:#394555}
+@media(prefers-color-scheme:dark){:root{--bg:#151b24;--fg:#edf2f8;--mut:#aab6c5;--card:#1e2632;--bd:#3a4655;--acc:#a7c9ff;--code:#283341;--warn:#493b1d;--warnbd:#e5a55c;--hl:#4a4320;
+--k-stat-f:#2a3340;--k-stat-s:#aab6c5;--k-cond-f:#36294a;--k-cond-s:#c4a5ee;--k-exp-f:#1f3550;--k-exp-s:#8db9f2;--k-leaf-f:#1f4130;--k-leaf-s:#7bd09a;--k-exps-f:#4a3d1c;--k-exps-s:#e5b45c;--k-id-f:#2b3138;--k-id-s:#8b96a3;--k-ph-s:#8b96a3;
+--pill:#2f8a4c;--pillhl:#46ad69;--badge:#3b78d0;--edge:#aab6c5}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.6 Arial,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:22px 16px 64px}
+h1{font-size:25px;line-height:1.25;margin:0 0 6px}h2{font-size:22px;margin:.2em 0 .4em}h3{font-size:18px;margin:1.5em 0 .4em}
+p,li{max-width:80ch}.mut{color:var(--mut)}
+nav{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 18px;padding:8px 0;position:sticky;top:0;background:var(--bg);z-index:5;border-bottom:1px solid var(--bd)}
+button{font:inherit;font-size:.9rem;border:1px solid var(--bd);background:var(--card);color:var(--fg);padding:6px 11px;cursor:pointer;border-radius:0}
+button.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+section.stage{display:none}section.stage.on{display:block}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:14px 18px;margin:12px 0}
+.card.warn{background:var(--warn);border-color:var(--warnbd)}
+code,pre,.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+code{background:var(--code);padding:1px 5px;border-radius:2px;font-size:.9em}
+pre.src{background:var(--code);padding:12px 16px;margin:8px 0;overflow-x:auto;font-size:.95rem;line-height:1.5;border-left:5px solid var(--acc)}
+.formula{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--code);padding:8px 12px;margin:8px 0;font-size:.9rem;overflow-x:auto;white-space:pre}
+table{border-collapse:collapse;margin:8px 0;font-size:15px;max-width:100%}
+th,td{border:1px solid var(--bd);padding:6px 10px;text-align:left;vertical-align:top}th{background:var(--card)}
+.scroll{overflow-x:auto}
+.scr{overflow-x:auto;border:1px solid var(--bd);background:var(--card);border-radius:6px;margin:8px 0}
+.scr svg{display:block}
+figure{margin:10px 0}figcaption{font-size:.92rem;color:var(--mut);margin:0 0 2px}
+svg text{font-family:Arial,Helvetica,sans-serif;fill:var(--fg)}
+svg .card{fill:var(--card);stroke-width:2}
+.nk-stat .card{fill:var(--k-stat-f);stroke:var(--k-stat-s)}.nk-cond .card{fill:var(--k-cond-f);stroke:var(--k-cond-s)}
+.nk-exp .card{fill:var(--k-exp-f);stroke:var(--k-exp-s)}.nk-leaf .card{fill:var(--k-leaf-f);stroke:var(--k-leaf-s)}
+.nk-exps .card{fill:var(--k-exps-f);stroke:var(--k-exps-s)}.nk-id .card{fill:var(--k-id-f);stroke:var(--k-id-s)}
+.nk-ph .card{fill:transparent;stroke:var(--k-ph-s);stroke-dasharray:7 5}
+svg .t1{font-size:16px;font-weight:700}svg .t2{font-size:15px}
+.pill rect{fill:var(--pill)}svg .pill text{fill:#fff;font-size:14px;font-weight:700}
+.badge rect{fill:var(--badge)}svg .badge text{fill:#fff;font-size:14px;font-weight:700}
+.edge{stroke:var(--edge);stroke-width:2}.edge.dash{stroke-dasharray:7 6}
+svg .note{font-size:14px;fill:var(--mut)}
+.nd{cursor:pointer}.nd.hl .card,.nd.sel .card{stroke-width:4.5}.nd.hl .pill rect,.nd.sel .pill rect{fill:var(--pillhl)}
+.codeblk{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92rem;border:1px solid var(--bd);background:var(--card);border-radius:6px;padding:6px 0;max-width:640px}
+.cl{display:grid;grid-template-columns:3em 1fr auto;gap:12px;padding:2px 12px;align-items:center;cursor:pointer}
+.cl .no{background:var(--pill);color:#fff;border-radius:11px;text-align:center;font-weight:700;font-size:.82rem;padding:1px 0}
+.cl .tg{color:var(--mut);font-size:.8rem;font-family:Arial,sans-serif}
+.cl.hl,.cl.sel{background:var(--hl)}
+.key{display:flex;flex-wrap:wrap;gap:6px 14px;margin:6px 0 2px;font-size:.88rem;align-items:center}
+.sw{display:inline-block;width:20px;height:14px;border:2px solid;border-radius:3px;vertical-align:-2px;margin-right:5px}
+.dotb{display:inline-block;min-width:22px;height:22px;line-height:22px;border-radius:11px;background:var(--badge);color:#fff;text-align:center;font-size:.8rem;font-weight:700;padding:0 5px;margin-right:4px}
+.dotg{display:inline-block;min-width:44px;height:22px;line-height:22px;border-radius:11px;background:var(--pill);color:#fff;text-align:center;font-size:.8rem;font-weight:700;padding:0 8px;margin-right:4px}
+.tog{display:inline-flex;gap:8px;align-items:center;font-size:.92rem;margin:4px 0}
+.ctx{font-size:.92rem;color:var(--mut);margin:4px 0}
+ol.m li,ul.m li{margin:.3em 0}
+@media(max-width:700px){.wrap{padding:16px 14px 48px}nav{position:static}}
+
+header{border-bottom:1px solid var(--bd);padding:16px 24px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:baseline;background:var(--card)}
+header h1{font-size:21px;line-height:1.25;margin:0;font-weight:700}
+header .sub{color:var(--mut);font-size:14px}
+header .spacer{flex:1}
+header .index-link{color:var(--mut);text-decoration:none;border:1px solid var(--bd);padding:2px 8px;font-size:14px;white-space:nowrap}
+header .index-link:hover{color:var(--fg);background:var(--bg)}
+@media(max-width:700px){header{padding:14px 16px;gap:8px 14px}}</style></head><body><header><h1>Chapter 6 translation trees</h1><span class="sub">See each construct, its syntax tree and the code the translation rules generate</span><span class="spacer"></span><a class="index-link" href="index.html">← Index</a></header><div class="wrap">
+
+<p class="mut">One tab per construct: example, generic tree, specific tree and the intermediate code it produces. Every code listing and every tree on this page is generated by a translator that applies the textbook rules (Figs 6.3, 6.5, 6.6, 6.8) literally.</p>
+<nav id="nav"></nav><div id="stages"></div></div>
+<script>
+/* ===== ENGINE: textbook Ch 6 (Figs 6.3, 6.5, 6.6, 6.8), literal, with a trace of every call ===== */
+const Num=v=>({t:'num',v}),Id=n=>({t:'id',n}),Bin=(op,a,b)=>({t:'bin',op,a,b}),Un=(op,a)=>({t:'un',op,a}),Call=(f,...args)=>({t:'call',f,args});
+const Rel=(op,a,b)=>({t:'rel',op,a,b}),And=(a,b)=>({t:'and',a,b}),Or=(a,b)=>({t:'or',a,b}),Not=a=>({t:'not',a}),TRUE={t:'true'},FALSE={t:'false'};
+const Asg=(n,e)=>({t:'asg',n,e}),Seq=(a,b)=>({t:'seq',a,b}),If=(c,s)=>({t:'if',c,s}),IfE=(c,s1,s2)=>({t:'ife',c,s1,s2}),While=(c,s)=>({t:'while',c,s}),Rep=(s,c)=>({t:'rep',s,c});
+const seqOf=(...ss)=>ss.reduceRight((acc,s)=>acc?Seq(s,acc):s,null);
+const fmt=s=>String(s).replace(/ - /g,' − ');
+/* ---- source printer (display only) ---- */
+function showE(e,top=true){switch(e.t){case 'num':return String(e.v);case 'id':return e.n;case 'un':return e.op+showE(e.a,false);
+ case 'bin':{const s=showE(e.a,false)+' '+e.op+' '+showE(e.b,false);return top?s:'('+s+')'}
+ case 'call':return e.f+'('+e.args.map(a=>showE(a,true)).join(', ')+')'}}
+function showC(c,top=true){switch(c.t){case 'true':return 'true';case 'false':return 'false';
+ case 'rel':{const s=showE(c.a,true)+' '+c.op+' '+showE(c.b,true);return top?s:'('+s+')'}
+ case 'not':return '!'+showC(c.a,false);
+ case 'and':case 'or':{const s=showC(c.a,false)+(c.t==='and'?' && ':' || ')+showC(c.b,false);return top?s:'('+s+')'}}}
+const flat=s=>s.t==='seq'?[...flat(s.a),...flat(s.b)]:[s];
+function printS(s,ind=''){const it=flat(s),out=[];it.forEach((x,i)=>{const L=printOne(x,ind);if(i<it.length-1)L[L.length-1]+=';';out.push(...L)});return out}
+function sub(b,ind){return b.t==='seq'?{br:true,l:printS(b,ind+'   ')}:{br:false,l:printOne(b,ind+'   ')}}
+function printOne(s,ind){switch(s.t){
+ case 'asg':return [ind+s.n+' := '+showE(s.e,true)];
+ case 'if':{if(s.s.t==='asg')return [ind+'if ('+showC(s.c)+') then '+s.s.n+' := '+showE(s.s.e)];const h=ind+'if ('+showC(s.c)+') then',b=sub(s.s,ind);return b.br?[h+' {',...b.l,ind+'}']:[h,...b.l]}
+ case 'ife':{const h=ind+'if ('+showC(s.c)+') then';
+  if(s.s1.t==='asg'&&s.s2.t==='asg')return [h+' '+s.s1.n+' := '+showE(s.s1.e)+' else '+s.s2.n+' := '+showE(s.s2.e)];
+  const a=sub(s.s1,ind),b=sub(s.s2,ind);return (a.br||b.br)?[h+' {',...a.l,ind+'} else {',...b.l,ind+'}']:[h,...a.l,ind+'else',...b.l]}
+ case 'while':{const h=ind+'while ('+showC(s.c)+') do',b=sub(s.s,ind);return b.br?[h+' {',...b.l,ind+'}']:[h,...b.l]}
+ case 'rep':{const b=sub(s.s,ind);return b.br?[ind+'repeat {',...b.l,ind+'} until ('+showC(s.c)+')']:[ind+'repeat',...b.l,ind+'until ('+showC(s.c)+')']}}}
+/* ---- translation with trace ---- */
+function newCtx(o={}){return{vt:o.vt||{},ft:o.ft||{},nv:o.nv||0,nl:o.nl||0,ev:0,nid:0}}
+function mk(c,par,kind,l1,tag){const n={id:c.nid++,kind,l1,lines:[],kids:[],emits:[],allocs:[],tag};if(par)par.kids.push(n);return n}
+const av=(c,n)=>{const nm='t'+c.nv++;n.allocs.push({kind:'var',name:nm,ord:++c.ev});return nm};
+const al=(c,n)=>{const nm='L'+c.nl++;n.allocs.push({kind:'label',name:nm,ord:++c.ev});return nm};
+const em=(n,txt)=>{const l={txt,node:n};n.emits.push(l);return l};
+function TExp(c,e,place,par){switch(e.t){
+ case 'num':{const n=mk(c,par,'leaf','Exp → '+e.v,'number');n.expText=String(e.v);n.place=place;n.lines=['given place '+place];return [em(n,place+' := '+e.v)]}
+ case 'id':{const n=mk(c,par,'leaf','Exp → '+e.n,'variable');n.expText=e.n;n.place=place;n.lines=['given place '+place,e.n+' ↦ '+c.vt[e.n]+'  (vtable)'];return [em(n,place+' := '+c.vt[e.n])]}
+ case 'un':{const n=mk(c,par,'exp','Exp → '+showE(e),'unop');n.expText=showE(e);n.place=place;const p1=av(c,n);n.lines=['given place '+place,'place₁ = '+p1];const c1=TExp(c,e.a,p1,n);return [...c1,em(n,place+' := '+e.op+' '+p1)]}
+ case 'bin':{const n=mk(c,par,'exp','Exp → '+showE(e),'binop');n.expText=showE(e);n.place=place;const p1=av(c,n),p2=av(c,n);n.lines=['given place '+place,'place₁ = '+p1+',  place₂ = '+p2];
+  const c1=TExp(c,e.a,p1,n),c2=TExp(c,e.b,p2,n);return [...c1,...c2,em(n,place+' := '+p1+' '+e.op+' '+p2)]}
+ case 'call':{const n=mk(c,par,'exp','Exp → '+e.f+'( Exps )','call');n.expText=showE(e);n.place=place;n.lines=['given place '+place];
+  const idn=mk(c,n,'id',e.f+'  =  '+c.ft[e.f],'name');idn.lines=['(ftable lookup)'];
+  const r=e.args.length?TExps(c,e.args,n):{code:[],args:[]};return [...r.code,em(n,place+' := CALL '+c.ft[e.f]+'('+r.args.join(', ')+')')]}}}
+function TExps(c,es,par){const n=mk(c,par,'exps',es.length>1?'Exps → Exp , Exps':'Exps → Exp  (last)','args');const place=av(c,n);n.lines=['place '+place+' = newvar()'];
+ const c1=TExp(c,es[0],place,n);if(es.length>1){const r=TExps(c,es.slice(1),n);return{code:[...c1,...r.code],args:[place,...r.args]}}return{code:c1,args:[place]}}
+const lab2=(lt,lf)=>'true → '+lt+',  false → '+lf;
+function TCond(c,k,lt,lf,par){switch(k.t){
+ case 'rel':{const n=mk(c,par,'cond','Cond → '+showC(k),'relop');const t1=av(c,n),t2=av(c,n);n.lines=[lab2(lt,lf),'t₁ = '+t1+',  t₂ = '+t2];
+  const c1=TExp(c,k.a,t1,n),c2=TExp(c,k.b,t2,n);return [...c1,...c2,em(n,'IF '+t1+' '+k.op+' '+t2+' THEN '+lt+' ELSE '+lf)]}
+ case 'true':{const n=mk(c,par,'cond','Cond → true','true');n.lines=[lab2(lt,lf)];return [em(n,'GOTO '+lt)]}
+ case 'false':{const n=mk(c,par,'cond','Cond → false','false');n.lines=[lab2(lt,lf)];return [em(n,'GOTO '+lf)]}
+ case 'not':{const n=mk(c,par,'cond','Cond → !Cond₁','!');n.lines=[lab2(lt,lf),'no code: swaps the labels'];return TCond(c,k.a,lf,lt,n)}
+ case 'and':case 'or':{const isA=k.t==='and',n=mk(c,par,'cond',isA?'Cond → Cond₁ && Cond₂':'Cond → Cond₁ || Cond₂',isA?'&&':'||');const a2=al(c,n);n.lines=[lab2(lt,lf),'arg₂ = '+a2+'  (newlabel)'];
+  const c1=isA?TCond(c,k.a,a2,lf,n):TCond(c,k.a,lt,a2,n);const c2=TCond(c,k.b,lt,lf,n);return [...c1,em(n,'LABEL '+a2),...c2]}}}
+function TStat(c,s,par){switch(s.t){
+ case 'seq':{const n=mk(c,par,'stat','Stat → Stat₁ ; Stat₂','seq');n.lines=['code₁ ++ code₂'];const c1=TStat(c,s.a,n),c2=TStat(c,s.b,n);return [...c1,...c2]}
+ case 'asg':{const n=mk(c,par,'stat','Stat → '+s.n+' := Exp','assign');const p=av(c,n);n.lines=['place '+p+' = newvar()',s.n+' ↦ '+c.vt[s.n]+'  (vtable)'];const c1=TExp(c,s.e,p,n);return [...c1,em(n,c.vt[s.n]+' := '+p)]}
+ case 'if':{const n=mk(c,par,'stat','Stat → if Cond then Stat₁','if');const l1=al(c,n),l2=al(c,n);n.lines=['label₁ = '+l1+'  (then)','label₂ = '+l2+'  (after)'];
+  const c1=TCond(c,s.c,l1,l2,n),c2=TStat(c,s.s,n);return [...c1,em(n,'LABEL '+l1),...c2,em(n,'LABEL '+l2)]}
+ case 'ife':{const n=mk(c,par,'stat','Stat → if Cond then Stat₁ else Stat₂','if-else');const l1=al(c,n),l2=al(c,n),l3=al(c,n);n.lines=['label₁ = '+l1+'  (then)','label₂ = '+l2+'  (else)','label₃ = '+l3+'  (after)'];
+  const c1=TCond(c,s.c,l1,l2,n),c2=TStat(c,s.s1,n),c3=TStat(c,s.s2,n);return [...c1,em(n,'LABEL '+l1),...c2,em(n,'GOTO '+l3),em(n,'LABEL '+l2),...c3,em(n,'LABEL '+l3)]}
+ case 'while':{const n=mk(c,par,'stat','Stat → while Cond do Stat₁','while');const l1=al(c,n),l2=al(c,n),l3=al(c,n);n.lines=['label₁ = '+l1+'  (loop start)','label₂ = '+l2+'  (body)','label₃ = '+l3+'  (exit)'];
+  const a=em(n,'LABEL '+l1),c1=TCond(c,s.c,l2,l3,n),b=em(n,'LABEL '+l2),c2=TStat(c,s.s,n);return [a,...c1,b,...c2,em(n,'GOTO '+l1),em(n,'LABEL '+l3)]}
+ case 'rep':{const n=mk(c,par,'stat','Stat → repeat Stat₁ until Cond','repeat');const l1=al(c,n),l2=al(c,n);n.lines=['label₁ = '+l1+'  (loop start)','label₂ = '+l2+'  (exit)'];
+  const a=em(n,'LABEL '+l1),c1=TStat(c,s.s,n),c2=TCond(c,s.c,l2,l1,n);return [a,...c1,...c2,em(n,'LABEL '+l2)]}}}
+function build(kind,ast,o={}){const c=newCtx(o),top={kids:[]};let code;
+ if(kind==='exp')code=TExp(c,ast,o.place,top);else if(kind==='cond')code=TCond(c,ast,o.lt,o.lf,top);else code=TStat(c,ast,top);
+ code.forEach((l,i)=>l.no=i+1);return{root:top.kids[0],code,ctx:c}}
+/* ---- display tree (optionally collapsing expression details) ---- */
+const badgeOf=al=>{if(!al.length)return '';const o=al.map(a=>a.ord);const a=Math.min(...o),b=Math.max(...o);return a===b?String(a):a+'–'+b};
+function display(root,collapse){let did=0;
+ const sub=(n,o=[])=>{n.emits.forEach(l=>o.push(l));n.kids.forEach(k=>sub(k,o));return o};
+ const als=(n,o=[])=>{n.allocs.forEach(a=>o.push(a));n.kids.forEach(k=>als(k,o));return o};
+ const mem=(n,o=[])=>{o.push(n.id);n.kids.forEach(k=>mem(k,o));return o};
+ function conv(n,pk){const expLike=n.kind==='exp'||n.kind==='leaf'||n.kind==='exps'||n.kind==='id';
+  if(collapse&&expLike&&(pk==='stat'||pk==='cond')){const ls=sub(n).sort((a,b)=>a.no-b.no),as=als(n);
+   return{id:did++,kind:'exp',l1:'Exp: '+n.expText,lines:['given place '+n.place,'('+ls.length+' line'+(ls.length>1?'s':'')+')'],kids:[],
+    pills:ls.map(l=>({label:'line '+l.no,txt:l.txt,no:l.no})),badge:badgeOf(as),members:mem(n),allocs:as}}
+  const d={id:did++,kind:n.kind,l1:n.l1,lines:n.lines,kids:[],pills:n.emits.map(l=>({label:'line '+l.no,txt:l.txt,no:l.no})).sort((a,b)=>a.no-b.no),badge:badgeOf(n.allocs),members:[n.id],allocs:n.allocs};
+  d.kids=n.kids.map(k=>conv(k,n.kind));return d}
+ return conv(root,null)}
+/* ---- layout + svg (DOM-free so it can be tested) ---- */
+const GX=26,GY=60,PAD=28;
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const pillStr=p=>fmt(p.label+': '+p.txt);
+function measure(d){const w=Math.max(140,d.l1.length*9.0+30,...d.lines.map(s=>s.length*7.6+30),...d.pills.map(p=>pillStr(p).length*8.0+34));
+ d.w=Math.ceil(w);d.h=14+22+d.lines.length*20+(d.pills.length?10+d.pills.length*30:0)+8}
+function layout(root){(function m(n){measure(n);n.kids.forEach(m)})(root);
+ (function sw(n){const kw=n.kids.reduce((a,k)=>a+sw(k),0)+GX*Math.max(0,n.kids.length-1);n.sw=Math.max(n.w,kw);return n.sw})(root);
+ const rows=[];(function pos(n,left,dep){n.depth=dep;n.cx=left+n.sw/2;(rows[dep]=rows[dep]||[]).push(n);
+  const kw=n.kids.reduce((a,k)=>a+k.sw,0)+GX*Math.max(0,n.kids.length-1);let x=left+(n.sw-kw)/2;n.kids.forEach(k=>{pos(k,x,dep+1);x+=k.sw+GX})})(root,0,0);
+ let y=PAD+8;rows.forEach(r=>{const h=Math.max(...r.map(n=>n.h));r.forEach(n=>n.y=y);y+=h+GY});
+ return{w:Math.ceil(root.sw+2*PAD),h:Math.ceil(y-GY+PAD),rows}}
+function nodeSvg(d,fig){const x=PAD+d.cx-d.w/2,y=d.y,cx=PAD+d.cx;let s=`<g class="nd nk-${d.kind}" data-n="${fig}:${d.id}"><rect class="card" x="${x}" y="${y}" width="${d.w}" height="${d.h}" rx="7"/>`;
+ s+=`<text class="t1" x="${cx}" y="${y+27}" text-anchor="middle">${esc(d.l1)}</text>`;
+ d.lines.forEach((t,i)=>{s+=`<text class="t2" x="${cx}" y="${y+48+i*20}" text-anchor="middle">${esc(t)}</text>`});
+ d.pills.forEach((p,i)=>{const t=pillStr(p),pw=Math.ceil(t.length*8.0+26),py=y+14+22+d.lines.length*20+10+i*30-4;
+  s+=`<g class="pill"><rect x="${cx-pw/2}" y="${py}" width="${pw}" height="26" rx="13"/><text x="${cx}" y="${py+18}" text-anchor="middle">${esc(t)}</text></g>`});
+ if(d.badge){const bw=d.badge.length>1?d.badge.length*9+18:28;s+=`<g class="badge"><rect x="${x-8}" y="${y-13}" width="${bw}" height="26" rx="13"/><text x="${x-8+bw/2}" y="${y+5}" text-anchor="middle">${esc(d.badge)}</text></g>`}
+ return s+'</g>'}
+function treeSvg(root,fig){const L=layout(root);let e='',nd='';
+ (function w(n){n.kids.forEach(k=>{const x1=PAD+n.cx,y1=n.y+n.h,x2=PAD+k.cx,y2=k.y;e+=`<line class="edge${k.dashed?' dash':''}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+  if(k.note)e+=`<text class="note" x="${(x1+x2)/2+10}" y="${(y1+y2)/2+4}">${esc(k.note)}</text>`;w(k)})})(root);
+ (function w(n){nd+=nodeSvg(n,fig);n.kids.forEach(w)})(root);
+ let W=L.w;(function w(n){n.kids.forEach(k=>{if(k.note)W=Math.max(W,Math.ceil((PAD+n.cx+PAD+k.cx)/2+10+k.note.length*7+PAD));w(k)})})(root);
+ return{svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${L.h}" width="${W}" height="${L.h}" role="img" aria-label="syntax-tree of the translation functions">${e}${nd}</svg>`,w:W,h:L.h,L}}
+/* ---- IR interpreter + reference interpreter (used only to test the page) ---- */
+function runIR(code,env,fns,limit=200000){const T=code.map(l=>l.txt),lab={};T.forEach((t,i)=>{const m=t.match(/^LABEL (\w+)$/);if(m)lab[m[1]]=i});
+ const val=x=>/^-?\d+$/.test(x)?+x:(x in env?env[x]:(()=>{throw new Error('undefined '+x)})());
+ const ap=(o,a,b)=>({'+':a+b,'-':a-b,'*':a*b,'/':Math.trunc(a/b)})[o];
+ const rel=(o,a,b)=>({'=':a===b,'!=':a!==b,'<':a<b,'>':a>b,'<=':a<=b,'>=':a>=b})[o];
+ let pc=0,st=0;while(pc<T.length){if(++st>limit)throw new Error('does not terminate');const t=T[pc++];let m;
+  if(/^LABEL /.test(t))continue;
+  if(m=t.match(/^GOTO (\w+)$/)){pc=lab[m[1]];continue}
+  if(m=t.match(/^IF (\S+) (=|!=|<=|>=|<|>) (\S+) THEN (\w+) ELSE (\w+)$/)){pc=lab[rel(m[2],val(m[1]),val(m[3]))?m[4]:m[5]];continue}
+  if(m=t.match(/^(\w+) := CALL (\w+)\((.*)\)$/)){env[m[1]]=fns[m[2]](...m[3].split(',').map(s=>s.trim()).filter(Boolean).map(val));continue}
+  if(m=t.match(/^(\w+) := (\S+) ([-+*/]) (\S+)$/)){env[m[1]]=ap(m[3],val(m[2]),val(m[4]));continue}
+  if(m=t.match(/^(\w+) := - (\S+)$/)){env[m[1]]=-val(m[2]);continue}
+  if(m=t.match(/^(\w+) := (\S+)$/)){env[m[1]]=val(m[2]);continue}
+  throw new Error('cannot run: '+t)}return env}
+function evE(e,env,fns){switch(e.t){case 'num':return e.v;case 'id':return env[e.n];case 'un':return -evE(e.a,env,fns);
+ case 'bin':{const a=evE(e.a,env,fns),b=evE(e.b,env,fns);return ({'+':a+b,'-':a-b,'*':a*b})[e.op]}
+ case 'call':return fns[e.f](...e.args.map(a=>evE(a,env,fns)))}}
+function evC(k,env,fns){switch(k.t){case 'true':return true;case 'false':return false;case 'not':return !evC(k.a,env,fns);case 'and':return evC(k.a,env,fns)&&evC(k.b,env,fns);case 'or':return evC(k.a,env,fns)||evC(k.b,env,fns);
+ case 'rel':{const a=evE(k.a,env,fns),b=evE(k.b,env,fns);return ({'=':a===b,'!=':a!==b,'<':a<b,'>':a>b,'<=':a<=b,'>=':a>=b})[k.op]}}}
+function evS(s,env,fns,lim={n:100000}){if(--lim.n<0)throw new Error('does not terminate');switch(s.t){
+ case 'asg':env[s.n]=evE(s.e,env,fns);break;case 'seq':evS(s.a,env,fns,lim);evS(s.b,env,fns,lim);break;
+ case 'if':if(evC(s.c,env,fns))evS(s.s,env,fns,lim);break;case 'ife':evC(s.c,env,fns)?evS(s.s1,env,fns,lim):evS(s.s2,env,fns,lim);break;
+ case 'while':while(evC(s.c,env,fns)){evS(s.s,env,fns,lim);if(--lim.n<0)throw new Error('does not terminate')}break;
+ case 'rep':do{evS(s.s,env,fns,lim);if(--lim.n<0)throw new Error('does not terminate')}while(!evC(s.c,env,fns));break}return env}
+
+/* ===== GENERIC TREES (hand-defined; same node renderer as the specific trees) ===== */
+const G=(kind,l1,lines,o={})=>({kind,l1,lines,kids:o.kids||[],pills:(o.pills||[]).map(([n,t])=>({label:'part '+n,txt:t})),badge:o.badge||'',dashed:!!o.dashed,note:o.note||''});
+const PH=(l1,lines,part,txt)=>G('ph',l1,lines,{pills:[[part,txt]]});
+const GEN={
+ exp:[{t:'Binary operator',r:G('exp','Exp → Exp₁ op Exp₂',['given place P','place₁ = newvar()','place₂ = newvar()'],{badge:'1–2',pills:[[3,'P := place₁ op place₂']],kids:[PH('Exp₁',['given place place₁'],1,'code₁'),PH('Exp₂',['given place place₂'],2,'code₂')]})},
+  {t:'Unary operator',r:G('exp','Exp → unop Exp₁',['given place P','place₁ = newvar()'],{badge:'1',pills:[[2,'P := unop place₁']],kids:[PH('Exp₁',['given place place₁'],1,'code₁')]})},
+  {t:'Number  (a leaf: allocates nothing)',r:G('leaf','Exp → num',['given place P'],{pills:[[1,'P := value']]})},
+  {t:'Variable  (a leaf: copies, never uses the variable directly)',r:G('leaf','Exp → id',['given place P','x = lookup(vtable, id)'],{pills:[[1,'P := x']]})}],
+ call:[{t:'Statement  id := f( Exp₁ , Exp₂ , … , Expₙ )',r:G('stat','Stat → id := Exp',['place P = newvar()'],{badge:'1',pills:[['n+2','id := P']],kids:[
+   G('exp','Exp → f( Exps )',['given place P'],{pills:[['n+1','P := CALL f(p₁ … pₙ)']],kids:[
+    G('id','f  (function name)',['ftable lookup']),
+    G('exps','Exps → Exp , Exps',['place p₁ = newvar()'],{badge:'2',kids:[
+     PH('Exp₁',['given place p₁'],1,'code₁'),
+     G('exps','Exps → Exp , Exps',['place p₂ = newvar()'],{badge:'3',kids:[
+      PH('Exp₂',['given place p₂'],2,'code₂'),
+      G('exps','Exps → Exp  (last)',['place pₙ = newvar()'],{badge:'n+1',dashed:true,note:'… repeated once per argument',kids:[PH('Expₙ',['given place pₙ'],'n','codeₙ')]})]})]})]})]})}],
+ asg:[{t:'Assignment',r:G('stat','Stat → id := Exp',['place P = newvar()','x = lookup(vtable, id)'],{badge:'1',pills:[[2,'x := P']],kids:[PH('Exp',['given place P'],1,'code(Exp)')]})}],
+ seq:[{t:'Sequence',r:G('stat','Stat → Stat₁ ; Stat₂',['no temps, no labels'],{kids:[PH('Stat₁',[],1,'code₁'),PH('Stat₂',[],2,'code₂')]})}],
+ rel:[{t:'Comparison',r:G('cond','Cond → Exp₁ relop Exp₂',['given: labelt , labelf','t₁ = newvar()','t₂ = newvar()'],{badge:'1–2',pills:[[3,'IF t₁ op t₂ THEN labelt ELSE labelf']],kids:[PH('Exp₁',['given place t₁'],1,'code₁'),PH('Exp₂',['given place t₂'],2,'code₂')]})}],
+ logic:[{t:'and  (&&)',r:G('cond','Cond → Cond₁ && Cond₂',['given: labelt , labelf','arg₂ = newlabel()'],{badge:'1',pills:[[2,'LABEL arg₂']],kids:[PH('Cond₁',['true → arg₂,  false → labelf'],1,'code₁'),PH('Cond₂',['true → labelt,  false → labelf'],3,'code₂')]})},
+  {t:'or  (||)',r:G('cond','Cond → Cond₁ || Cond₂',['given: labelt , labelf','arg₂ = newlabel()'],{badge:'1',pills:[[2,'LABEL arg₂']],kids:[PH('Cond₁',['true → labelt,  false → arg₂'],1,'code₁'),PH('Cond₂',['true → labelt,  false → labelf'],3,'code₂')]})},
+  {t:'not  (!)',r:G('cond','Cond → ! Cond₁',['given: labelt , labelf','no code of its own'],{kids:[PH('Cond₁',['true → labelf,  false → labelt','(the two labels are swapped)'],1,'code₁')]})},
+  {t:'true',r:G('cond','Cond → true',['given: labelt , labelf'],{pills:[[1,'GOTO labelt']]})},
+  {t:'false',r:G('cond','Cond → false',['given: labelt , labelf'],{pills:[[1,'GOTO labelf']]})}],
+ if:[{t:'if … then …',r:G('stat','Stat → if Cond then Stat₁',['label₁ = newlabel()  (then)','label₂ = newlabel()  (after)'],{badge:'1–2',pills:[[2,'LABEL label₁'],[4,'LABEL label₂']],kids:[PH('Cond',['true → label₁,  false → label₂'],1,'code₁'),PH('Stat₁',[],3,'code₂')]})}],
+ ife:[{t:'if … then … else …',r:G('stat','Stat → if Cond then Stat₁ else Stat₂',['label₁ = newlabel()  (then)','label₂ = newlabel()  (else)','label₃ = newlabel()  (after)'],{badge:'1–3',pills:[[2,'LABEL label₁'],[4,'GOTO label₃'],[5,'LABEL label₂'],[7,'LABEL label₃']],kids:[PH('Cond',['true → label₁,  false → label₂'],1,'code₁'),PH('Stat₁',[],3,'code₂'),PH('Stat₂',[],6,'code₃')]})}],
+ while:[{t:'while … do …',r:G('stat','Stat → while Cond do Stat₁',['label₁ = newlabel()  (loop start)','label₂ = newlabel()  (body)','label₃ = newlabel()  (exit)'],{badge:'1–3',pills:[[1,'LABEL label₁'],[3,'LABEL label₂'],[5,'GOTO label₁'],[6,'LABEL label₃']],kids:[PH('Cond',['true → label₂ (body),  false → label₃ (exit)'],2,'code₁'),PH('Stat₁',[],4,'code₂')]})}],
+ rep:[{t:'repeat … until …',r:G('stat','Stat → repeat Stat₁ until Cond',['label₁ = newlabel()  (loop start)','label₂ = newlabel()  (exit)'],{badge:'1–2',pills:[[1,'LABEL label₁'],[4,'LABEL label₂']],kids:[PH('Stat₁',[],2,'code₁'),PH('Cond',['true → label₂ (exit),  false → label₁ (again)'],3,'code₂')]})}]};
+const FORM={
+ exp:'binop:  code₁ ++ code₂ ++ [P := place₁ op place₂]\nunop:   code₁ ++ [P := unop place₁]\nnumber: [P := value]        variable: [P := x]',
+ call:'code₁ ++ code₂ ++ … ++ codeₙ ++ [P := CALL f(p₁, …, pₙ)]      then the statement adds  [id := P]',
+ asg:'code(Exp) ++ [x := P]',
+ seq:'code₁ ++ code₂',
+ rel:'code₁ ++ code₂ ++ [IF t₁ op t₂ THEN labelt ELSE labelf]',
+ logic:'&&:  code₁ ++ [LABEL arg₂] ++ code₂\n||:  code₁ ++ [LABEL arg₂] ++ code₂\n!:   just the code of Cond₁ (labels swapped)        true: [GOTO labelt]     false: [GOTO labelf]',
+ if:'code₁ ++ [LABEL label₁] ++ code₂ ++ [LABEL label₂]',
+ ife:'code₁ ++ [LABEL label₁] ++ code₂ ++ [GOTO label₃, LABEL label₂] ++ code₃ ++ [LABEL label₃]',
+ while:'[LABEL label₁] ++ code₁ ++ [LABEL label₂] ++ code₂ ++ [GOTO label₁, LABEL label₃]',
+ rep:'[LABEL label₁] ++ code₁ ++ code₂ ++ [LABEL label₂]'};
+/* ===== EXAMPLES ===== */
+const SET={vt:{x:'u1',y:'u2',result:'u0'},ft:{add:'f'}};
+const X=Id('x'),Y=Id('y'),inc=Asg('x',Bin('+',X,Num(1))),dec=Asg('y',Bin('-',Y,Num(1))),body=Seq(inc,dec);
+const SPEC={
+ exp:{kind:'exp',ast:Bin('+',X,Bin('-',Y,Num(1))),o:{...SET,place:'t0',nv:1},ctx:'The place t0 is handed in by whoever asked for this expression (for example an assignment), so new temporaries start at t1.'},
+ call:{kind:'stat',ast:Asg('result',Call('add',Num(3),Call('add',Num(4),Num(5)))),o:{...SET}},
+ asg:{kind:'stat',ast:inc,o:{...SET}},
+ seq:{kind:'stat',ast:body,o:{...SET}},
+ rel:{kind:'cond',ast:Rel('>',Y,Num(0)),o:{...SET,lt:'L1',lf:'L2',nl:3},ctx:'The two labels are handed in by the parent (here we pretend a while loop gave us L1 for true and L2 for false), so new labels would start at L3.'},
+ and:{kind:'cond',ast:And(Rel('>',X,Num(0)),Rel('>',Y,Num(0))),o:{...SET,lt:'L0',lf:'L1',nl:2},ctx:'Handed in: true → L0, false → L1. The first new label is therefore L2.'},
+ or:{kind:'cond',ast:Or(Rel('>',X,Num(0)),Rel('>',Y,Num(0))),o:{...SET,lt:'L0',lf:'L1',nl:2},ctx:'Handed in: true → L0, false → L1. The first new label is therefore L2.'},
+ not:{kind:'cond',ast:Not(Rel('>',X,Num(0))),o:{...SET,lt:'L0',lf:'L1',nl:2},ctx:'Handed in: true → L0, false → L1.'},
+ if:{kind:'stat',ast:If(Rel('>',X,Num(1)),dec),o:{...SET}},
+ ife:{kind:'stat',ast:IfE(Rel('>',X,Num(1)),dec,inc),o:{...SET}},
+ while:{kind:'stat',ast:While(Rel('>',Y,Num(0)),body),o:{...SET}},
+ rep:{kind:'stat',ast:Rep(body,Rel('=',Y,Num(0))),o:{...SET},collapse:true},
+ final:{kind:'stat',ast:Seq(Asg('result',Call('add',X,Num(4))),While(Rel('>',Y,Num(0)),IfE(Rel('>',X,Num(1)),dec,inc))),o:{...SET},collapse:true}};
+const srcOf=s=>s.kind==='stat'?printS(s.ast).join('\n'):s.kind==='exp'?showE(s.ast):showC(s.ast);
+/* ===== helpers ===== */
+const $=id=>document.getElementById(id);
+const KEY='<div class="key"><span><span class="dotb">1</span>blue = order in which newvar() / newlabel() hands out a name (top of the tree first)</span><span><span class="dotg">line 1</span>green = position of that code line in the output (read the code block below)</span></div>';
+const KINDS='<div class="key"><span><span class="sw" style="background:var(--k-stat-f);border-color:var(--k-stat-s)"></span>statement</span><span><span class="sw" style="background:var(--k-cond-f);border-color:var(--k-cond-s)"></span>condition</span><span><span class="sw" style="background:var(--k-exp-f);border-color:var(--k-exp-s)"></span>expression</span><span><span class="sw" style="background:var(--k-exps-f);border-color:var(--k-exps-s)"></span>argument list (Exps)</span><span><span class="sw" style="background:var(--k-leaf-f);border-color:var(--k-leaf-s)"></span>number / variable</span><span><span class="sw" style="border-style:dashed;border-color:var(--k-ph-s)"></span>“its own tree plugs in here”</span></div>';
+function genFigs(key,pre){return GEN[key].map((g,i)=>{const t=treeSvg(g.r,pre+i);return `<figure><figcaption>${g.t}</figcaption><div class="scr">${t.svg}</div></figure>`}).join('')}
+function hasCollapsible(n,pk=null){const el=['exp','leaf','exps','id'].includes(n.kind);if(el&&(pk==='stat'||pk==='cond'))return true;return n.kids.some(k=>hasCollapsible(k,n.kind))}
+const STATE={};
+function mountSpec(host,fig,spec){const r=build(spec.kind,spec.ast,spec.o);const can=hasCollapsible(r.root);let coll=STATE[fig]!==undefined?STATE[fig]:!!spec.collapse;
+ const names=[];(function w(n){n.allocs.forEach(a=>names.push(`<span class="dotb">${a.ord}</span>${a.name}`));n.kids.forEach(w)})(r.root);
+ function draw(){const d=display(r.root,coll),t=treeSvg(d,fig),own={};(function w(n){n.pills.forEach(p=>own[p.no]=n.id);n.kids.forEach(w)})(d);
+  const code=r.code.map(l=>`<div class="cl" data-n="${fig}:${own[l.no]}"><span class="no">${l.no}</span><span class="tx">${esc(fmt(l.txt))}</span><span class="tg">${l.node.tag}</span></div>`).join('');
+  host.innerHTML=(can?`<label class="tog"><input type="checkbox" ${coll?'checked':''}> collapse the expression details (show only statements and conditions)</label>`:'')+
+   `<div class="scr">${t.svg}</div>${names.length?`<p class="ctx">Blue numbers in this tree: ${names.join('  ·  ')}</p>`:''}`+
+   `<h4 style="margin:.8em 0 .3em">Intermediate code &nbsp;<span class="mut" style="font-weight:400;font-size:.88rem">(hover a line or a box to see the match; the grey word is the rule that wrote the line)</span></h4><div class="codeblk">${code}</div>`;
+  const cb=host.querySelector('input');if(cb)cb.onchange=()=>{coll=cb.checked;STATE[fig]=coll;draw()}}
+ draw()}
+function ctxLine(s){const vt=Object.entries(s.o.vt).map(([a,b])=>a+' ↦ '+b).join(', '),ft=Object.entries(s.o.ft).map(([a,b])=>a+' ↦ '+b).join(', ');
+ return `<p class="ctx">Setting: vtable ${vt};  ftable ${ft}. New temporaries are t${s.o.nv||0}, t${(s.o.nv||0)+1}, … and new labels are L${s.o.nl||0}, L${(s.o.nl||0)+1}, …${s.ctx?'<br>'+s.ctx:''}</p>`}
+/* ===== TABS ===== */
+const TABS=[];
+function addTab(name,html,after){TABS.push({name,html,after:after||(()=>{})})}
+function simpleTab(key,name,title,specKeys,words,extraGen){const specs=specKeys.map(k=>SPEC[k]);
+ addTab(name,()=>`<h2>${title}</h2>
+ <div class="card"><b>Example${specs.length>1?'s':''}</b>${specs.map(s=>`<pre class="src">${esc(srcOf(s))}</pre>`).join('')}${ctxLine(specs[0])}</div>
+ <h3>How the rule works</h3><ul class="m">${words.map(w=>'<li>'+w+'</li>').join('')}</ul>
+ <h3>Generic tree</h3>${KEY}${KINDS}${genFigs(key,'g_'+key+'_')}<div class="formula">${esc(FORM[key])}</div>
+ <h3>Specific tree${specs.length>1?'s':''} for the example${specs.length>1?'s':''}</h3>
+ ${specs.map((s,i)=>(specs.length>1?`<p><b>${esc(srcOf(s))}</b></p>`:'')+`<div id="sp_${key}_${i}"></div>`).join('')}`,
+ ()=>specs.forEach((s,i)=>mountSpec($('sp_'+key+'_'+i),'s_'+key+'_'+i,s)))}
+/* 0 intro */
+addTab('How to read',()=>`<h2>How the translation functions recurse, drawn as trees</h2>
+<p>Chapter 6 turns a syntax tree into a flat list of three-address code by calling a few functions on each other: one for statements, one for conditions, one for expressions and one for argument lists. Each call works on one node of the syntax tree, so the calls themselves form a tree. This page draws that tree for every construct, first in general and then for a concrete example, and shows the code it produces.</p>
+<div class="card"><b>Two things travel through the tree</b><ul class="m">
+<li><b>Down:</b> names. A parent decides where its child must put the result (a <i>place</i>) or which labels a condition must jump to, and hands them down. In the diagrams, “given place t1” and “true → L1, false → L2” are such handed-down items.</li>
+<li><b>Up:</b> code. Each child returns a list of lines, and the parent glues the lists together in the order its rule says (for example, <code>code₁ ++ code₂ ++ [P := p₁ op p₂]</code>).</li></ul></div>
+<h3>How to read a picture</h3>${KEY}${KINDS}
+<ul class="m"><li>Each box is one call of a translation function. The bold line is the grammar rule that was chosen; the lines below are what that call is given or what it creates.</li>
+<li><b>Blue number:</b> the box takes a new name <i>before</i> its children run, so numbering goes top-down. A range such as 1–3 means the box took three names in a row (a while loop takes three labels).</li>
+<li><b>Green pill:</b> a line of code that this box writes itself, with its position in the final output. Output is assembled bottom-up and left to right, so the pills are not in tree order.</li>
+<li><b>Dashed box (generic trees only):</b> a child whose own tree plugs in there.</li>
+<li>In the specific trees, hover a box or a code line to see which box wrote which line.</li></ul>
+<p>One small tree to practise on (the assignment rule):</p><div class="scr" id="introTree"></div>
+<h3>The setting used in every example</h3>
+<table><tr><th>Name table</th><th>Contents</th></tr><tr><td>vtable</td><td class="mono">x ↦ u1,  y ↦ u2,  result ↦ u0 (the renaming from your Test 2)</td></tr><tr><td>ftable</td><td class="mono">add ↦ f</td></tr><tr><td>fresh names</td><td class="mono">temporaries t0, t1, t2, …  and labels L0, L1, L2, …</td></tr></table>
+<p class="mut">Any consistent, unused names are fine in an exam. Only the shape matters.</p>
+<div class="card warn"><b>What comes from where</b><ul class="m">
+<li><b>From the textbook:</b> every rule used here (Figs 6.3, 6.5, 6.6 and 6.8). The translator on this page applies them literally, in the order the book gives (each box takes its names before its children run). I checked it against the book’s own printed answers for <code>x-3</code> and <code>3+f(x-y,z)</code>, against my Task 2 answers, and by running the generated code against the source program on many inputs.</li>
+<li><b>My own teaching device:</b> the trees. The book shows the rules as tables, not as trees, and the colours, badges and pills are mine.</li>
+<li><b>Not drawn:</b> the textbook’s rule that turns a condition into a number (and the reverse). Your Test 2 and past papers only needed the constructs on these tabs.</li></ul></div>`,
+ ()=>{const g=GEN.asg[0].r;$('introTree').innerHTML=treeSvg(g,'intro').svg});
+simpleTab('exp','Expressions','Expressions: numbers, variables and operators',['exp'],[
+ 'An expression is translated into code that leaves its value in a <b>place</b> (a temporary) that the parent chose.',
+ '<b>Number:</b> one line, <code>place := value</code>. <b>Variable:</b> one line, <code>place := u1</code>. The variable is copied into a new place instead of being used directly, because a later update could change it before the parent uses it.',
+ '<b>Binary operator:</b> take <b>two new temporaries first</b> (one per operand), translate the left operand into the first and the right into the second, then write one line that combines them into <code>place</code>.',
+ '<b>Unary operator:</b> same with one temporary.',
+ 'Code order for a binary operator: left code, right code, then the operator line.']);
+simpleTab('call','Function calls','Function calls',['call'],[
+ 'A call is translated by first translating the <b>arguments</b>, each into its own new temporary, one after another. Then comes one line <code>place := CALL f(p₁, …, pₙ)</code>.',
+ 'The argument list is a chain: <code>Exps → Exp , Exps</code> takes a temporary for its first expression <b>before</b> it translates that expression, and then recurses on the rest. This is why an inner call’s result temporary exists before its own arguments’ temporaries.',
+ 'An argument that is itself a call puts a whole smaller copy of this tree underneath. Its code ends with its own <code>CALL</code> line, and that block of code comes <b>before</b> the outer call line.',
+ 'The assignment around it takes its own temporary first, and copies it into the variable at the very end.']);
+simpleTab('asg','Assignment','Assignment',['asg'],[
+ 'The statement takes <b>one new temporary</b> first, translates the right-hand side into it, and only then copies it into the variable (<code>u1 := place</code>).',
+ 'The extra copy is deliberate in the textbook: the right-hand side is never allowed to write straight into the variable while it is still being evaluated.',
+ 'Code order: the right-hand side’s code, then the copy line.']);
+simpleTab('seq','Statement sequence','Statement sequence: two statements in a row',['seq'],[
+ '<code>Stat₁ ; Stat₂</code> takes <b>no</b> temporary and <b>no</b> label. It only puts the two code lists one after the other.',
+ 'A block of more than two statements is a sequence nested inside a sequence, so the same rule applies again. Their code always appears in source order.',
+ 'Names are still handed out in tree order (the first statement’s temporaries come before the second’s), which is why the second statement continues the numbering.']);
+simpleTab('rel','Conditions','Conditions: a comparison',['rel'],[
+ 'A condition does <b>not</b> leave a value in a place. Instead it ends in one jump line: <code>IF t₁ op t₂ THEN labelt ELSE labelf</code>.',
+ 'The two labels are <b>handed down</b> by the parent that needs the decision: a while, an if, or an and/or. They are not created here.',
+ 'A comparison takes <b>two new temporaries first</b>, translates each side into one, then writes the IF line.']);
+simpleTab('logic','&& || !','Conditions: and, or, not, true, false',['and','or','not'],[
+ '<b>&&:</b> takes <b>one new label</b>, arg₂ (where the second test starts). If the first test is true it jumps to arg₂, if false it jumps straight to the original false label, so the second test is skipped. The second test uses the original two labels.',
+ '<b>||:</b> the mirror: first test true jumps to the original true label, false jumps to arg₂.',
+ '<b>!:</b> writes no code of its own. It just swaps the two labels when translating its operand.',
+ '<b>true / false:</b> a single jump, <code>GOTO labelt</code> or <code>GOTO labelf</code> (trees below the first three, on the generic side).']);
+simpleTab('if','if-then','if … then …',['if'],[
+ 'Takes <b>two labels</b> first: label₁ for the then-part and label₂ for the code after the statement.',
+ 'The condition is translated with <b>true → label₁, false → label₂</b>. If it is false we jump over the then-part.',
+ 'Code order: condition, LABEL label₁, then-part, LABEL label₂.']);
+simpleTab('ife','if-then-else','if … then … else …',['ife'],[
+ 'Takes <b>three labels</b> first: label₁ (then), label₂ (else), label₃ (after everything).',
+ 'The condition jumps to label₁ when true and to label₂ when false.',
+ 'At the end of the then-part a <code>GOTO label₃</code> jumps over the else-part. Without it the then-part would run straight into the else-part.',
+ 'Code order: condition, LABEL label₁, then-part, GOTO label₃, LABEL label₂, else-part, LABEL label₃.']);
+simpleTab('while','while','while … do …',['while'],[
+ 'Takes <b>three labels</b> first: label₁ (loop start, where the condition is tested), label₂ (body), label₃ (exit).',
+ 'The condition jumps to label₂ when true and to label₃ when false.',
+ 'After the body, <code>GOTO label₁</code> goes back and tests the condition again.',
+ 'Code order: LABEL label₁, condition, LABEL label₂, body, GOTO label₁, LABEL label₃.']);
+simpleTab('rep','repeat-until','repeat … until …',['rep'],[
+ 'Takes <b>two labels</b> first: label₁ (loop start) and label₂ (exit).',
+ 'The body comes <b>before</b> the condition, so it always runs at least once.',
+ 'The condition is translated with <b>true → label₂ (leave), false → label₁ (go round again)</b>. That is the opposite way round from while.',
+ 'Code order: LABEL label₁, body, condition, LABEL label₂.']);
+/* 11 combined */
+addTab('Combined example',()=>`<h2>Putting it together: one program, every rule</h2>
+<div class="card"><b>Example</b><pre class="src">${esc(srcOf(SPEC.final))}</pre>${ctxLine(SPEC.final)}</div>
+<h3>How to read it</h3><ul class="m">
+<li>The top of the tree is a <b>sequence</b>: no names, just the first statement’s code and then the second’s.</li>
+<li>Left branch: an <b>assignment</b> whose right-hand side is a <b>call</b>. It takes t0 for the result, then one temporary per argument.</li>
+<li>Right branch: a <b>while</b> loop. It takes labels L0, L1, L2 before anything inside it. Inside, an <b>if-then-else</b> takes L3, L4, L5. Each condition takes two temporaries and each assignment takes one more, plus two for its operands.</li>
+<li>Follow the blue numbers to see the exact order in which names were handed out, then the green line numbers to see how the code was glued together afterwards.</li></ul>
+<h3>Tree and code</h3><div id="sp_final"></div>
+<h3>Names handed out, in order</h3><div id="alloc"></div>
+<h3>Why the output looks the way it does</h3><ul class="m">
+<li><b>L0</b> is the loop start. The loop-condition test comes right after it, and the last line before the exit is <code>GOTO L0</code>.</li>
+<li><b>L1</b> is the body (the true target of the loop condition), and <b>L2</b> is the exit (the false target).</li>
+<li><b>L3 / L4 / L5</b> belong to the if-then-else inside the body: then-part, else-part, and the end. The then-part ends with <code>GOTO L5</code> so it skips the else-part.</li>
+<li>After L5 the loop body is finished, so the while writes <code>GOTO L0</code>.</li></ul>`,
+ ()=>{const s=SPEC.final;mountSpec($('sp_final'),'s_final',s);const r=build(s.kind,s.ast,s.o),rows=[];
+  (function w(n){n.allocs.forEach(a=>rows.push(`<tr><td>${a.ord}</td><td class="mono">${a.name}</td><td>${esc(n.l1)}</td></tr>`));n.kids.forEach(w)})(r.root);
+  $('alloc').innerHTML=`<div class="scroll"><table><tr><th>Blue number</th><th>Name</th><th>Taken by this call</th></tr>${rows.join('')}</table></div>`});
+/* 12 cheat sheet */
+addTab('Rules at a glance',()=>{const R=[
+ ['Exp → num','nothing','[P := v]'],['Exp → id','nothing','[P := x]'],['Exp → unop Exp₁','1 temp','code₁ ++ [P := unop p₁]'],['Exp → Exp₁ op Exp₂','2 temps','code₁ ++ code₂ ++ [P := p₁ op p₂]'],
+ ['Exp → f( Exps )','1 temp per argument (in Exps)','code₁ ++ … ++ codeₙ ++ [P := CALL f(p₁ … pₙ)]'],
+ ['Stat → Stat₁ ; Stat₂','nothing','code₁ ++ code₂'],['Stat → id := Exp','1 temp','code(Exp) ++ [x := P]'],
+ ['Stat → if Cond then Stat₁','2 labels','code₁ ++ [LABEL l₁] ++ code₂ ++ [LABEL l₂]    (Cond: l₁ / l₂)'],
+ ['Stat → if Cond then Stat₁ else Stat₂','3 labels','code₁ ++ [LABEL l₁] ++ code₂ ++ [GOTO l₃, LABEL l₂] ++ code₃ ++ [LABEL l₃]    (Cond: l₁ / l₂)'],
+ ['Stat → while Cond do Stat₁','3 labels','[LABEL l₁] ++ code₁ ++ [LABEL l₂] ++ code₂ ++ [GOTO l₁, LABEL l₃]    (Cond: l₂ / l₃)'],
+ ['Stat → repeat Stat₁ until Cond','2 labels','[LABEL l₁] ++ code₁ ++ code₂ ++ [LABEL l₂]    (Cond: l₂ / l₁)'],
+ ['Cond → Exp₁ relop Exp₂','2 temps','code₁ ++ code₂ ++ [IF t₁ op t₂ THEN lt ELSE lf]'],['Cond → true / false','nothing','[GOTO lt]  /  [GOTO lf]'],['Cond → ! Cond₁','nothing','code of Cond₁ with lt and lf swapped'],
+ ['Cond → Cond₁ && Cond₂','1 label','code₁ (true → arg₂, false → lf) ++ [LABEL arg₂] ++ code₂'],['Cond → Cond₁ || Cond₂','1 label','code₁ (true → lt, false → arg₂) ++ [LABEL arg₂] ++ code₂']];
+ return `<h2>Rules at a glance</h2><p class="mut">Two habits cover all of them: a call <b>takes its names first</b>, then recurses; and the code is glued in the order the formula shows. “Cond: a / b” means the condition is given the true label a and the false label b.</p>
+ <div class="scroll"><table><tr><th>Rule</th><th>Takes before recursing</th><th>Code produced</th></tr>${R.map(r=>`<tr><td class="mono">${esc(r[0])}</td><td>${esc(r[1])}</td><td class="mono">${esc(r[2])}</td></tr>`).join('')}</table></div>
+ <div class="card"><b>Checklist for an exam answer</b><ol class="m"><li>Did each construct take its names before translating its parts?</li><li>Did every condition get the right pair of labels (true first)?</li><li>Does each loop jump back to the right label (while: the start; repeat: the start, from the condition’s false side)?</li><li>Is an assignment’s value copied from a temporary at the end?</li><li>Is the code in the order of the formula, not the order the names were taken?</li></ol></div>`});
+/* ===== wiring ===== */
+const rendered={};
+(function(){const nav=$('nav'),host=$('stages');
+ TABS.forEach((t,i)=>{const b=document.createElement('button');b.textContent=(i?i+' · ':'')+t.name;b.dataset.i=i;nav.appendChild(b);const s=document.createElement('section');s.className='stage';s.id='s'+i;host.appendChild(s)});
+ const show=i=>{if(!rendered[i]){const t=TABS[i];$('s'+i).innerHTML=t.html();t.after();rendered[i]=1}
+  TABS.forEach((_,k)=>$('s'+k).classList.toggle('on',k===i));nav.querySelectorAll('button').forEach((b,k)=>b.classList.toggle('on',k===i));window.scrollTo(0,0);try{localStorage.setItem('c6trees',i)}catch(e){}};
+ nav.onclick=e=>{const b=e.target.closest('button');if(b)show(+b.dataset.i)};
+ let s=0;try{s=+localStorage.getItem('c6trees')||0}catch(e){}if(s>=TABS.length)s=0;show(s);
+ document.addEventListener('mouseover',e=>{const t=e.target.closest&&e.target.closest('[data-n]');if(!t)return;document.querySelectorAll('[data-n="'+t.dataset.n+'"]').forEach(x=>x.classList.add('hl'))});
+ document.addEventListener('mouseout',()=>document.querySelectorAll('.hl').forEach(x=>x.classList.remove('hl')));
+ document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-n]');if(!t)return;const was=t.classList.contains('sel');document.querySelectorAll('.sel').forEach(x=>x.classList.remove('sel'));if(!was)document.querySelectorAll('[data-n="'+t.dataset.n+'"]').forEach(x=>x.classList.add('sel'))})})();
+
+</script></body></html>
