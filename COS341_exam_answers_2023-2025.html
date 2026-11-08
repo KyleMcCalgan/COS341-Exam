@@ -1,0 +1,832 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>COS341 Exam Answers 2023–2025</title><style>:root{--bg:#f6f7f9;--card:#fff;--ink:#14181f;--mute:#566074;--line:#d9dee7;--acc:#2b5fd9;--acc-bg:#e6edff;--code-bg:#f0f2f6;--ok:#1d7a3a;--ok-bg:#e3f4e8;--ver:#1f5fa8;--ver-bg:#e2eefb;--mine:#8a5a00;--mine-bg:#fdf0d5;--flag-bg:#fff6e0;--flag-line:#e0b04a;--conf:#fbd5d5;--conf-ink:#8c1a1a}
+:root[data-theme=dark]{--bg:#12151b;--card:#1a1f28;--ink:#e8ebf1;--mute:#9aa4b6;--line:#2c3441;--acc:#7fa6ff;--acc-bg:#232d47;--code-bg:#11151c;--ok:#6fd18c;--ok-bg:#16301f;--ver:#7db7f2;--ver-bg:#172a40;--mine:#f0c06a;--mine-bg:#3a2d10;--flag-bg:#2d2610;--flag-line:#8a6d22;--conf:#5a2323;--conf-ink:#ffb3b3}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#12151b;--card:#1a1f28;--ink:#e8ebf1;--mute:#9aa4b6;--line:#2c3441;--acc:#7fa6ff;--acc-bg:#232d47;--code-bg:#11151c;--ok:#6fd18c;--ok-bg:#16301f;--ver:#7db7f2;--ver-bg:#172a40;--mine:#f0c06a;--mine-bg:#3a2d10;--flag-bg:#2d2610;--flag-line:#8a6d22;--conf:#5a2323;--conf-ink:#ffb3b3}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.top{padding:18px 16px 0;max-width:1100px;margin:0 auto}
+h1{font-size:1.45rem;margin:0 0 4px;line-height:1.25}
+.sub{margin:0 0 10px;color:var(--mute)}
+.legendbar{font-size:.82rem;color:var(--mute);display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin-bottom:12px}
+.legendbar .k{flex-basis:100%}
+.years{display:flex;gap:6px;border-bottom:2px solid var(--line)}
+.years button{flex:1;max-width:160px;font:inherit;font-size:1.05rem;font-weight:650;padding:10px 12px;border:0;border-radius:10px 10px 0 0;background:transparent;color:var(--mute);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
+.years button[aria-selected=true]{color:var(--acc);border-bottom-color:var(--acc);background:var(--acc-bg)}
+main{max-width:1100px;margin:0 auto;padding:12px 16px 60px}
+.intro{color:var(--mute);margin:6px 0 10px}
+.qnav{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 14px}
+.qnav button{font:inherit;font-weight:600;min-width:46px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.qnav button[aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:#fff}
+:root[data-theme=dark] .qnav button[aria-pressed=true]{color:#0b1020}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .qnav button[aria-pressed=true]{color:#0b1020}}
+.q{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px 20px}
+.q header{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;justify-content:space-between;margin-bottom:8px}
+.q h3{margin:0;font-size:1.2rem}
+.meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pts{font-weight:650;color:var(--mute);font-size:.9rem}
+.chip{display:inline-block;font-size:.76rem;font-weight:650;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.chip.ok{color:var(--ok);background:var(--ok-bg)}.chip.ver{color:var(--ver);background:var(--ver-bg)}.chip.mine{color:var(--mine);background:var(--mine-bg)}
+.ask{font-size:.9rem;color:var(--mute);border-left:3px solid var(--line);padding:2px 0 2px 10px;margin:4px 0 12px;font-style:italic}
+h4{margin:20px 0 6px;font-size:1rem}h5{margin:10px 0 4px;font-size:.9rem;color:var(--mute)}
+p{margin:6px 0 8px}ul{margin:6px 0 8px;padding-left:22px}li{margin:3px 0}
+.small{font-size:.86rem;color:var(--mute)}
+code{font:.9em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--code-bg);padding:1px 5px;border-radius:5px}
+pre.code{font:.86rem/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--code-bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;overflow-x:auto;margin:8px 0;white-space:pre}
+pre.code code{background:none;padding:0}
+.tcode{background:var(--code-bg);border:1px solid var(--line);border-radius:10px;padding:8px 0;margin:8px 0;overflow-x:auto}
+.ln{display:flex;font:.86rem/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;border-left:4px solid transparent;padding:0 12px 0 0;min-width:max-content}
+.ln code{background:none;padding:0;font:inherit;white-space:pre}
+.tg{flex:0 0 118px;font:600 .68rem/1.9 system-ui,sans-serif;text-transform:uppercase;letter-spacing:.04em;color:var(--mute);padding-left:8px}
+.t-pro,.t-epi{border-left-color:#8c6ad8;background:rgba(140,106,216,.10)}
+.t-save{border-left-color:#d98a2b;background:rgba(217,138,43,.10)}
+.t-arg{border-left-color:#2b8ad9;background:rgba(43,138,217,.10)}
+.t-res{border-left-color:#2ba86a;background:rgba(43,168,106,.10)}
+.ln.cm code{color:var(--mute);font-style:italic}
+.ln.cm{padding-top:4px}
+.tw{overflow-x:auto;margin:8px 0}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
+thead th{background:var(--code-bg);white-space:nowrap}
+table.slr{width:auto;min-width:100%}table.slr th,table.slr td{text-align:center;padding:5px 8px;font-variant-numeric:tabular-nums}
+table.slr tbody th{background:var(--code-bg)}th.g{background:var(--acc-bg)}
+td.conf{background:var(--conf);color:var(--conf-ink);font-weight:800}
+.note{border:1px solid var(--flag-line);background:var(--flag-bg);border-radius:10px;padding:9px 13px;margin:12px 0;font-size:.92rem}
+.note.ok{border-color:var(--ok);background:var(--ok-bg)}
+.fig{border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0;overflow-x:auto;text-align:center;background:var(--card)}
+.fig svg{max-width:100%;height:auto;color:var(--ink)}
+.fig.dfa svg{min-width:460px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:center;font-size:.85rem;margin-top:8px}
+.legend i{display:inline-block;width:13px;height:13px;border-radius:50%;vertical-align:-2px;margin-right:5px;border:1px solid var(--mute)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:760px){.two{grid-template-columns:1fr}.tg{flex-basis:92px}.q{padding:14px 13px 18px}}
+details{border:1px solid var(--line);border-radius:10px;padding:6px 12px;margin:10px 0}
+summary{cursor:pointer;font-weight:600;padding:3px 0}
+.states{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin-top:8px}
+.st{font:.8rem/1.5 ui-monospace,Menlo,Consolas,monospace;background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:6px 9px}
+.st b{font-family:system-ui,sans-serif}
+.tn rect{stroke-width:1.5}
+.tn text{font:600 12px system-ui,sans-serif}
+.tn .tt{font:500 11px system-ui,sans-serif}
+.two>div{min-width:0}
+
+/* Shared site palette and readable sans-serif styling */
+:root{color-scheme:light dark;--bg:#f5f7fa;--card:#fff;--ink:#18212f;--mute:#526071;--line:#d4dbe4;--acc:#1756a9;--acc-bg:#eaf1fa;--code-bg:#edf1f5;--ok:#28713d;--ok-bg:#e4f1e7;--ver:#1756a9;--ver-bg:#eaf1fa;--mine:#8a5a00;--mine-bg:#fff0bf;--flag-bg:#fff0bf;--flag-line:#8a5a00;--conf:#f8e8e5;--conf-ink:#a83228}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#151b24;--card:#1e2632;--ink:#edf2f8;--mute:#aab6c5;--line:#3a4655;--acc:#a7c9ff;--acc-bg:#26364b;--code-bg:#283341;--ok:#8fd17c;--ok-bg:#23432e;--ver:#a7c9ff;--ver-bg:#26364b;--mine:#e5a55c;--mine-bg:#493b1d;--flag-bg:#493b1d;--flag-line:#e5a55c;--conf:#482b2b;--conf-ink:#ff9b91}}
+:root[data-theme=light]{color-scheme:light;--bg:#f5f7fa;--card:#fff;--ink:#18212f;--mute:#526071;--line:#d4dbe4;--acc:#1756a9;--acc-bg:#eaf1fa;--code-bg:#edf1f5;--ok:#28713d;--ok-bg:#e4f1e7;--ver:#1756a9;--ver-bg:#eaf1fa;--mine:#8a5a00;--mine-bg:#fff0bf;--flag-bg:#fff0bf;--flag-line:#8a5a00;--conf:#f8e8e5;--conf-ink:#a83228}
+:root[data-theme=dark]{color-scheme:dark;--bg:#151b24;--card:#1e2632;--ink:#edf2f8;--mute:#aab6c5;--line:#3a4655;--acc:#a7c9ff;--acc-bg:#26364b;--code-bg:#283341;--ok:#8fd17c;--ok-bg:#23432e;--ver:#a7c9ff;--ver-bg:#26364b;--mine:#e5a55c;--mine-bg:#493b1d;--flag-bg:#493b1d;--flag-line:#e5a55c;--conf:#482b2b;--conf-ink:#ff9b91}
+body{color:var(--ink);font:17px/1.65 Arial,"Segoe UI",Roboto,sans-serif}
+.top{padding:16px 24px 0;max-width:none;margin:0;background:var(--card);border-bottom:1px solid var(--line)}
+.top-inner{max-width:1240px;margin:0 auto}
+.title-row{display:flex;align-items:center;flex-wrap:wrap;gap:12px}
+h1{font-size:21px;line-height:1.25;margin:0;font-weight:700}
+.index-link{margin-left:auto;color:var(--mute);text-decoration:none;border:1px solid var(--line);padding:2px 8px;font-size:14px;white-space:nowrap}
+.index-link:hover{color:var(--ink);background:var(--bg)}
+.sub{font-size:14px}
+.legendbar{line-height:1.5;margin:10px 0 14px}
+.years{max-width:1240px;margin:0 auto;gap:8px;border-bottom:0}
+.years button{flex:0 0 auto;max-width:none;font-size:15px;font-weight:600;padding:7px 12px;border:1px solid var(--line);border-bottom:3px solid transparent;border-radius:0;background:var(--card);color:var(--ink);margin-bottom:0}
+.years button[aria-selected=true]{background:var(--acc-bg);color:var(--ink);border-color:var(--acc);border-bottom-color:var(--acc)}
+main{max-width:1240px;padding:24px 24px 64px}
+.intro{max-width:85ch}
+.qnav button{border-radius:0}
+.q{border-radius:6px}
+.q header{border:0;padding:0;background:transparent}
+.note{border-radius:6px}
+.pdfnav{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}
+$$('.pdfnav button'),.themebtn{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:5px 10px;border-radius:0;cursor:pointer}
+$$('.pdfnav button')[aria-selected=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.source-viewer{border:1px solid var(--line);background:var(--card);padding:12px}
+.source-viewer header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+.source-viewer h2{font-size:18px;margin:0}
+.source-viewer a{color:var(--acc)}
+.pdf-frame{display:block;width:100%;height:min(78vh,980px);min-height:440px;border:1px solid var(--line);background:var(--bg)}
+@media(max-width:700px){.top{padding:14px 16px 0}main{padding:20px 16px 48px}.pdf-frame{height:70vh;min-height:380px}}
+</style></head><body>
+<header class="top"><div class="top-inner"><div class="title-row"><h1>COS341 Compiler Construction · exam answers</h1><a class="index-link" href="index.html">← Index</a><button class="themebtn" id="themeToggle" type="button">Light / dark</button></div>
+<p class="sub">Past exam questions and worked answers for 2023, 2024 and 2025. Pick a year, then a question.</p>
+<div class="legendbar"><span>Status tags:</span><span class="chip ok">checked against marked script</span> <span class="chip ver">verified in code</span> <span class="chip mine">my own derivation</span> <span class="k">checked against marked script = same as the lecturer-marked student answer · verified in code = computed and run in a simulator or interpreter · my own derivation = my reading, not marked by the lecturer</span></div>
+<nav class="years" role="tablist" aria-label="Exam years and source papers"><button role="tab" aria-selected="false" data-y="23">2023</button><button role="tab" aria-selected="false" data-y="24">2024</button><button role="tab" aria-selected="false" data-y="25">2025</button><button role="tab" aria-selected="false" data-y="src">Source PDFs</button></nav></div></header>
+<main><div class="pane" id="p23" hidden><p class="intro">Final exam 15 June 2023 · 50 points · A (5) · B (10) · C (10) · D (10) · E (15). Question E asks for Chapter 8 work, D for Chapter 6 + 9.</p><div class="qnav" data-year="23"><button data-q="y23-A">A</button><button data-q="y23-B">B</button><button data-q="y23-C">C</button><button data-q="y23-D">D</button><button data-q="y23-E">E</button></div><section class="q" id="y23-A" hidden><header><h3>Question A · multiple choice</h3><div class="meta"><span class="pts">5 points</span><span class="chip mine">my own derivation</span></div></header><div class="ask">Five one-answer questions across the book.</div><div class="ans"><div class="tw"><table class=""><thead><tr><th>#</th><th>Answer</th><th>Why</th></tr></thead><tbody><tr><td>1</td><td><b>c</b></td><td>Minimise both DFAs; minimal DFAs are unique up to renaming, so equal ⇔ same language. (a) is wrong as written: you would need a word in the <i>symmetric difference</i>, not the intersection. (b) two different NFAs/DFAs can accept the same language. (d) parse trees do not decide language equality.</td></tr><tr><td>2</td><td><b>c</b></td><td>Word membership is decidable for CFGs (CYK / LL / LR parsers). (b) is false: grammar ambiguity is <i>un</i>decidable. (a) is false: CFGs can be ambiguous. (d) is false: context-sensitive grammars are <i>more</i> expressive.</td></tr><tr><td>3</td><td><b>b</b></td><td>An LL(1) parser is deterministic with one token of look-ahead and runs in linear time. (a) is backwards: the LL(1) languages are a <i>smaller</i> class. (c) is false: every ε-free CFG has a GNF. (d) is false: general algorithms for GNF grammars exist, they are just not deterministic/efficient.</td></tr><tr><td>4</td><td><b>c</b></td><td>Intermediate code is translated by matching tiles (patterns) against it, greedily, largest first (Chapter 7). (a), (b), (d) describe things the course never does.</td></tr><tr><td>5</td><td><b>c</b></td><td>Liveness analysis sets up recursive equations <code>in[i] = gen[i] ∪ (out[i] \ kill[i])</code>, <code>out[i] = ∪ in[succ]</code> and iterates them to a fixpoint. (b) is register allocation (colouring), a later step.</td></tr></tbody></table></div><div class="note flag"><b>Flag:</b> questions 3 and 4 are my reading of the options. In 4 the option says "with backtracking" while the textbook's greedy Largest-Fit-First does <i>not</i> backtrack; (c) is still the only option about pattern matching, so I would pick it.</div></div></section><section class="q" id="y23-B" hidden><header><h3>Question B · is the grammar LL(1)?</h3><div class="meta"><span class="pts">10 points</span><span class="chip ver">verified in code</span></div></header><div class="ask">Investigate stepwise whether the branching-program grammar is suitable for LL(1) parsing: do not forget the additional rule ($), identify the relevant rules [3], give each relevant rule's LA-set [6], conclude by comparing [1].</div><div class="ans"><h4>Steps 1–2 [3 pts] · the additional rule, then the relevant rules</h4><p>Add a rule that produces the end-of-file symbol: <code>0.&nbsp;S → PROG $</code></p><h4>Step 2 · which rules are relevant</h4><p>Only nonterminals that have <b>more than one</b> rule need a decision. Those are <b>PROG</b> (rules 1, 2), <b>INSTR</b> (rules 3, 4) and <b>ELSE</b> (rules 6, 7). Rule 0 and rule 5 (the only rule for BRANCH) are not relevant: nothing to choose between.</p><p class="small">Helper sets: PROG and ELSE are nullable. FIRST(INSTR) = {c, i}, FIRST(BRANCH) = {i}. FOLLOW(PROG) = {$, }}  (from rule 0 and from rule 5), FOLLOW(INSTR) = FOLLOW(BRANCH) = FOLLOW(ELSE) = {;} (from rule 1).</p><h4>Step 3 [6 pts] · Look-Ahead set of each relevant rule</h4><div class="tw"><table class=""><thead><tr><th>Rule</th><th>Production</th><th>LA-set</th><th>How</th></tr></thead><tbody><tr><td>1</td><td>PROG → INSTR ; PROG</td><td>{c, i}</td><td>FIRST(INSTR ; PROG)</td></tr><tr><td>2</td><td>PROG → ε</td><td>{$, }}</td><td>FOLLOW(PROG)</td></tr><tr><td>3</td><td>INSTR → c</td><td>{c}</td><td>FIRST(c)</td></tr><tr><td>4</td><td>INSTR → BRANCH</td><td>{i}</td><td>FIRST(BRANCH) = {i}</td></tr><tr><td>6</td><td>ELSE → e { PROG }</td><td>{e}</td><td>FIRST(e …)</td></tr><tr><td>7</td><td>ELSE → ε</td><td>{;}</td><td>FOLLOW(ELSE) = FOLLOW(BRANCH) = FOLLOW(INSTR) = {;}</td></tr></tbody></table></div><h4>Step 4 [1 pt] · compare the LA-sets of rules with the same left-hand side</h4><div class="tw"><table class=""><thead><tr><th>Nonterminal</th><th>Rules</th><th>LA-sets</th><th>Intersection</th></tr></thead><tbody><tr><td>PROG</td><td>1 vs 2</td><td>{c,i} vs {$,}}</td><td>∅  ✓</td></tr><tr><td>INSTR</td><td>3 vs 4</td><td>{c} vs {i}</td><td>∅  ✓</td></tr><tr><td>ELSE</td><td>6 vs 7</td><td>{e} vs {;}</td><td>∅  ✓</td></tr></tbody></table></div><div class="note ok"><b>Conclusion:</b> all look-ahead sets of rules sharing a left-hand side are pairwise disjoint, so the grammar <b>is LL(1)</b>.</div><p class="small">Checked by computing nullable/FIRST/FOLLOW in code: the LA-sets above are exactly what it produced.</p></div></section><section class="q" id="y23-C" hidden><header><h3>Question C · translator functions</h3><div class="meta"><span class="pts">10 points</span><span class="chip ver">verified in code</span></div></header><div class="ask">Provide TransStat [6], TransCond [1] and TransExp [3] for the given source grammar and intermediate grammar. TransStat uses TransCond and TransExp; TransCond uses only TransExp.</div><div class="ans"><p>Textbook method (Figs 6.3, 6.5, 6.6) adapted to this language. The differences from the book are in the table below; <b>do not copy the book unchanged</b>.</p><h4>TransStat [6 pts]</h4><pre class="code ">TransStat(Stat, vtable, ftable) = case Stat of
+  Stat1 ; Stat2   →  code1 = TransStat(Stat1, vtable, ftable)
+                     code2 = TransStat(Stat2, vtable, ftable)
+                     return code1 ++ code2
+
+  id := Exp       →  place = newvar()
+                     code1 = TransExp(Exp, vtable, ftable, place)
+                     x     = lookup(vtable, getname(id))
+                     return code1 ++ [x := place]
+
+  while Cond do Stat1
+                  →  label1 = newlabel()
+                     label2 = newlabel()
+                     label3 = newlabel()
+                     code1  = TransCond(Cond, label2, label3, vtable, ftable)
+                     code2  = TransStat(Stat1, vtable, ftable)
+                     return [LABEL label1] ++ code1 ++ [LABEL label2] ++ code2
+                            ++ [GOTO label1, LABEL label3]</pre><h4>TransCond [1 pt]</h4><pre class="code ">TransCond(Cond, labelt, labelf, vtable, ftable) = case Cond of
+  Exp1 relop Exp2 →  t1    = newvar()
+                     t2    = newvar()
+                     code1 = TransExp(Exp1, vtable, ftable, t1)
+                     code2 = TransExp(Exp2, vtable, ftable, t2)
+                     op    = transop(getopname(relop))
+                     return code1 ++ code2
+                            ++ [IF t1 op t2 THEN labelt ELSE labelf]</pre><h4>TransExp [3 pts]</h4><pre class="code ">TransExp(Exp, vtable, ftable, place) = case Exp of
+  num             →  v = getvalue(num)
+                     return [place := v]
+
+  id              →  x = lookup(vtable, getname(id))
+                     return [place := x]
+
+  Exp1 binop Exp2 →  t1    = newvar()
+                     t2    = newvar()
+                     code1 = TransExp(Exp1, vtable, ftable, t1)
+                     code2 = TransExp(Exp2, vtable, ftable, t2)
+                     op    = transop(getopname(binop))
+                     return code1 ++ code2 ++ [place := t1 op t2]</pre><h4>What is adapted to this question</h4><div class="tw"><table class=""><thead><tr><th>Spot</th><th>Book version</th><th>This language</th></tr></thead><tbody><tr><td>Statements</td><td>if / while / repeat, calls</td><td>only <code>;</code>, <code>id := Exp</code>, <code>while Cond do Stat</code></td></tr><tr><td>Cond</td><td>&&, ||, !, true, false, relop</td><td>only <code>Exp relop Exp</code>, so <b>no</b> hand-down tricks beyond the two labels</td></tr><tr><td>Exp</td><td>calls, unary ops</td><td>only <code>num</code>, <code>id</code>, <code>Exp binop Exp</code></td></tr><tr><td>IR shape</td><td>book's IR</td><td>IF takes <code>id relop ATOM</code>: both operands are plain ids/numbers, which our temps are, so <code>IF t1 op t2</code> is legal</td></tr></tbody></table></div><h4>Worked check</h4><p>Source: <code>x := 0 ; while x &lt; 3 do x := x + 1</code>, with x ↦ u0. Output of the translator above:</p><pre class="code ">t0 := 0
+u0 := t0
+LABEL L0
+t1 := u0
+t2 := 3
+IF t1 &lt; t2 THEN L1 ELSE L2
+LABEL L1
+t4 := u0
+t5 := 1
+t3 := t4 + t5
+u0 := t3
+GOTO L0
+LABEL L2</pre><p class="small">Run in a small interpreter: x ends as 3.</p><div class="note flag"><b>Flag:</b> <code>id := Exp</code> uses a fresh temp then a move (<code>x := place</code>). That is how the 2025 translation (and the lecturer-marked script) goes. If your slides translate straight into <code>x</code>, drop the temp: <code>place = lookup(vtable, getname(id))</code> and return <code>TransExp(Exp, …, place)</code>.</div></div></section><section class="q" id="y23-D" hidden><header><h3>Question D · Chapter 6 + 9: euclid, caller-saves</h3><div class="meta"><span class="pts">10 points</span><span class="chip ver">verified in code</span></div></header><div class="ask">Present the final intermediate code (algorithms, prologue, call-sequence, epilogue) for MAIN (x:=12; y:=8; z := CALL euclid(x,y)) and the function euclid(a,b). Assumptions: mod is a binop, ≠ is a relop, caller-saves, enough frame space.</div><div class="ans"><div class="note ok"><b>Please note: I'm using the book method (caller-saves, Figs 9.2–9.4).</b> Write this sentence in your answer: marks are lost without it.</div><h4>Setup (my choices, since no symbol table is given)</h4><div class="tw"><table class=""><thead><tr><th>Source name</th><th>Internal name</th></tr></thead><tbody><tr><td>a, b (parameters)</td><td>p1, p2</td></tr><tr><td>c</td><td>u0</td></tr><tr><td>x, y, z (MAIN)</td><td>u1, u2, u3</td></tr><tr><td>euclid</td><td>f</td></tr><tr><td>modulo, ≠</td><td>binop <code>mod</code>, relop <code>!=</code> (given)</td></tr></tbody></table></div><p>Function translated first, then MAIN (counters carry on). Temps t0…, labels L0…</p><h4>Function</h4><div class="tcode"><div class="ln t-pro"><span class="tg">prologue</span><code>LABEL f</code></div><div class="ln t-pro"><span class="tg"></span><code>p1 := M[SP+4]</code></div><div class="ln t-pro"><span class="tg"></span><code>p2 := M[SP+8]</code></div><div class="ln t-body"><span class="tg"></span><code>LABEL L0</code></div><div class="ln t-body"><span class="tg"></span><code>t0 := p1</code></div><div class="ln t-body"><span class="tg"></span><code>t1 := p2</code></div><div class="ln t-body"><span class="tg"></span><code>IF t0 != t1 THEN L1 ELSE L2</code></div><div class="ln t-body"><span class="tg"></span><code>LABEL L1</code></div><div class="ln t-body"><span class="tg"></span><code>t2 := p2</code></div><div class="ln t-body"><span class="tg"></span><code>u0 := t2</code></div><div class="ln t-body"><span class="tg"></span><code>t4 := p1</code></div><div class="ln t-body"><span class="tg"></span><code>t5 := p2</code></div><div class="ln t-body"><span class="tg"></span><code>t3 := t4 mod t5</code></div><div class="ln t-body"><span class="tg"></span><code>p2 := t3</code></div><div class="ln t-body"><span class="tg"></span><code>t6 := u0</code></div><div class="ln t-body"><span class="tg"></span><code>p1 := t6</code></div><div class="ln t-body"><span class="tg"></span><code>GOTO L0</code></div><div class="ln t-body"><span class="tg"></span><code>LABEL L2</code></div><div class="ln t-epi"><span class="tg">epilogue</span><code>M[SP+4] := p1</code></div><div class="ln t-epi"><span class="tg"></span><code>GOTO M[SP]</code></div></div><h4>MAIN</h4><div class="tcode"><div class="ln t-body"><span class="tg"></span><code>t7 := 12</code></div><div class="ln t-body"><span class="tg"></span><code>u1 := t7</code></div><div class="ln t-body"><span class="tg"></span><code>t8 := 8</code></div><div class="ln t-body"><span class="tg"></span><code>u2 := t8</code></div><div class="ln t-body"><span class="tg"></span><code>t10 := u1</code></div><div class="ln t-body"><span class="tg"></span><code>t11 := u2</code></div><div class="ln cm"><span class="tg"></span><code>// ---- call f(t10, t11)  -&gt;  t9 ----</code></div><div class="ln t-save"><span class="tg">save + move SP</span><code>SP := SP - 12</code></div><div class="ln t-arg"><span class="tg">args + jump</span><code>M[SP+4] := t10</code></div><div class="ln t-arg"><span class="tg"></span><code>M[SP+8] := t11</code></div><div class="ln t-arg"><span class="tg"></span><code>M[SP] := L3</code></div><div class="ln t-arg"><span class="tg"></span><code>GOTO f</code></div><div class="ln t-arg"><span class="tg"></span><code>LABEL L3</code></div><div class="ln t-res"><span class="tg">result + restore</span><code>t9 := M[SP+4]</code></div><div class="ln t-res"><span class="tg"></span><code>SP := SP + 12</code></div><div class="ln t-body"><span class="tg"></span><code>u3 := t9</code></div></div><h4>Why these choices</h4><ul><li><b>Prologue:</b> label, then load the parameters from the caller's frame: <code>p1 := M[SP+4]</code>, <code>p2 := M[SP+8]</code>.</li><li><b>No <code>SP := SP − framesize</code> in the function:</b> framesize = 4 × the biggest save set of any call <i>inside</i> it. euclid makes no calls, so it is 0.</li><li><b>Epilogue:</b> <code>M[SP+4] := p1</code> puts the returned <code>a</code> into the result slot, then <code>GOTO M[SP]</code> jumps to the return label the caller stored.</li><li><b>Save set of the call in MAIN = ∅:</b> save what is live after the call, minus the result variable. After <code>z := CALL …</code> nothing else is read, so nothing is live (x, y are dead too). So the call sequence has no saves and no restores.</li><li><b>Call sequence:</b> <code>SP := SP − 12</code> (3 words: return address + 2 arguments), arguments to <code>M[SP+4]</code>, <code>M[SP+8]</code>, return label to <code>M[SP]</code>, <code>GOTO f</code>, <code>LABEL L3</code>, result from <code>M[SP+4]</code>, <code>SP := SP + 12</code>.</li></ul><details><summary>If your marker expects "save all locals" in MAIN</summary><p>Then x, y and z (u1, u2, u3) are stored first at <code>M[SP]</code>, <code>M[SP+4]</code>, <code>M[SP+8]</code> and restored after the call, and MAIN needs a frame of 12. The program still gives the same result (checked).</p></details><div class="note flag"><b>Heads-up on the source program itself:</b> <code>while a ≠ b do {c := b; b := a mod b; a := c}</code> is not really Euclid's algorithm (it should be <code>while b ≠ 0</code>). For x=12, y=8 it ends up computing <code>a mod 0</code>. I simulated my IR next to a direct interpreter of the source: they agree everywhere (both return 5 for a = b = 5 and both hit the division by zero otherwise), so the <i>translation</i> is right; just do not expect "4" as the run result. Translating is all the question asks.</div></div></section><section class="q" id="y23-E" hidden><header><h3>Question E · liveness + interference</h3><div class="meta"><span class="pts">15 points</span><span class="chip ver">verified in code</span></div></header><div class="ask">Five variables n, t, x, u, b. E.1 liveness table with succ/gen/kill/out/in; E.2 table of variable dependencies (interference).</div><div class="ans"><h4>E.1 · final liveness table [10 pts]</h4><div class="tw"><table class=""><thead><tr><th>Line i</th><th>succ[i]</th><th>gen[i]</th><th>kill[i]</th><th>out[i]</th><th>in[i]</th></tr></thead><tbody><tr><td>1</td><td>{2}</td><td>∅</td><td>{n}</td><td>{n, u}</td><td>{u}</td></tr><tr><td>2</td><td>{3}</td><td>∅</td><td>{t}</td><td>{n, t, u}</td><td>{n, u}</td></tr><tr><td>3</td><td>{4}</td><td>{u}</td><td>{x}</td><td>{n, t, x}</td><td>{n, t, u}</td></tr><tr><td>4</td><td>{5, 9}</td><td>{n, x}</td><td>∅</td><td>{n, t, x}</td><td>{n, t, x}</td></tr><tr><td>5</td><td>{6}</td><td>{t, x}</td><td>{b}</td><td>{b, n, t, x}</td><td>{n, t, x}</td></tr><tr><td>6</td><td>{7, 9}</td><td>{b, n}</td><td>∅</td><td>{n, t, x}</td><td>{b, n, t, x}</td></tr><tr><td>7</td><td>{8}</td><td>{t, x}</td><td>{x}</td><td>{n, t, x}</td><td>{n, t, x}</td></tr><tr><td>8</td><td>{5}</td><td>∅</td><td>∅</td><td>{n, t, x}</td><td>{n, t, x}</td></tr><tr><td>9</td><td>∅</td><td>{x}</td><td>∅</td><td>∅</td><td>{x}</td></tr></tbody></table></div><p class="small">Rule used: <code>in[i] = gen[i] ∪ (out[i] \ kill[i])</code>, <code>out[i] = ∪ in[j]</code> for j in succ[i]. Line 4 and 6 are conditional jumps, so they have two successors (the fall-through and line 9).</p><h4>E.2 · interference table [5 pts]</h4><p>Only lines that assign a variable are relevant (1, 2, 3, 5, 7). For each one the assigned variable interferes with everything in out[i], except itself, and except the source of a plain move <code>x := y</code> (Definition 8.2).</p><div class="tw"><table class=""><thead><tr><th>Relevant line i</th><th>Left-hand-side variable</th><th>Interferes with</th></tr></thead><tbody><tr><td>1</td><td>n</td><td>u</td></tr><tr><td>2</td><td>t</td><td>n, u</td></tr><tr><td>3</td><td>x</td><td>n, t</td></tr><tr><td>5</td><td>b</td><td>n, t, x</td></tr><tr><td>7</td><td>x</td><td>n, t</td></tr></tbody></table></div><p>Symmetric graph edges: n–u, t–u, n–t, n–x, t–x, b–n, b–t, b–x.</p><div class="fig"><svg
+ viewBox="0.00 0.00 140.20 95.62" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 91.62)">
+<title>G</title>
+<polygon fill="none" stroke="none" points="-4,4 -4,-91.62 136.2,-91.62 136.2,4 -4,4"/>
+<!-- b -->
+<g id="node1" class="node">
+<title>b</title>
+<ellipse fill="#f4a3a3" stroke="currentColor" cx="26.09" cy="-20" rx="20" ry="20"/>
+<text fill="#14181f" text-anchor="middle" x="26.09" y="-16.5" font-family="Times,serif" font-size="15.00">b</text>
+</g>
+<!-- n -->
+<g id="node2" class="node">
+<title>n</title>
+<ellipse fill="#9cc4f0" stroke="currentColor" cx="62.87" cy="-67.62" rx="20" ry="20"/>
+<text fill="#14181f" text-anchor="middle" x="62.87" y="-64.12" font-family="Times,serif" font-size="15.00">n</text>
+</g>
+<!-- b&#45;&#45;n -->
+<g id="edge1" class="edge">
+<title>b&#45;&#45;n</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M38.34,-35.86C42.27,-40.94 46.62,-46.58 50.55,-51.67"/>
+</g>
+<!-- t -->
+<g id="node3" class="node">
+<title>t</title>
+<ellipse fill="#a6dba0" stroke="currentColor" cx="68.96" cy="-26.82" rx="20" ry="20"/>
+<text fill="#14181f" text-anchor="middle" x="68.96" y="-23.32" font-family="Times,serif" font-size="15.00">t</text>
+</g>
+<!-- b&#45;&#45;t -->
+<g id="edge2" class="edge">
+<title>b&#45;&#45;t</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M46.02,-23.17C47.07,-23.34 48.12,-23.5 49.17,-23.67"/>
+</g>
+<!-- x -->
+<g id="node5" class="node">
+<title>x</title>
+<ellipse fill="#f2dc82" stroke="currentColor" cx="20" cy="-62.05" rx="20" ry="20"/>
+<text fill="#14181f" text-anchor="middle" x="20" y="-58.55" font-family="Times,serif" font-size="15.00">x</text>
+</g>
+<!-- b&#45;&#45;x -->
+<g id="edge3" class="edge">
+<title>b&#45;&#45;x</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M23.19,-40.04C23.09,-40.71 22.99,-41.39 22.89,-42.07"/>
+</g>
+<!-- n&#45;&#45;t -->
+<g id="edge4" class="edge">
+<title>n&#45;&#45;t</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M65.84,-47.7C65.89,-47.37 65.94,-47.05 65.99,-46.73"/>
+</g>
+<!-- u -->
+<g id="node4" class="node">
+<title>u</title>
+<ellipse fill="#f4a3a3" stroke="currentColor" cx="112.2" cy="-54.44" rx="20" ry="20"/>
+<text fill="#14181f" text-anchor="middle" x="112.2" y="-50.94" font-family="Times,serif" font-size="15.00">u</text>
+</g>
+<!-- n&#45;&#45;u -->
+<g id="edge5" class="edge">
+<title>n&#45;&#45;u</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M82.37,-62.41C85.82,-61.49 89.4,-60.53 92.85,-59.61"/>
+</g>
+<!-- n&#45;&#45;x -->
+<g id="edge6" class="edge">
+<title>n&#45;&#45;x</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M42.94,-65.03C41.98,-64.9 41.01,-64.78 40.05,-64.65"/>
+</g>
+<!-- t&#45;&#45;u -->
+<g id="edge7" class="edge">
+<title>t&#45;&#45;u</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M86.05,-37.74C89.07,-39.67 92.22,-41.68 95.24,-43.6"/>
+</g>
+<!-- t&#45;&#45;x -->
+<g id="edge8" class="edge">
+<title>t&#45;&#45;x</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M52.65,-38.55C47.43,-42.31 41.63,-46.48 36.4,-50.25"/>
+</g>
+</g>
+</svg>
+<div class="legend"><span><i style="background:#f4a3a3"></i>RED: b, u</span><span><i style="background:#9cc4f0"></i>BLUE: n</span><span><i style="background:#a6dba0"></i>GREEN: t</span><span><i style="background:#f2dc82"></i>YELLOW: x</span></div></div><p class="small">(Bonus, not asked: the graph needs 4 colours, because n, t, x, b are mutually interfering.)</p><p class="small">Line 3 is a move <code>x := u</code>, so x–u is not an edge, and u is not live after it anyway.</p></div></section></div><div class="pane" id="p24" hidden><p class="intro">Final exam 11 November 2024 · 60 points · A (7) DFA · B (14) typecheck · C (15) translate · D (13) Ch 6+9 · E (11) interference graph.</p><div class="qnav" data-year="24"><button data-q="y24-A">A</button><button data-q="y24-B">B</button><button data-q="y24-C">C</button><button data-q="y24-D">D</button><button data-q="y24-E">E</button></div><section class="q" id="y24-A" hidden><header><h3>Task A · minimised DFA</h3><div class="meta"><span class="pts">7 points</span><span class="chip ver">verified in code</span></div></header><div class="ask">Construct the unique minimised DFA for L(RE), RE = 0 | 0,(0|1)*1 | −0,(0|1)*1 | 1(0|1)* | −1(0|1)* | 1(0|1)*,(0|1)*1 | −1(0|1)*,(0|1)*1 over Σ = {0, 1, −, ,}.</div><div class="ans"><div class="fig dfa"><svg
+ viewBox="0.00 0.00 515.58 205.50" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 201.5)">
+<title>G</title>
+<polygon fill="none" stroke="none" points="-4,4 -4,-201.5 511.58,-201.5 511.58,4 -4,4"/>
+<!-- start -->
+<g id="node1" class="node">
+<title>start</title>
+<ellipse fill="currentColor" stroke="currentColor" cx="1.8" cy="-102.75" rx="1.8" ry="1.8"/>
+</g>
+<!-- q0 -->
+<g id="node2" class="node">
+<title>q0</title>
+<ellipse fill="none" stroke="currentColor" cx="63.35" cy="-102.75" rx="23" ry="23"/>
+<text fill="currentColor" text-anchor="middle" x="63.35" y="-99.05" font-family="Times,serif" font-size="14.00">q0</text>
+</g>
+<!-- start&#45;&gt;q0 -->
+<g id="edge1" class="edge">
+<title>start&#45;&gt;q0</title>
+<path fill="none" stroke="currentColor" d="M3.83,-102.75C7.23,-102.75 18.48,-102.75 30.22,-102.75"/>
+<polygon fill="currentColor" stroke="currentColor" points="30.48,-106.25 40.48,-102.75 30.48,-99.25 30.48,-106.25"/>
+</g>
+<!-- q1 -->
+<g id="node3" class="node">
+<title>q1</title>
+<ellipse fill="none" stroke="currentColor" cx="224.34" cy="-170.75" rx="22.96" ry="22.96"/>
+<ellipse fill="none" stroke="currentColor" cx="224.34" cy="-170.75" rx="27" ry="27"/>
+<text fill="currentColor" text-anchor="middle" x="224.34" y="-167.05" font-family="Times,serif" font-size="14.00">q1</text>
+</g>
+<!-- q0&#45;&gt;q1 -->
+<g id="edge2" class="edge">
+<title>q0&#45;&gt;q1</title>
+<path fill="none" stroke="currentColor" d="M84.48,-111.36C111.06,-122.73 158.21,-142.89 190.11,-156.54"/>
+<polygon fill="currentColor" stroke="currentColor" points="188.91,-159.83 199.48,-160.55 191.67,-153.39 188.91,-159.83"/>
+<text fill="currentColor" text-anchor="middle" x="110.1" y="-127.35" font-family="Times,serif" font-size="13.00">0</text>
+</g>
+<!-- q2 -->
+<g id="node4" class="node">
+<title>q2</title>
+<ellipse fill="none" stroke="currentColor" cx="295.84" cy="-89.75" rx="22.96" ry="22.96"/>
+<ellipse fill="none" stroke="currentColor" cx="295.84" cy="-89.75" rx="27" ry="27"/>
+<text fill="currentColor" text-anchor="middle" x="295.84" y="-86.05" font-family="Times,serif" font-size="14.00">q2</text>
+</g>
+<!-- q0&#45;&gt;q2 -->
+<g id="edge3" class="edge">
+<title>q0&#45;&gt;q2</title>
+<path fill="none" stroke="currentColor" d="M86.45,-101.5C126.34,-99.25 210.7,-94.49 258.95,-91.77"/>
+<polygon fill="currentColor" stroke="currentColor" points="259.18,-95.26 268.96,-91.21 258.78,-88.28 259.18,-95.26"/>
+<text fill="currentColor" text-anchor="middle" x="156.84" y="-102.35" font-family="Times,serif" font-size="13.00">1</text>
+</g>
+<!-- q3 -->
+<g id="node5" class="node">
+<title>q3</title>
+<ellipse fill="none" stroke="currentColor" cx="156.84" cy="-43.75" rx="23" ry="23"/>
+<text fill="currentColor" text-anchor="middle" x="156.84" y="-40.05" font-family="Times,serif" font-size="14.00">q3</text>
+</g>
+<!-- q0&#45;&gt;q3 -->
+<g id="edge4" class="edge">
+<title>q0&#45;&gt;q3</title>
+<path fill="none" stroke="currentColor" d="M82.36,-89.64C89.1,-84.84 96.88,-79.44 104.1,-74.75 111.67,-69.82 120.01,-64.7 127.75,-60.07"/>
+<polygon fill="currentColor" stroke="currentColor" points="129.65,-63.01 136.47,-54.9 126.08,-56.99 129.65,-63.01"/>
+<text fill="currentColor" text-anchor="middle" x="110.1" y="-78.35" font-family="Times,serif" font-size="13.00">−</text>
+</g>
+<!-- q5 -->
+<g id="node6" class="node">
+<title>q5</title>
+<ellipse fill="none" stroke="currentColor" cx="386.33" cy="-89.75" rx="23" ry="23"/>
+<text fill="currentColor" text-anchor="middle" x="386.33" y="-86.05" font-family="Times,serif" font-size="14.00">q5</text>
+</g>
+<!-- q1&#45;&gt;q5 -->
+<g id="edge5" class="edge">
+<title>q1&#45;&gt;q5</title>
+<path fill="none" stroke="currentColor" d="M251.13,-171.96C271.6,-171.87 300.37,-169.29 322.58,-157.75 340.7,-148.34 356.29,-131.52 367.4,-116.96"/>
+<polygon fill="currentColor" stroke="currentColor" points="370.34,-118.86 373.41,-108.72 364.68,-114.74 370.34,-118.86"/>
+<text fill="currentColor" text-anchor="middle" x="295.84" y="-174.35" font-family="Times,serif" font-size="13.00">,</text>
+</g>
+<!-- q2&#45;&gt;q2 -->
+<g id="edge6" class="edge">
+<title>q2&#45;&gt;q2</title>
+<path fill="none" stroke="currentColor" d="M287.26,-115.5C286.78,-125.83 289.64,-134.5 295.84,-134.5 299.81,-134.5 302.41,-130.94 303.64,-125.67"/>
+<polygon fill="currentColor" stroke="currentColor" points="307.14,-125.74 304.41,-115.5 300.16,-125.21 307.14,-125.74"/>
+<text fill="currentColor" text-anchor="middle" x="295.84" y="-138.1" font-family="Times,serif" font-size="13.00">0,1</text>
+</g>
+<!-- q2&#45;&gt;q5 -->
+<g id="edge7" class="edge">
+<title>q2&#45;&gt;q5</title>
+<path fill="none" stroke="currentColor" d="M322.91,-89.75C332.34,-89.75 343.11,-89.75 353.02,-89.75"/>
+<polygon fill="currentColor" stroke="currentColor" points="353.33,-93.25 363.33,-89.75 353.33,-86.25 353.33,-93.25"/>
+<text fill="currentColor" text-anchor="middle" x="343.08" y="-93.35" font-family="Times,serif" font-size="13.00">,</text>
+</g>
+<!-- q3&#45;&gt;q2 -->
+<g id="edge9" class="edge">
+<title>q3&#45;&gt;q2</title>
+<path fill="none" stroke="currentColor" d="M178.6,-50.59C197.51,-56.83 226.2,-66.34 251.09,-74.75 254.21,-75.8 257.45,-76.9 260.69,-78.01"/>
+<polygon fill="currentColor" stroke="currentColor" points="259.73,-81.38 270.32,-81.3 261.99,-74.75 259.73,-81.38"/>
+<text fill="currentColor" text-anchor="middle" x="224.34" y="-78.35" font-family="Times,serif" font-size="13.00">1</text>
+</g>
+<!-- q6 -->
+<g id="node7" class="node">
+<title>q6</title>
+<ellipse fill="none" stroke="currentColor" cx="295.84" cy="-22.75" rx="23" ry="23"/>
+<text fill="currentColor" text-anchor="middle" x="295.84" y="-19.05" font-family="Times,serif" font-size="14.00">q6</text>
+</g>
+<!-- q3&#45;&gt;q6 -->
+<g id="edge8" class="edge">
+<title>q3&#45;&gt;q6</title>
+<path fill="none" stroke="currentColor" d="M179.55,-40.42C202.1,-36.96 237.6,-31.52 263.25,-27.59"/>
+<polygon fill="currentColor" stroke="currentColor" points="263.88,-31.03 273.23,-26.06 262.82,-24.12 263.88,-31.03"/>
+<text fill="currentColor" text-anchor="middle" x="224.34" y="-41.35" font-family="Times,serif" font-size="13.00">0</text>
+</g>
+<!-- q5&#45;&gt;q5 -->
+<g id="edge11" class="edge">
+<title>q5&#45;&gt;q5</title>
+<path fill="none" stroke="currentColor" d="M378.61,-111.55C377.77,-121.66 380.34,-130.5 386.33,-130.5 390.17,-130.5 392.6,-126.87 393.64,-121.6"/>
+<polygon fill="currentColor" stroke="currentColor" points="397.14,-121.68 394.05,-111.55 390.14,-121.39 397.14,-121.68"/>
+<text fill="currentColor" text-anchor="middle" x="386.33" y="-134.1" font-family="Times,serif" font-size="13.00">0</text>
+</g>
+<!-- q7 -->
+<g id="node8" class="node">
+<title>q7</title>
+<ellipse fill="none" stroke="currentColor" cx="480.83" cy="-89.75" rx="22.96" ry="22.96"/>
+<ellipse fill="none" stroke="currentColor" cx="480.83" cy="-89.75" rx="27" ry="27"/>
+<text fill="currentColor" text-anchor="middle" x="480.83" y="-86.05" font-family="Times,serif" font-size="14.00">q7</text>
+</g>
+<!-- q5&#45;&gt;q7 -->
+<g id="edge12" class="edge">
+<title>q5&#45;&gt;q7</title>
+<path fill="none" stroke="currentColor" d="M409.25,-89.75C419.48,-89.75 431.92,-89.75 443.5,-89.75"/>
+<polygon fill="currentColor" stroke="currentColor" points="443.79,-93.25 453.79,-89.75 443.79,-86.25 443.79,-93.25"/>
+<text fill="currentColor" text-anchor="middle" x="431.58" y="-93.35" font-family="Times,serif" font-size="13.00">1</text>
+</g>
+<!-- q6&#45;&gt;q5 -->
+<g id="edge10" class="edge">
+<title>q6&#45;&gt;q5</title>
+<path fill="none" stroke="currentColor" d="M314.74,-36.31C327.66,-46.09 345.29,-59.43 359.7,-70.34"/>
+<polygon fill="currentColor" stroke="currentColor" points="357.67,-73.19 367.75,-76.44 361.89,-67.61 357.67,-73.19"/>
+<text fill="currentColor" text-anchor="middle" x="343.08" y="-62.35" font-family="Times,serif" font-size="13.00">,</text>
+</g>
+<!-- q7&#45;&gt;q5 -->
+<g id="edge13" class="edge">
+<title>q7&#45;&gt;q5</title>
+<path fill="none" stroke="currentColor" d="M457.57,-76.44C448.28,-72.4 437.29,-69.54 427.08,-71.75 423.38,-72.55 419.61,-73.72 415.95,-75.09"/>
+<polygon fill="currentColor" stroke="currentColor" points="414.42,-71.93 406.58,-79.05 417.15,-78.38 414.42,-71.93"/>
+<text fill="currentColor" text-anchor="middle" x="431.58" y="-75.35" font-family="Times,serif" font-size="13.00">0</text>
+</g>
+<!-- q7&#45;&gt;q7 -->
+<g id="edge14" class="edge">
+<title>q7&#45;&gt;q7</title>
+<path fill="none" stroke="currentColor" d="M471.91,-115.05C471.29,-125.57 474.27,-134.5 480.83,-134.5 485.13,-134.5 487.9,-130.65 489.11,-125.04"/>
+<polygon fill="currentColor" stroke="currentColor" points="492.6,-125.25 489.75,-115.05 485.62,-124.81 492.6,-125.25"/>
+<text fill="currentColor" text-anchor="middle" x="480.83" y="-138.1" font-family="Times,serif" font-size="13.00">1</text>
+</g>
+</g>
+</svg>
+</div><p>Start q0. Accepting (double circle): q1, q2, q7. A dead state is left out for clarity: every transition not drawn goes to it and never comes back.</p><div class="tw"><table class=""><thead><tr><th>State</th><th>Means</th><th>0</th><th>1</th><th>−</th><th>,</th></tr></thead><tbody><tr><td>q0 (start)</td><td>nothing read yet</td><td>q1</td><td>q2</td><td>q3</td><td>dead</td></tr><tr><td>q1 ✓</td><td>read exactly <code>0</code></td><td>dead</td><td>dead</td><td>dead</td><td>q5</td></tr><tr><td>q2 ✓</td><td>a whole number <code>1(0|1)*</code> or <code>−1(0|1)*</code></td><td>q2</td><td>q2</td><td>dead</td><td>q5</td></tr><tr><td>q3</td><td>read <code>−</code></td><td>q6</td><td>q2</td><td>dead</td><td>dead</td></tr><tr><td>q5</td><td>inside the fraction, last digit not a 1</td><td>q5</td><td>q7</td><td>dead</td><td>dead</td></tr><tr><td>q6</td><td>read <code>−0</code></td><td>dead</td><td>dead</td><td>dead</td><td>q5</td></tr><tr><td>q7 ✓</td><td>inside the fraction, last digit is 1</td><td>q5</td><td>q7</td><td>dead</td><td>dead</td></tr></tbody></table></div><h4>Reading it</h4><ul><li><code>0</code> and <code>−0,…</code>: a lone zero is allowed, but <code>−0</code> alone is not, so q1 accepts and q6 does not.</li><li>The sign on <code>−1…</code> merges with plain <code>1…</code> at q2 because from there the allowed futures are identical.</li><li>A fraction needs a final 1, which is why the digits after the comma bounce between q5 and q7 and only q7 accepts.</li></ul><p class="small">Built with Brzozowski derivatives, minimised with Moore's algorithm (7 live states + dead state, no two equivalent), then tested against the regular expression on all 87,381 strings of length ≤ 8 over {0,1,−,,}: no mismatch.</p></div></section><section class="q" id="y24-B" hidden><header><h3>Task B · type checker for the for-loop</h3><div class="meta"><span class="pts">14 points</span><span class="chip mine">my own derivation</span></div></header><div class="ask">Write boolean typeCheck(LOOP, symbolTable) including sub-functions for INIT and INCR. typeCheck(ALGO, …) and typeCheck(COND, …) are given. Return true if the loop is correctly typed, false otherwise.</div><div class="ans"><pre class="code ">boolean typeCheck(LOOP, symbolTable) {
+  // LOOP → for ( INIT , COND , INCR ) { ALGO }
+  ok1 = typeCheck(INIT, symbolTable)
+  ok2 = typeCheck(COND, symbolTable)
+  ok3 = typeCheck(INCR, symbolTable)
+  ok4 = typeCheck(ALGO, symbolTable)
+  return ok1 AND ok2 AND ok3 AND ok4
+}
+
+boolean typeCheck(INIT, symbolTable) {
+  // INIT → VAR := number
+  t = lookup(symbolTable, getname(VAR))
+  if (t == unbound) return false        // undeclared variable
+  return (t == numeric)                 // the token &quot;number&quot; is numeric
+}
+
+boolean typeCheck(INCR, symbolTable) {
+  // INCR → VAR1 := VAR2 + number
+  t1 = lookup(symbolTable, getname(VAR1))
+  t2 = lookup(symbolTable, getname(VAR2))
+  if (t1 == unbound OR t2 == unbound) return false
+  return (t1 == numeric AND t2 == numeric)
+}</pre><h4>How it follows the Chapter 5 style</h4><ul><li>One function per grammar rule; the rule's children are checked by calling the matching function.</li><li>Chapter 5 functions <i>print</i> an error and return nothing. Here the same decisions are made, but "error" becomes <code>return false</code> and "fine" becomes <code>true</code>, and the results are combined with AND.</li><li>COND and ALGO are given, so they are simply called.</li><li>The symbol table lookup gives the declared type; the assignment is well typed only when the variable (and the variable on the right of <code>+</code>) is numeric.</li></ul><div class="note flag"><b>Flag:</b> the grammar does not say that INIT and INCR must use the <i>same</i> loop variable, so I do not require it. If your lecturer wants that, add <code>getname(VAR1) == getname(VAR)</code> by passing the INIT variable in. I also assume the type name is <code>numeric</code> as in Chapter 5.</div></div></section><section class="q" id="y24-C" hidden><header><h3>Task C · translator for the for-loop</h3><div class="meta"><span class="pts">15 points</span><span class="chip ver">verified in code</span></div></header><div class="ask">Write transStat(LOOP, symbolTable) using the given transStat(ALGO), transStat(id := EXPR), newlabel() and transCond(COND, Lt, Lf).</div><div class="ans"><pre class="code ">transStat(LOOP, symbolTable) {
+  // LOOP → for ( INIT , COND , INCR ) { ALGO }
+  //        behaves like:  INIT ; while COND do { ALGO ; INCR }
+  label1 = newlabel()                                  // loop start
+  label2 = newlabel()                                  // body
+  label3 = newlabel()                                  // exit
+  code0  = transStat(INIT, symbolTable)                // INIT has the shape  id := EXPR
+  code1  = transCond(COND, label2, label3, symbolTable)
+  code2  = transStat(ALGO, symbolTable)
+  code3  = transStat(INCR, symbolTable)                // INCR has the shape  id := EXPR
+  return code0
+         ++ [LABEL label1] ++ code1
+         ++ [LABEL label2] ++ code2 ++ code3
+         ++ [GOTO label1, LABEL label3]
+}</pre><h4>Why it looks like this</h4><ul><li>The for-loop is a while-loop with the initialisation before it and the increment at the end of the body. That is exactly the <b>while</b> rule of Fig. 6.5 (three labels, condition true → body, false → exit) plus two extra pieces of code.</li><li>INIT is <code>VAR := number</code> (like <code>id := Atom</code>) and INCR is <code>VAR := VAR + number</code> (like <code>id := id binop Atom</code>). Both fit the pattern <code>id := EXPR</code>, so the already given <code>transStat(id := EXPR)</code> translates them. Nothing new to write.</li><li>Order of the calls matches the order of the code, so temps are numbered INIT, COND, ALGO, INCR.</li></ul><h4>Worked check</h4><p><code>for (i := 0, i &lt; 3, i := i + 1) { s := s + i }</code> with i ↦ u0, s ↦ u1:</p><pre class="code ">t0 := 0
+u0 := t0
+LABEL L0
+t1 := u0
+t2 := 3
+IF t1 &lt; t2 THEN L1 ELSE L2
+LABEL L1
+t4 := u1
+t5 := u0
+t3 := t4 + t5
+u1 := t3
+t7 := u0
+t8 := 1
+t6 := t7 + t8
+u0 := t6
+GOTO L0
+LABEL L2</pre><p class="small">Run in an interpreter with s = 0 before: the loop runs three times and s ends as 3 = 0+1+2.</p></div></section><section class="q" id="y24-D" hidden><header><h3>Task D · chainSum with caller-saves</h3><div class="meta"><span class="pts">13 points</span><span class="chip ver">verified in code</span></div></header><div class="ask">Translate the recursive function chainSum(i) { if (i < 0) then { i := 0 } else { i := i + chainSum(i−1) } RETURN i } with Chapter 6 and Section 9.3 (Caller Saves), newvar → t0, t1, …, newlabel → L0, L1, …</div><div class="ans"><div class="note ok"><b>Method:</b> textbook Chapter 6 + Section 9.3 (caller-saves). No inlining, since the function is recursive.</div><h4>Setup from the question</h4><div class="tw"><table class=""><thead><tr><th>Item</th><th>Value</th></tr></thead><tbody><tr><td>i</td><td>v0</td></tr><tr><td>chainSum</td><td>f</td></tr><tr><td>newvar()</td><td>t0, t1, t2, …</td></tr><tr><td>newlabel()</td><td>L0, L1, L2, …</td></tr><tr><td>return label of the recursive call</td><td>L3 (next free label)</td></tr></tbody></table></div><h4>Final code</h4><div class="tcode"><div class="ln t-pro"><span class="tg">prologue</span><code>LABEL f</code></div><div class="ln t-pro"><span class="tg"></span><code>v0 := M[SP+4]</code></div><div class="ln t-pro"><span class="tg"></span><code>SP := SP - 4</code></div><div class="ln t-body"><span class="tg"></span><code>t0 := v0</code></div><div class="ln t-body"><span class="tg"></span><code>t1 := 0</code></div><div class="ln t-body"><span class="tg"></span><code>IF t0 &lt; t1 THEN L0 ELSE L1</code></div><div class="ln t-body"><span class="tg"></span><code>LABEL L0</code></div><div class="ln t-body"><span class="tg"></span><code>t2 := 0</code></div><div class="ln t-body"><span class="tg"></span><code>v0 := t2</code></div><div class="ln t-body"><span class="tg"></span><code>GOTO L2</code></div><div class="ln t-body"><span class="tg"></span><code>LABEL L1</code></div><div class="ln t-body"><span class="tg"></span><code>t4 := v0</code></div><div class="ln t-body"><span class="tg"></span><code>t7 := v0</code></div><div class="ln t-body"><span class="tg"></span><code>t8 := 1</code></div><div class="ln t-body"><span class="tg"></span><code>t6 := t7 - t8</code></div><div class="ln cm"><span class="tg"></span><code>// ---- call f(t6)  -&gt;  t5 ----</code></div><div class="ln t-save"><span class="tg">save + move SP</span><code>M[SP] := t4</code></div><div class="ln t-save"><span class="tg"></span><code>SP := SP - 8</code></div><div class="ln t-arg"><span class="tg">args + jump</span><code>M[SP+4] := t6</code></div><div class="ln t-arg"><span class="tg"></span><code>M[SP] := L3</code></div><div class="ln t-arg"><span class="tg"></span><code>GOTO f</code></div><div class="ln t-arg"><span class="tg"></span><code>LABEL L3</code></div><div class="ln t-res"><span class="tg">result + restore</span><code>t5 := M[SP+4]</code></div><div class="ln t-res"><span class="tg"></span><code>SP := SP + 8</code></div><div class="ln t-res"><span class="tg"></span><code>t4 := M[SP]</code></div><div class="ln t-body"><span class="tg"></span><code>t3 := t4 + t5</code></div><div class="ln t-body"><span class="tg"></span><code>v0 := t3</code></div><div class="ln t-body"><span class="tg"></span><code>LABEL L2</code></div><div class="ln t-epi"><span class="tg">epilogue</span><code>SP := SP + 4</code></div><div class="ln t-epi"><span class="tg"></span><code>M[SP+4] := v0</code></div><div class="ln t-epi"><span class="tg"></span><code>GOTO M[SP]</code></div></div><h4>The save set (the interesting part)</h4><p>The call is inside <code>i := i + chainSum(i−1)</code>. The textbook binop rule evaluates its left operand into <b>t4</b> <i>before</i> the call is made, and t4 is read again by <code>t3 := t4 + t5</code> after it returns. So <b>t4 is live across the call and must be saved</b>. t5 is the result, so not saved. <b>v0 (i) is not saved</b>: after the call it is overwritten by <code>v0 := t3</code> before anybody reads it.</p><p>Live after the call = {t4, t5}; minus the result t5 → <b>save set {t4}</b>, framesize = 4 bytes, hence <code>SP := SP − 4</code> in the prologue and <code>SP := SP + 4</code> in the epilogue.</p><h4>Walk-through of the numbering</h4><ul><li><b>t0, t1</b>: the two sides of <code>i &lt; 0</code>. <b>t2</b>: the <code>0</code> in <code>i := 0</code>.</li><li><b>t3</b>: place for the right-hand side of the else-assignment. <b>t4, t5</b>: the two operands of <code>+</code>. <b>t6</b>: the argument temp of the call. <b>t7, t8</b>: operands of <code>i − 1</code>.</li><li>Labels: the if-else takes L0 (then), L1 (else), L2 (end); the return label is L3.</li></ul><p class="small">Simulated for chainSum(0…7): result = n(n+1)/2 each time, and SP is restored.</p><div class="note flag"><b>Flag:</b> RETURN i is translated as <code>M[SP+4] := v0</code> (i lives in v0, so no separate result variable like rf in 2025). Saving "everything" would also be accepted as safe, but this exam asks for the textbook method, which saves only what is live.</div></div></section><section class="q" id="y24-E" hidden><header><h3>Task E · minimally coloured interference graph</h3><div class="meta"><span class="pts">11 points</span><span class="chip ver">verified in code</span></div></header><div class="ask">Provide the minimally coloured interference graph for the quadrangle-checking program (r, u, v, w, z assigned; a, b, c, d, x, y inputs).</div><div class="ans"><div class="fig"><svg
+ viewBox="0.00 0.00 342.40 354.63" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 350.63)">
+<title>G</title>
+<polygon fill="none" stroke="none" points="-4,4 -4,-350.63 338.4,-350.63 338.4,4 -4,4"/>
+<!-- a -->
+<g id="node1" class="node">
+<title>a</title>
+<ellipse fill="#f4a3a3" stroke="currentColor" cx="20" cy="-166.32" rx="20" ry="20"/>
+<text fill="#14181f" text-anchor="middle" x="20" y="-162.82" font-family="Times,serif" font-size="15.00">a</text>
+</g>
+<!-- r -->
+<g id="node5" class="node">
+<title>r</title>
+<ellipse fill="#9cc4f0" stroke="currentColor" cx="177.86" cy="-172.3" rx="20" ry="20"/>
+<text fill="#14181f" text-anchor="middle" x="177.86" y="-168.8" font-family="Times,serif" font-size="15.00">r</text>
+</g>
+<!-- a&#45;&#45;r -->
+<g id="edge1" class="edge">
+<title>a&#45;&#45;r</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M39.99,-167.08C70.19,-168.22 127.13,-170.38 157.53,-171.53"/>
+</g>
+<!-- b -->
+<g id="node2" class="node">
+<title>b</title>
+<ellipse fill="#f4a3a3" stroke="currentColor" cx="308.2" cy="-326.63" rx="20" ry="20"/>
+<text fill="#14181f" text-anchor="middle" x="308.2" y="-323.13" font-family="Times,serif" font-size="15.00">b</text>
+</g>
+<!-- b&#45;&#45;r -->
+<g id="edge2" class="edge">
+<title>b&#45;&#45;r</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M295.22,-311.26C270.24,-281.68 215.72,-217.13 190.78,-187.6"/>
+</g>
+<!-- u -->
+<g id="node6" class="node">
+<title>u</title>
+<ellipse fill="#a6dba0" stroke="currentColor" cx="215.08" cy="-316.05" rx="20" ry="20"/>
+<text fill="#14181f" text-anchor="middle" x="215.08" y="-312.55" font-family="Times,serif" font-size="15.00">u</text>
+</g>
+<!-- b&#45;&#45;u -->
+<g id="edge3" class="edge">
+<title>b&#45;&#45;u</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M287.99,-324.33C272.37,-322.56 250.85,-320.11 235.24,-318.34"/>
+</g>
+<!-- c -->
+<g id="node3" class="node">
+<title>c</title>
+<ellipse fill="#f4a3a3" stroke="currentColor" cx="82.54" cy="-54.41" rx="20" ry="20"/>
+<text fill="#14181f" text-anchor="middle" x="82.54" y="-50.91" font-family="Times,serif" font-size="15.00">c</text>
+</g>
+<!-- c&#45;&#45;r -->
+<g id="edge4" class="edge">
+<title>c&#45;&#45;r</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M95.4,-70.31C113.69,-92.93 147.03,-134.17 165.21,-156.65"/>
+</g>
+<!-- d -->
+<g id="node4" class="node">
+<title>d</title>
+<ellipse fill="#f4a3a3" stroke="currentColor" cx="79.02" cy="-311.64" rx="20" ry="20"/>
+<text fill="#14181f" text-anchor="middle" x="79.02" y="-308.14" font-family="Times,serif" font-size="15.00">d</text>
+</g>
+<!-- d&#45;&#45;r -->
+<g id="edge5" class="edge">
+<title>d&#45;&#45;r</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M90.75,-295.11C109.77,-268.29 147.14,-215.61 166.15,-188.81"/>
+</g>
+<!-- d&#45;&#45;u -->
+<g id="edge6" class="edge">
+<title>d&#45;&#45;u</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M99.1,-312.29C124.82,-313.12 169.16,-314.56 194.92,-315.4"/>
+</g>
+<!-- r&#45;&#45;u -->
+<g id="edge7" class="edge">
+<title>r&#45;&#45;u</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M182.88,-191.69C189.98,-219.12 202.89,-268.99 210.02,-296.51"/>
+</g>
+<!-- v -->
+<g id="node7" class="node">
+<title>v</title>
+<ellipse fill="#f4a3a3" stroke="currentColor" cx="166.85" cy="-258.44" rx="20" ry="20"/>
+<text fill="#14181f" text-anchor="middle" x="166.85" y="-254.94" font-family="Times,serif" font-size="15.00">v</text>
+</g>
+<!-- r&#45;&#45;v -->
+<g id="edge8" class="edge">
+<title>r&#45;&#45;v</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M175.3,-192.28C173.53,-206.2 171.16,-224.68 169.39,-238.57"/>
+</g>
+<!-- w -->
+<g id="node8" class="node">
+<title>w</title>
+<ellipse fill="#f4a3a3" stroke="currentColor" cx="312.47" cy="-85.39" rx="20" ry="20"/>
+<text fill="#14181f" text-anchor="middle" x="312.47" y="-81.89" font-family="Times,serif" font-size="15.00">w</text>
+</g>
+<!-- r&#45;&#45;w -->
+<g id="edge9" class="edge">
+<title>r&#45;&#45;w</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M194.91,-161.29C220.8,-144.57 269.75,-112.97 295.56,-96.3"/>
+</g>
+<!-- x -->
+<g id="node9" class="node">
+<title>x</title>
+<ellipse fill="#f2dc82" stroke="currentColor" cx="273.6" cy="-181.72" rx="20" ry="20"/>
+<text fill="#14181f" text-anchor="middle" x="273.6" y="-178.22" font-family="Times,serif" font-size="15.00">x</text>
+</g>
+<!-- r&#45;&#45;x -->
+<g id="edge10" class="edge">
+<title>r&#45;&#45;x</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M198.16,-174.3C214.52,-175.91 237.39,-178.15 253.65,-179.75"/>
+</g>
+<!-- y -->
+<g id="node10" class="node">
+<title>y</title>
+<ellipse fill="#f2dc82" stroke="currentColor" cx="314.4" cy="-221.67" rx="20" ry="20"/>
+<text fill="#14181f" text-anchor="middle" x="314.4" y="-218.17" font-family="Times,serif" font-size="15.00">y</text>
+</g>
+<!-- r&#45;&#45;y -->
+<g id="edge11" class="edge">
+<title>r&#45;&#45;y</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M196.84,-179.16C222.93,-188.6 269.58,-205.46 295.58,-214.86"/>
+</g>
+<!-- z -->
+<g id="node11" class="node">
+<title>z</title>
+<ellipse fill="#a6dba0" stroke="currentColor" cx="218.46" cy="-20" rx="20" ry="20"/>
+<text fill="#14181f" text-anchor="middle" x="218.46" y="-16.5" font-family="Times,serif" font-size="15.00">z</text>
+</g>
+<!-- r&#45;&#45;z -->
+<g id="edge12" class="edge">
+<title>r&#45;&#45;z</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M183.08,-152.7C190.88,-123.46 205.47,-68.72 213.25,-39.52"/>
+</g>
+<!-- u&#45;&#45;v -->
+<g id="edge13" class="edge">
+<title>u&#45;&#45;v</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M202.15,-300.61C195.23,-292.35 186.73,-282.19 179.81,-273.92"/>
+</g>
+<!-- u&#45;&#45;x -->
+<g id="edge14" class="edge">
+<title>u&#45;&#45;x</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M223.09,-297.65C234.24,-272.07 254.3,-226.01 265.49,-200.32"/>
+</g>
+<!-- u&#45;&#45;y -->
+<g id="edge15" class="edge">
+<title>u&#45;&#45;y</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M229.73,-302.12C248.51,-284.28 280.88,-253.52 299.69,-235.65"/>
+</g>
+<!-- v&#45;&#45;x -->
+<g id="edge16" class="edge">
+<title>v&#45;&#45;x</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M183.53,-246.45C203.58,-232.04 237.03,-208 257.04,-193.62"/>
+</g>
+<!-- v&#45;&#45;y -->
+<g id="edge17" class="edge">
+<title>v&#45;&#45;y</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M186.44,-253.56C214.66,-246.52 266.46,-233.62 294.73,-226.57"/>
+</g>
+<!-- w&#45;&#45;x -->
+<g id="edge18" class="edge">
+<title>w&#45;&#45;x</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M304.98,-103.96C298.14,-120.91 288.08,-145.84 281.2,-162.87"/>
+</g>
+<!-- w&#45;&#45;y -->
+<g id="edge19" class="edge">
+<title>w&#45;&#45;y</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M312.76,-105.49C313.12,-131.26 313.75,-175.67 314.12,-201.48"/>
+</g>
+<!-- w&#45;&#45;z -->
+<g id="edge20" class="edge">
+<title>w&#45;&#45;z</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M295.67,-73.7C278.55,-61.79 252.18,-43.45 235.12,-31.59"/>
+</g>
+</g>
+</svg>
+<div class="legend"><span><i style="background:#f4a3a3"></i>RED: a, b, c, d, v, w</span><span><i style="background:#9cc4f0"></i>BLUE: r</span><span><i style="background:#a6dba0"></i>GREEN: u, z</span><span><i style="background:#f2dc82"></i>YELLOW: x, y</span></div></div><p>4 colours are needed and enough. r, u, v, x form a clique (each pair interferes), so 3 colours cannot work. Colours are written as words so a single pen is enough.</p><details><summary>The rough work: liveness table (not marked)</summary><div class="tw"><table class=""><thead><tr><th>Line i</th><th>succ[i]</th><th>gen[i]</th><th>kill[i]</th><th>out[i]</th><th>in[i]</th></tr></thead><tbody><tr><td>1</td><td>{2}</td><td>∅</td><td>{r}</td><td>{a, b, c, d, r, x, y}</td><td>{a, b, c, d, x, y}</td></tr><tr><td>2</td><td>{3}</td><td>{a, c}</td><td>{u}</td><td>{b, d, r, u, x, y}</td><td>{a, b, c, d, r, x, y}</td></tr><tr><td>3</td><td>{4}</td><td>{b, d}</td><td>{v}</td><td>{r, u, v, x, y}</td><td>{b, d, r, u, x, y}</td></tr><tr><td>4</td><td>{5}</td><td>{u, v}</td><td>{w}</td><td>{r, w, x, y}</td><td>{r, u, v, x, y}</td></tr><tr><td>5</td><td>{6}</td><td>{x, y}</td><td>{z}</td><td>{r, w, z}</td><td>{r, w, x, y}</td></tr><tr><td>6</td><td>{7, 8}</td><td>{w, z}</td><td>∅</td><td>{r}</td><td>{r, w, z}</td></tr><tr><td>7</td><td>{8}</td><td>∅</td><td>{r}</td><td>{r}</td><td>∅</td></tr><tr><td>8</td><td>{9}</td><td>∅</td><td>∅</td><td>{r}</td><td>{r}</td></tr><tr><td>9</td><td>∅</td><td>{r}</td><td>∅</td><td>∅</td><td>{r}</td></tr></tbody></table></div><p class="small">Line 6 jumps to line 8 (<code>LABEL e</code>) or falls through to line 7. a, b, c, d, x, y are program inputs: they are never assigned, so under Definition 8.2 they only interfere with variables assigned while they are live.</p></details><details open><summary>Edges (Definition 8.2: assigned variable vs out[i])</summary><div class="tw"><table class=""><thead><tr><th>Line</th><th>Assigns</th><th>out[i]</th><th>New edges</th></tr></thead><tbody><tr><td>1</td><td>r</td><td>{a,b,c,d,r,x,y}</td><td>r–a, r–b, r–c, r–d, r–x, r–y</td></tr><tr><td>2</td><td>u</td><td>{b,d,r,u,x,y}</td><td>u–b, u–d, u–r, u–x, u–y</td></tr><tr><td>3</td><td>v</td><td>{r,u,v,x,y}</td><td>v–r, v–u, v–x, v–y</td></tr><tr><td>4</td><td>w</td><td>{r,w,x,y}</td><td>w–r, w–x, w–y</td></tr><tr><td>5</td><td>z</td><td>{r,w,z}</td><td>z–r, z–w</td></tr><tr><td>7</td><td>r</td><td>{r}</td><td>none</td></tr></tbody></table></div></details><div class="note flag"><b>Flag:</b> I follow the textbook definition exactly (edges only from assignments). Then the six inputs do not interfere with each other. If your lecturer also wants inputs that are live together at program start to interfere (a "physical" reading), the graph gets a clique on a, b, c, d, x, y and needs more colours. The textbook definition is what the course examines, and what the 2025 marked solution matches.</div></div></section></div><div class="pane" id="p25" hidden><p class="intro">Final exam 10 November 2025 · 55 points · A (12) · B (12) · C (13) · D (13) · E (5). In the paper the tasks are printed in the order A, C, D, E, B.</p><div class="qnav" data-year="25"><button data-q="y25-A1">A.1</button><button data-q="y25-A2">A.2</button><button data-q="y25-B">B</button><button data-q="y25-C">C</button><button data-q="y25-D1">D.1</button><button data-q="y25-D2">D.2</button><button data-q="y25-E">E</button></div><section class="q" id="y25-A1" hidden><header><h3>Task A.1 · ambiguity proof</h3><div class="meta"><span class="pts">3 points</span><span class="chip ok">checked against marked script</span></div></header><div class="ask">Give one string from L(G) with two structurally different syntax trees, root ALGO.</div><div class="ans"><p><b>String:</b> <code>i t i f c e c</code>  (an “if t, if f, c, else c”: the classic dangling else.)</p><div class="two"><div><h5>Tree 1: else belongs to the inner if</h5><pre class="code">ALGO
+└ COMMAND
+  └ IF ELSE
+    ├ IF: i  BOOL(t)  ALGO
+    │        └ COMMAND
+    │          └ IF  ELSE
+    │            ├ i  BOOL(f)  ALGO(COMMAND(c))
+    │            └ e  ALGO(COMMAND(c))
+    └ ELSE → ε</pre></div><div><h5>Tree 2: else belongs to the outer if</h5><pre class="code">ALGO
+└ COMMAND
+  └ IF ELSE
+    ├ IF: i  BOOL(t)  ALGO
+    │        └ COMMAND
+    │          └ IF  ELSE(ε)
+    │            └ i  BOOL(f)  ALGO(COMMAND(c))
+    └ ELSE: e  ALGO(COMMAND(c))</pre></div></div><p>Same string, two different trees, so G is ambiguous. (This is the string the lecturer marked as a "good string", 3/3.)</p><p class="small">A shorter proof also works: <code>i t c c</code>. The IF's ALGO can be <code>c c</code> (ELSE = ε), or just <code>c</code> with the second <code>c</code> being the next COMMAND of the outer ALGO. That is a second source of ambiguity: the sequence rule ALGO → COMMAND ALGO.</p></div></section><section class="q" id="y25-A2" hidden><header><h3>Task A.2 · SLR parsing table</h3><div class="meta"><span class="pts">9 points</span><span class="chip ver">verified in code</span></div></header><div class="ask">Present the grammar's SLR parsing table and boldly highlight all conflicts.</div><div class="ans"><h4>Numbered grammar (rule 0 added)</h4><pre class="code">0.  S&#x27; → ALGO $
+1.  ALGO → COMMAND
+2.  ALGO → COMMAND ALGO
+3.  COMMAND → c
+4.  COMMAND → IF ELSE
+5.  IF → i BOOL ALGO
+6.  ELSE → e ALGO
+7.  ELSE → ε
+8.  BOOL → t
+9.  BOOL → f</pre><h4>FOLLOW sets (needed for the reduce entries)</h4><div class="tw"><table class=""><thead><tr><th>Nonterminal</th><th>FOLLOW</th></tr></thead><tbody><tr><td>ALGO</td><td>{$, c, e, i}</td></tr><tr><td>IF</td><td>{$, c, e, i}</td></tr><tr><td>BOOL</td><td>{c, i}</td></tr><tr><td>COMMAND</td><td>{$, c, e, i}</td></tr><tr><td>ELSE</td><td>{$, c, e, i}</td></tr></tbody></table></div><h4>Final table</h4><p>s<i>n</i> = shift and go to state <i>n</i>, r<i>n</i> = reduce by rule <i>n</i>, plain numbers = GOTO, acc = accept. <b>Highlighted cells are conflicts.</b></p><div class="tw"><table class="slr"><thead><tr><th>State</th><th>c</th><th>i</th><th>e</th><th>t</th><th>f</th><th>$</th><th class="g">ALGO</th><th class="g">COMMAND</th><th class="g">IF</th><th class="g">ELSE</th><th class="g">BOOL</th></tr></thead><tbody><tr><th>0</th><td>s3</td><td>s5</td><td></td><td></td><td></td><td></td><td>1</td><td>2</td><td>4</td><td></td><td></td></tr><tr><th>1</th><td></td><td></td><td></td><td></td><td></td><td>acc</td><td></td><td></td><td></td><td></td><td></td></tr><tr><th>2</th><td class="conf">r1 / s3</td><td class="conf">s5 / r1</td><td>r1</td><td></td><td></td><td>r1</td><td>6</td><td>2</td><td>4</td><td></td><td></td></tr><tr><th>3</th><td>r3</td><td>r3</td><td>r3</td><td></td><td></td><td>r3</td><td></td><td></td><td></td><td></td><td></td></tr><tr><th>4</th><td>r7</td><td>r7</td><td class="conf">r7 / s8</td><td></td><td></td><td>r7</td><td></td><td></td><td></td><td>7</td><td></td></tr><tr><th>5</th><td></td><td></td><td></td><td>s10</td><td>s11</td><td></td><td></td><td></td><td></td><td></td><td>9</td></tr><tr><th>6</th><td>r2</td><td>r2</td><td>r2</td><td></td><td></td><td>r2</td><td></td><td></td><td></td><td></td><td></td></tr><tr><th>7</th><td>r4</td><td>r4</td><td>r4</td><td></td><td></td><td>r4</td><td></td><td></td><td></td><td></td><td></td></tr><tr><th>8</th><td>s3</td><td>s5</td><td></td><td></td><td></td><td></td><td>12</td><td>2</td><td>4</td><td></td><td></td></tr><tr><th>9</th><td>s3</td><td>s5</td><td></td><td></td><td></td><td></td><td>13</td><td>2</td><td>4</td><td></td><td></td></tr><tr><th>10</th><td>r8</td><td>r8</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><th>11</th><td>r9</td><td>r9</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><th>12</th><td>r6</td><td>r6</td><td>r6</td><td></td><td></td><td>r6</td><td></td><td></td><td></td><td></td><td></td></tr><tr><th>13</th><td>r5</td><td>r5</td><td>r5</td><td></td><td></td><td>r5</td><td></td><td></td><td></td><td></td><td></td></tr></tbody></table></div><h4>The three conflicts</h4><div class="tw"><table class=""><thead><tr><th>Where</th><th>Entries</th><th>Cause</th></tr></thead><tbody><tr><td>State 2, on <b>c</b></td><td>s3 / r1</td><td>After one COMMAND the parser cannot tell whether the ALGO ends (reduce ALGO → COMMAND) or another COMMAND follows (shift c). c is in FOLLOW(ALGO) because ELSE can be empty and ALGO can be followed by the next COMMAND.</td></tr><tr><td>State 2, on <b>i</b></td><td>s5 / r1</td><td>Same reason, for a following if.</td></tr><tr><td>State 4, on <b>e</b></td><td>s8 / r7</td><td>The dangling else: after <code>IF</code> the parser can shift e (ELSE → e ALGO) or reduce ELSE → ε, because e is also in FOLLOW(ELSE).</td></tr></tbody></table></div><details><summary>The 14 LR(0) item sets (the work-out)</summary><div class="states"><div class="st"><b>State 0</b><br>S&#x27; → • ALGO<br>ALGO → • COMMAND<br>ALGO → • COMMAND ALGO<br>COMMAND → • c<br>COMMAND → • IF ELSE<br>IF → • i BOOL ALGO</div><div class="st"><b>State 1</b><br>S&#x27; → ALGO •</div><div class="st"><b>State 2</b><br>ALGO → • COMMAND<br>ALGO → COMMAND •<br>ALGO → • COMMAND ALGO<br>ALGO → COMMAND • ALGO<br>COMMAND → • c<br>COMMAND → • IF ELSE<br>IF → • i BOOL ALGO</div><div class="st"><b>State 3</b><br>COMMAND → c •</div><div class="st"><b>State 4</b><br>COMMAND → IF • ELSE<br>ELSE → • e ALGO<br>ELSE → •</div><div class="st"><b>State 5</b><br>IF → i • BOOL ALGO<br>BOOL → • t<br>BOOL → • f</div><div class="st"><b>State 6</b><br>ALGO → COMMAND ALGO •</div><div class="st"><b>State 7</b><br>COMMAND → IF ELSE •</div><div class="st"><b>State 8</b><br>ALGO → • COMMAND<br>ALGO → • COMMAND ALGO<br>COMMAND → • c<br>COMMAND → • IF ELSE<br>IF → • i BOOL ALGO<br>ELSE → e • ALGO</div><div class="st"><b>State 9</b><br>ALGO → • COMMAND<br>ALGO → • COMMAND ALGO<br>COMMAND → • c<br>COMMAND → • IF ELSE<br>IF → • i BOOL ALGO<br>IF → i BOOL • ALGO</div><div class="st"><b>State 10</b><br>BOOL → t •</div><div class="st"><b>State 11</b><br>BOOL → f •</div><div class="st"><b>State 12</b><br>ELSE → e ALGO •</div><div class="st"><b>State 13</b><br>IF → i BOOL ALGO •</div></div></details><div class="note flag"><b>Flag:</b> the lecturer-marked student script left A.2 blank, so there is no marked reference. My table is computed by a program (item sets → FOLLOW sets → table). The state numbering is just the order they are discovered; yours may differ, but the conflicts will be the same three. If your slides add <code>$</code> into rule 0 (S′ → ALGO $), you get one extra state and "accept" is entered on shifting $.</div></div></section><section class="q" id="y25-B" hidden><header><h3>Task B · attributed syntax tree</h3><div class="meta"><span class="pts">12 points</span><span class="chip ok">checked against marked script</span></div></header><div class="ask">Show the attributed syntax tree with all new T-attributes after the type checker has finished (numeric / boolean / string / correct / wrong).</div><div class="ans"><div class="fig"><div id="treeB"></div></div><div class="legend" id="treeLegend"></div><h4>Why each type</h4><ul><li><b>Leaves first:</b> <code>int n</code> → numeric (declaration). Every use of <code>n</code> → numeric (it is the same declared variable). <code>n / 2</code> → numeric. <code>n &gt; 1</code> → boolean (a comparison). <code>is_odd_number</code> → boolean (the function is used as a condition).</li><li><b><code>n ++ "hello"</code> → wrong:</b> the only genuine type error. A string is joined onto a numeric n, so the expression has no valid type.</li><li><b>Wrong spreads upwards:</b> TERM → ASSIGN (a numeric variable receives a wrong expression) → BRANCH → ALGO → LOOP → ALGO → PROGRAM are all <b>wrong</b>.</li><li><b>Keywords</b> (while, if, else) and fine statements are <b>correct</b>: VAR-DECL, the second ASSIGN (<code>n := n/2</code>, numeric into numeric).</li><li><b>Conditions:</b> the TERM of the loop and of the branch must be boolean, and both are.</li></ul><p class="small">This is the lecturer-marked solution, 12/12. The same tree is in the marked script; I redrew it.</p></div></section><section class="q" id="y25-C" hidden><header><h3>Task C · Chapter 6 + 9 combined</h3><div class="meta"><span class="pts">13 points</span><span class="chip ver">verified in code</span></div></header><div class="ask">Present the complete intermediate code of the main algorithm and of the recursive function euclid(a,b) using the combined Chapter 6 and 9 methods and the listed conditions.</div><div class="ans"><div class="note ok"><b>Conditions applied:</b> first variable v0, first label L0 · AND translated with the chain of GOTOs (Fig. 6.8, no AND operator in the IR) · <code>EQ</code> → <code>=</code> · <code>&gt; &lt; −</code> unchanged · caller-saves (Sect. 9.3) · "save all local variables", no liveness.</div><h4>Symbol table</h4><div class="tw"><table class=""><thead><tr><th>Source</th><th>Internal</th></tr></thead><tbody><tr><td>a, b</td><td>p1, p2</td></tr><tr><td>c</td><td>rf</td></tr><tr><td>x, y, z</td><td>u0, u1, u2</td></tr><tr><td>v, w</td><td>u3, u4</td></tr><tr><td>euclid</td><td>f</td></tr></tbody></table></div><h4>Function euclid (translated first: v0 … v17, labels L0 … L6, return label L7)</h4><div class="tcode"><div class="ln t-pro"><span class="tg">prologue</span><code>LABEL f</code></div><div class="ln t-pro"><span class="tg"></span><code>p1 := M[SP+4]</code></div><div class="ln t-pro"><span class="tg"></span><code>p2 := M[SP+8]</code></div><div class="ln t-pro"><span class="tg"></span><code>SP := SP - 20</code></div><div class="ln t-body"><span class="tg"></span><code>v0 := p1</code></div><div class="ln t-body"><span class="tg"></span><code>v1 := p2</code></div><div class="ln t-body"><span class="tg"></span><code>IF v0 = v1 THEN L0 ELSE L1</code></div><div class="ln t-body"><span class="tg"></span><code>LABEL L0</code></div><div class="ln t-body"><span class="tg"></span><code>v2 := p1</code></div><div class="ln t-body"><span class="tg"></span><code>rf := v2</code></div><div class="ln t-body"><span class="tg"></span><code>GOTO L2</code></div><div class="ln t-body"><span class="tg"></span><code>LABEL L1</code></div><div class="ln t-body"><span class="tg"></span><code>v3 := p1</code></div><div class="ln t-body"><span class="tg"></span><code>v4 := p2</code></div><div class="ln t-body"><span class="tg"></span><code>IF v3 &gt; v4 THEN L3 ELSE L4</code></div><div class="ln t-body"><span class="tg"></span><code>LABEL L3</code></div><div class="ln t-body"><span class="tg"></span><code>v6 := p1</code></div><div class="ln t-body"><span class="tg"></span><code>v7 := p2</code></div><div class="ln t-body"><span class="tg"></span><code>v5 := v6 - v7</code></div><div class="ln t-body"><span class="tg"></span><code>u3 := v5</code></div><div class="ln t-body"><span class="tg"></span><code>v8 := p2</code></div><div class="ln t-body"><span class="tg"></span><code>u4 := v8</code></div><div class="ln t-body"><span class="tg"></span><code>LABEL L4</code></div><div class="ln t-body"><span class="tg"></span><code>v9 := p1</code></div><div class="ln t-body"><span class="tg"></span><code>v10 := p2</code></div><div class="ln t-body"><span class="tg"></span><code>IF v9 &lt; v10 THEN L5 ELSE L6</code></div><div class="ln t-body"><span class="tg"></span><code>LABEL L5</code></div><div class="ln t-body"><span class="tg"></span><code>v11 := p1</code></div><div class="ln t-body"><span class="tg"></span><code>u3 := v11</code></div><div class="ln t-body"><span class="tg"></span><code>v13 := p2</code></div><div class="ln t-body"><span class="tg"></span><code>v14 := p1</code></div><div class="ln t-body"><span class="tg"></span><code>v12 := v13 - v14</code></div><div class="ln t-body"><span class="tg"></span><code>u4 := v12</code></div><div class="ln t-body"><span class="tg"></span><code>LABEL L6</code></div><div class="ln t-body"><span class="tg"></span><code>v16 := u3</code></div><div class="ln t-body"><span class="tg"></span><code>v17 := u4</code></div><div class="ln cm"><span class="tg"></span><code>// ---- call f(v16, v17)  -&gt;  v15 ----</code></div><div class="ln t-save"><span class="tg">save + move SP</span><code>M[SP] := p1</code></div><div class="ln t-save"><span class="tg"></span><code>M[SP+4] := p2</code></div><div class="ln t-save"><span class="tg"></span><code>M[SP+8] := rf</code></div><div class="ln t-save"><span class="tg"></span><code>M[SP+12] := u3</code></div><div class="ln t-save"><span class="tg"></span><code>M[SP+16] := u4</code></div><div class="ln t-save"><span class="tg"></span><code>SP := SP - 12</code></div><div class="ln t-arg"><span class="tg">args + jump</span><code>M[SP+4] := v16</code></div><div class="ln t-arg"><span class="tg"></span><code>M[SP+8] := v17</code></div><div class="ln t-arg"><span class="tg"></span><code>M[SP] := L7</code></div><div class="ln t-arg"><span class="tg"></span><code>GOTO f</code></div><div class="ln t-arg"><span class="tg"></span><code>LABEL L7</code></div><div class="ln t-res"><span class="tg">result + restore</span><code>v15 := M[SP+4]</code></div><div class="ln t-res"><span class="tg"></span><code>SP := SP + 12</code></div><div class="ln t-res"><span class="tg"></span><code>p1 := M[SP]</code></div><div class="ln t-res"><span class="tg"></span><code>p2 := M[SP+4]</code></div><div class="ln t-res"><span class="tg"></span><code>rf := M[SP+8]</code></div><div class="ln t-res"><span class="tg"></span><code>u3 := M[SP+12]</code></div><div class="ln t-res"><span class="tg"></span><code>u4 := M[SP+16]</code></div><div class="ln t-body"><span class="tg"></span><code>rf := v15</code></div><div class="ln t-body"><span class="tg"></span><code>LABEL L2</code></div><div class="ln t-epi"><span class="tg">epilogue</span><code>SP := SP + 20</code></div><div class="ln t-epi"><span class="tg"></span><code>M[SP+4] := rf</code></div><div class="ln t-epi"><span class="tg"></span><code>GOTO M[SP]</code></div></div><h4>MAIN (continues numbering: v18 … v24, labels L8 … L10, return label L11)</h4><div class="tcode"><div class="ln t-body"><span class="tg"></span><code>v18 := u0</code></div><div class="ln t-body"><span class="tg"></span><code>v19 := 0</code></div><div class="ln t-body"><span class="tg"></span><code>IF v18 &gt; v19 THEN L10 ELSE L9</code></div><div class="ln t-body"><span class="tg"></span><code>LABEL L10</code></div><div class="ln t-body"><span class="tg"></span><code>v20 := u1</code></div><div class="ln t-body"><span class="tg"></span><code>v21 := 0</code></div><div class="ln t-body"><span class="tg"></span><code>IF v20 &gt; v21 THEN L8 ELSE L9</code></div><div class="ln t-body"><span class="tg"></span><code>LABEL L8</code></div><div class="ln t-body"><span class="tg"></span><code>v23 := u0</code></div><div class="ln t-body"><span class="tg"></span><code>v24 := u1</code></div><div class="ln cm"><span class="tg"></span><code>// ---- call f(v23, v24)  -&gt;  v22 ----</code></div><div class="ln t-save"><span class="tg">save + move SP</span><code>M[SP] := u0</code></div><div class="ln t-save"><span class="tg"></span><code>M[SP+4] := u1</code></div><div class="ln t-save"><span class="tg"></span><code>M[SP+8] := u2</code></div><div class="ln t-save"><span class="tg"></span><code>SP := SP - 12</code></div><div class="ln t-arg"><span class="tg">args + jump</span><code>M[SP+4] := v23</code></div><div class="ln t-arg"><span class="tg"></span><code>M[SP+8] := v24</code></div><div class="ln t-arg"><span class="tg"></span><code>M[SP] := L11</code></div><div class="ln t-arg"><span class="tg"></span><code>GOTO f</code></div><div class="ln t-arg"><span class="tg"></span><code>LABEL L11</code></div><div class="ln t-res"><span class="tg">result + restore</span><code>v22 := M[SP+4]</code></div><div class="ln t-res"><span class="tg"></span><code>SP := SP + 12</code></div><div class="ln t-res"><span class="tg"></span><code>u0 := M[SP]</code></div><div class="ln t-res"><span class="tg"></span><code>u1 := M[SP+4]</code></div><div class="ln t-res"><span class="tg"></span><code>u2 := M[SP+8]</code></div><div class="ln t-body"><span class="tg"></span><code>u2 := v22</code></div><div class="ln t-body"><span class="tg"></span><code>LABEL L9</code></div></div><h4>Why the saves are what they are</h4><ul><li><b>Function:</b> save <b>all five locals</b> p1, p2, rf, u3, u4 around the recursive call (exam rule) → 5 words = 20 bytes, so <code>SP := SP − 20</code> in the prologue and <code>SP + 20</code> in the epilogue.</li><li><b>MAIN:</b> save all three locals u0, u1, u2 (12 bytes). MAIN has no prologue/epilogue: it is the program itself.</li><li><b>Argument temps:</b> the textbook call rule makes a fresh temp per argument (<code>v16 := u3; v17 := u4</code>) and only then calls. The result lands in a temp and is then moved to the target (<code>rf := v15</code>, <code>u2 := v22</code>). That is also why restoring rf / u2 right after the call is harmless: the move overwrites it afterwards.</li><li><b>Chain for AND:</b> <code>x &gt; 0</code> true → test <code>y &gt; 0</code> (L10), false → L9; second true → L8 (the then-part), false → L9. L9 is the end label.</li></ul><details><summary>The Chapter 6 stage before call-sequences were inserted</summary><h5>Function</h5><pre class="code ">v0 := p1
+v1 := p2
+IF v0 = v1 THEN L0 ELSE L1
+LABEL L0
+v2 := p1
+rf := v2
+GOTO L2
+LABEL L1
+v3 := p1
+v4 := p2
+IF v3 &gt; v4 THEN L3 ELSE L4
+LABEL L3
+v6 := p1
+v7 := p2
+v5 := v6 - v7
+u3 := v5
+v8 := p2
+u4 := v8
+LABEL L4
+v9 := p1
+v10 := p2
+IF v9 &lt; v10 THEN L5 ELSE L6
+LABEL L5
+v11 := p1
+u3 := v11
+v13 := p2
+v14 := p1
+v12 := v13 - v14
+u4 := v12
+LABEL L6
+v16 := u3
+v17 := u4
+v15 := CALL f(v16, v17)
+rf := v15
+LABEL L2</pre><h5>MAIN</h5><pre class="code ">v18 := u0
+v19 := 0
+IF v18 &gt; v19 THEN L10 ELSE L9
+LABEL L10
+v20 := u1
+v21 := 0
+IF v20 &gt; v21 THEN L8 ELSE L9
+LABEL L8
+v23 := u0
+v24 := u1
+v22 := CALL f(v23, v24)
+u2 := v22
+LABEL L9</pre></details><p class="small">Simulated with euclid(12,8) → 4, (9,6) → 3, (5,5) → 5, (7,1) → 1, and with x=0 the guard keeps z untouched; stack pointer returns to its start every time.</p><div class="note flag"><b>Flags:</b> (1) The lecturer-marked script is not a model answer: it lost marks in MAIN (marked "+4,3 for the MAIN"), e.g. it passes no argument temps. Mine follows the textbook rules literally. (2) <code>LABEL f … RETURN</code> placement: the epilogue sits after the last label of the if-else, where <code>RETURN c</code> is. (3) If liveness were used instead of "save all", both save sets would be empty (after the call only the result is read), which is exactly why the exam says "save all": it removes that analysis.</div></div></section><section class="q" id="y25-D1" hidden><header><h3>Task D.1 · liveness sets</h3><div class="meta"><span class="pts">10 points</span><span class="chip ok">checked against marked script</span></div></header><div class="ask">Apply Chapter 8: in[L] and out[L] for each of the 17 lines, three-column table.</div><div class="ans"><div class="tw"><table class=""><thead><tr><th>Line L</th><th>out[L]</th><th>in[L]</th></tr></thead><tbody><tr><td>1</td><td>{x}</td><td>∅</td></tr><tr><td>2</td><td>{y}</td><td>{x}</td></tr><tr><td>3</td><td>{i, y}</td><td>{y}</td></tr><tr><td>4</td><td>{a, i, y}</td><td>{i, y}</td></tr><tr><td>5</td><td>{a, i, y}</td><td>{a, i, y}</td></tr><tr><td>6</td><td>{a, i, j, y}</td><td>{a, i, y}</td></tr><tr><td>7</td><td>{a, b, i, j, y}</td><td>{a, i, j, y}</td></tr><tr><td>8</td><td>{a, b, i, j, y}</td><td>{a, b, i, j, y}</td></tr><tr><td>9</td><td>{a, b, i, j, y}</td><td>{a, b, i, j, y}</td></tr><tr><td>10</td><td>{a, b, i, j, y}</td><td>{a, b, i, j, y}</td></tr><tr><td>11</td><td>{a, b, i, j, y}</td><td>{a, b, i, j, y}</td></tr><tr><td>12</td><td>{a, b, i, y}</td><td>{a, b, i, y}</td></tr><tr><td>13</td><td>{a, b, i, y}</td><td>{a, b, i, y}</td></tr><tr><td>14</td><td>{a, i, y}</td><td>{a, b, i, y}</td></tr><tr><td>15</td><td>{a, i, y}</td><td>{a, i, y}</td></tr><tr><td>16</td><td>{a, i, y}</td><td>{a, i, y}</td></tr><tr><td>17</td><td>∅</td><td>{a}</td></tr></tbody></table></div><p class="small">Lines 5 and 8 are the labels L0 and L1. Together with the 15 instructions that gives the 17 relevant lines. These sets equal the lecturer-marked ones, 10/10; I recomputed them to the fixpoint in code.</p><details><summary>Statement by line</summary><div class="tw"><table class=""><thead><tr><th>Line</th><th>Code</th><th>succ</th></tr></thead><tbody><tr><td>1</td><td>x = 5</td><td>2</td></tr><tr><td>2</td><td>y = x</td><td>3</td></tr><tr><td>3</td><td>i = y</td><td>4</td></tr><tr><td>4</td><td>a = 0</td><td>5</td></tr><tr><td>5</td><td>L0:</td><td>6</td></tr><tr><td>6</td><td>j = y</td><td>7</td></tr><tr><td>7</td><td>b = 0</td><td>8</td></tr><tr><td>8</td><td>L1:</td><td>9</td></tr><tr><td>9</td><td>b = b + j</td><td>10</td></tr><tr><td>10</td><td>j = j − 1</td><td>11</td></tr><tr><td>11</td><td>if (j &gt; 0) goto L1</td><td>8, 12</td></tr><tr><td>12</td><td>y = y − 1</td><td>13</td></tr><tr><td>13</td><td>b = b + i</td><td>14</td></tr><tr><td>14</td><td>a = a + b</td><td>15</td></tr><tr><td>15</td><td>i = i − 1</td><td>16</td></tr><tr><td>16</td><td>if (i &gt; 0) goto L0</td><td>5, 17</td></tr><tr><td>17</td><td>return a</td><td>—</td></tr></tbody></table></div></details></div></section><section class="q" id="y25-D2" hidden><header><h3>Task D.2 · interference graph</h3><div class="meta"><span class="pts">3 points</span><span class="chip ok">checked against marked script</span></div></header><div class="ask">Draw the interference graph for x, y, i, j, a, b (no colours needed).</div><div class="ans"><div class="fig"><svg
+ viewBox="0.00 0.00 191.00 136.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 132)">
+<title>G</title>
+<polygon fill="none" stroke="none" points="-4,4 -4,-132 187,-132 187,4 -4,4"/>
+<!-- a -->
+<g id="node1" class="node">
+<title>a</title>
+<ellipse fill="#dfe3ea" stroke="currentColor" cx="20" cy="-55.81" rx="20" ry="20"/>
+<text fill="#14181f" text-anchor="middle" x="20" y="-52.31" font-family="Times,serif" font-size="15.00">a</text>
+</g>
+<!-- b -->
+<g id="node2" class="node">
+<title>b</title>
+<ellipse fill="#dfe3ea" stroke="currentColor" cx="107.62" cy="-47.76" rx="20" ry="20"/>
+<text fill="#14181f" text-anchor="middle" x="107.62" y="-44.26" font-family="Times,serif" font-size="15.00">b</text>
+</g>
+<!-- a&#45;&#45;b -->
+<g id="edge1" class="edge">
+<title>a&#45;&#45;b</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M40.32,-53.94C54.48,-52.64 73.28,-50.91 87.41,-49.61"/>
+</g>
+<!-- i -->
+<g id="node3" class="node">
+<title>i</title>
+<ellipse fill="#dfe3ea" stroke="currentColor" cx="60.8" cy="-20" rx="20" ry="20"/>
+<text fill="#14181f" text-anchor="middle" x="60.8" y="-16.5" font-family="Times,serif" font-size="15.00">i</text>
+</g>
+<!-- a&#45;&#45;i -->
+<g id="edge2" class="edge">
+<title>a&#45;&#45;i</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M35.19,-42.47C38.64,-39.45 42.29,-36.24 45.73,-33.23"/>
+</g>
+<!-- j -->
+<g id="node4" class="node">
+<title>j</title>
+<ellipse fill="#dfe3ea" stroke="currentColor" cx="41.44" cy="-105.84" rx="20" ry="20"/>
+<text fill="#14181f" text-anchor="middle" x="41.44" y="-102.34" font-family="Times,serif" font-size="15.00">j</text>
+</g>
+<!-- a&#45;&#45;j -->
+<g id="edge3" class="edge">
+<title>a&#45;&#45;j</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M27.98,-74.44C29.79,-78.66 31.71,-83.14 33.52,-87.36"/>
+</g>
+<!-- y -->
+<g id="node6" class="node">
+<title>y</title>
+<ellipse fill="#dfe3ea" stroke="currentColor" cx="95.42" cy="-100.6" rx="20" ry="20"/>
+<text fill="#14181f" text-anchor="middle" x="95.42" y="-97.1" font-family="Times,serif" font-size="15.00">y</text>
+</g>
+<!-- a&#45;&#45;y -->
+<g id="edge4" class="edge">
+<title>a&#45;&#45;y</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M37.49,-66.2C49.67,-73.43 65.86,-83.04 78.02,-90.26"/>
+</g>
+<!-- b&#45;&#45;i -->
+<g id="edge5" class="edge">
+<title>b&#45;&#45;i</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M90.19,-37.42C86.24,-35.08 82.04,-32.59 78.1,-30.25"/>
+</g>
+<!-- b&#45;&#45;j -->
+<g id="edge6" class="edge">
+<title>b&#45;&#45;j</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M92.27,-61.23C81.58,-70.61 67.38,-83.07 56.7,-92.44"/>
+</g>
+<!-- b&#45;&#45;y -->
+<g id="edge7" class="edge">
+<title>b&#45;&#45;y</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M103.08,-67.43C102.05,-71.89 100.95,-76.63 99.92,-81.08"/>
+</g>
+<!-- i&#45;&#45;j -->
+<g id="edge8" class="edge">
+<title>i&#45;&#45;j</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M56.31,-39.91C53.18,-53.78 49.03,-72.19 45.9,-86.04"/>
+</g>
+<!-- i&#45;&#45;y -->
+<g id="edge9" class="edge">
+<title>i&#45;&#45;y</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M68.83,-38.69C74.42,-51.71 81.85,-69.01 87.43,-82"/>
+</g>
+<!-- j&#45;&#45;y -->
+<g id="edge10" class="edge">
+<title>j&#45;&#45;y</title>
+<path fill="none" stroke="currentColor" stroke-width="1.6" d="M61.54,-103.88C66.09,-103.44 70.93,-102.97 75.48,-102.53"/>
+</g>
+<!-- x -->
+<g id="node5" class="node">
+<title>x</title>
+<ellipse fill="#dfe3ea" stroke="currentColor" cx="163" cy="-108" rx="20" ry="20"/>
+<text fill="#14181f" text-anchor="middle" x="163" y="-104.5" font-family="Times,serif" font-size="15.00">x</text>
+</g>
+</g>
+</svg>
+</div><p><b>x has no edges:</b> when x is assigned (line 1) nothing else is live, and by the time the other variables are assigned x is already dead. The other five (y, i, j, a, b) are all live together around the loops, so every pair interferes: a complete graph K₅ (10 edges).</p><div class="tw"><table class=""><thead><tr><th>Edge-producing line</th><th>Assigns</th><th>out[L]</th><th>Edges</th></tr></thead><tbody><tr><td>1</td><td>x</td><td>{x}</td><td>none</td></tr><tr><td>2</td><td>y</td><td>{y}</td><td>none</td></tr><tr><td>3</td><td>i</td><td>{y,i}</td><td>i–y</td></tr><tr><td>4</td><td>a</td><td>{y,i,a}</td><td>a–y, a–i</td></tr><tr><td>6</td><td>j</td><td>{j,y,i,a}</td><td>j–y, j–i, j–a</td></tr><tr><td>7</td><td>b</td><td>{b,j,y,i,a}</td><td>b–j, b–y, b–i, b–a</td></tr><tr><td>9</td><td>b</td><td>{j,y,b,i,a}</td><td>(already there)</td></tr><tr><td>10</td><td>j</td><td>{y,b,i,a,j}</td><td>(already there)</td></tr><tr><td>12</td><td>y</td><td>{b,i,a,y}</td><td>(already there)</td></tr><tr><td>13</td><td>b</td><td>{a,b,i,y}</td><td>(already there)</td></tr><tr><td>14</td><td>a</td><td>{i,y,a}</td><td>(already there)</td></tr><tr><td>15</td><td>i</td><td>{y,i,a}</td><td>(already there)</td></tr></tbody></table></div><p class="small">Matches the marked 3/3 answer: five fully connected variables plus isolated x.</p></div></section><section class="q" id="y25-E" hidden><header><h3>Task E · Largest-Fit-First pseudo-code</h3><div class="meta"><span class="pts">5 points</span><span class="chip mine">my own derivation</span></div></header><div class="ask">In simple semi-English pseudo-code, give the few main steps of the greedy Largest-Fit-First algorithm that translates intermediate code into machine-specific target code.</div><div class="ans"><pre class="code">Preparation (once, for the target machine)
+  1. Write down a list of tiles. Each tile = (intermediate-code pattern, the machine
+     instruction(s) that implement it).
+  2. Sort the list by pattern size, LARGEST pattern first.
+
+Translation (greedy, no backtracking)
+  3. Look at the intermediate program from its start (the first untranslated line).
+  4. Scan the sorted list from the top and take the FIRST tile whose pattern matches
+     the code at the current position.   (Largest pattern wins, so &quot;largest fit first&quot;.)
+  5. Output that tile&#x27;s machine code, and mark the matched intermediate instructions
+     as translated (the position moves to just after the tile).
+  6. Repeat steps 4 and 5 until the whole intermediate program is covered.
+     (Every instruction is covered exactly once: no gaps, no overlaps.)
+  7. The concatenated machine code, in order, is the final target code.</pre><p>Or the same in the lecturer's recursive style (the marked student answer used this shape):</p><pre class="code">Trans(IR) =  case IR of
+   longest pattern :: IR&#x27;          →  its machine code ++ Trans(IR&#x27;)
+   next-longest pattern :: IR&#x27;     →  its machine code ++ Trans(IR&#x27;)
+   …                                (list ordered longest pattern first)
+   single-instruction pattern :: IR&#x27; → its machine code ++ Trans(IR&#x27;)</pre><div class="note flag"><b>Flag:</b> the marked student script (using this recursive shape) got only 2/5 and the margin says "for memo see lecture slides (Ch. 7)". So the memo is in the slides. My steps cover what the textbook says about greedy tiling, but check them against the slides: the likely missing marks are the explicit points "list ordered longest first", "take the first match", "emit code, continue after the tile", and "no backtracking".</div></div></section></div><div class="pane" id="psrc" hidden><p class="intro">View the original exam papers used for the answers. Choose a year to open its PDF here, or open it in a separate tab.</p><nav class="pdfnav" role="tablist" aria-label="Original exam papers"><button type="button" role="tab" data-pdf="2023" aria-selected="true">2023</button><button type="button" role="tab" data-pdf="2024" aria-selected="false">2024</button><button type="button" role="tab" data-pdf="2025" aria-selected="false">2025</button></nav><section class="source-viewer"><header><h2 id="pdfTitle">2023 original exam paper</h2><a id="pdfOpen" href="SOURCES/compiler%20construction%20exam%2023.pdf" target="_blank" rel="noopener">Open PDF separately ↗</a></header><iframe class="pdf-frame" id="sourceFrame" src="SOURCES/compiler%20construction%20exam%2023.pdf" title="2023 original exam paper" loading="lazy"></iframe></section></div></main>
+<script>(function(){
+var TREE={"n": "PROGRAM", "t": "wrong", "k": [{"n": "VAR-DECL", "t": "correct", "k": [{"n": "int n", "t": "numeric", "k": []}]}, {"n": "ALGO", "t": "wrong", "k": [{"n": "LOOP", "t": "wrong", "k": [{"n": "while", "t": "correct", "k": []}, {"n": "TERM", "t": "boolean", "k": [{"n": "n > 1", "t": "boolean", "k": []}]}, {"n": "ALGO", "t": "wrong", "k": [{"n": "BRANCH", "t": "wrong", "k": [{"n": "if", "t": "correct", "k": []}, {"n": "TERM", "t": "boolean", "k": [{"n": "FUNCTIONCALL", "t": "boolean", "k": [{"n": "is_odd_number", "t": "boolean", "k": []}]}, {"n": "PARAMETER", "t": "numeric", "k": [{"n": "n", "t": "numeric", "k": []}]}]}, {"n": "ASSIGN", "t": "wrong", "k": [{"n": "n", "t": "numeric", "k": []}, {"n": "TERM", "t": "wrong", "k": [{"n": "n ++ \"hello\"", "t": "wrong", "k": []}]}]}, {"n": "else", "t": "correct", "k": []}, {"n": "ASSIGN", "t": "correct", "k": [{"n": "n", "t": "numeric", "k": []}, {"n": "TERM", "t": "numeric", "k": [{"n": "n / 2", "t": "numeric", "k": []}]}]}]}]}]}]}]};
+var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+function show(year,qid){
+  $$('.pane').forEach(function(p){p.hidden=p.id!=='p'+year});
+  $$('.years button').forEach(function(b){b.setAttribute('aria-selected',b.dataset.y===year)});
+  if(year==='src'){try{history.replaceState(null,'','#sources')}catch(e){};return}
+  var pane=$('#p'+year);var first=$('.qnav button',pane).dataset.q;qid=qid&&pane.querySelector('#'+qid)?qid:first;
+  $$('.q',pane).forEach(function(s){s.hidden=s.id!==qid});
+  $$('.qnav button',pane).forEach(function(b){b.setAttribute('aria-pressed',b.dataset.q===qid)});
+  try{history.replaceState(null,'','#'+qid)}catch(e){}
+  if(qid==='y25-B')drawTree();
+}
+$$('.years button').forEach(function(b){b.onclick=function(){show(b.dataset.y)}});
+$$('.qnav button').forEach(function(b){b.onclick=function(){show(b.closest('.qnav').dataset.year,b.dataset.q)}});
+var PDFS={'2023':{title:'2023 original exam paper',src:'SOURCES/compiler%20construction%20exam%2023.pdf'},'2024':{title:'2024 original exam paper',src:'SOURCES/COS341%202024-1.pdf'},'2025':{title:'2025 original exam paper',src:'SOURCES/2025_compiler_exam.pdf'}};
+function showPdf(year){var pdf=PDFS[year];if(!pdf)return;var frame=$('#sourceFrame');frame.src=pdf.src;frame.title=pdf.title;$('#pdfTitle').textContent=pdf.title;$('#pdfOpen').href=pdf.src;$$('.pdfnav button').forEach(function(b){b.setAttribute('aria-selected',b.dataset.pdf===year)})}
+$$('.pdfnav button').forEach(function(b){b.onclick=function(){showPdf(b.dataset.pdf)}});showPdf('2023');
+var themeSaved='';try{themeSaved=localStorage.getItem('cos341-exams-theme')||''}catch(e){};if(themeSaved==='light'||themeSaved==='dark')document.documentElement.dataset.theme=themeSaved;$('#themeToggle').onclick=function(){var dark=document.documentElement.dataset.theme?document.documentElement.dataset.theme==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;var next=dark?'light':'dark';document.documentElement.dataset.theme=next;try{localStorage.setItem('cos341-exams-theme',next)}catch(e){}};
+var drawn=false;
+function drawTree(){
+  if(drawn)return;drawn=true;
+  var W=112,H=46,GX=10,GY=40,pos=[],x=0;
+  function lay(n,d){n.d=d;if(!n.k.length){n.x=x+W/2;x+=W+GX}else{n.k.forEach(function(c){lay(c,d+1)});n.x=(n.k[0].x+n.k[n.k.length-1].x)/2}pos.push(n)}
+  lay(TREE,0);var maxd=Math.max.apply(null,pos.map(function(n){return n.d}));
+  var wd=x,ht=(maxd+1)*(H+GY)-GY+8;
+  var C={numeric:['#d6e6fb','#2b5fa8'],boolean:['#e4dcf6','#6a4db0'],string:['#fbe3c9','#a8651b'],correct:['#d8f0df','#1d7a3a'],wrong:['#fbd5d5','#a82b2b']};
+  var s='<svg xmlns="http://www.w3.org/2000/svg" width="'+wd+'" height="'+ht+'" viewBox="0 0 '+wd+' '+ht+'" role="img" aria-label="Attributed syntax tree with final T attributes">';
+  pos.forEach(function(n){n.k.forEach(function(c){var y1=n.d*(H+GY)+H,y2=c.d*(H+GY);s+='<path d="M'+n.x+' '+y1+' C'+n.x+' '+(y1+GY/2)+' '+c.x+' '+(y2-GY/2)+' '+c.x+' '+y2+'" fill="none" stroke="currentColor" stroke-opacity=".55" stroke-width="1.4"/>'})});
+  pos.forEach(function(n){var y=n.d*(H+GY),col=C[n.t];
+    s+='<g class="tn"><rect x="'+(n.x-W/2)+'" y="'+y+'" width="'+W+'" height="'+H+'" rx="8" fill="'+col[0]+'" stroke="'+col[1]+'"/><text x="'+n.x+'" y="'+(y+19)+'" text-anchor="middle" fill="#14181f">'+esc(n.n)+'</text><text class="tt" x="'+n.x+'" y="'+(y+36)+'" text-anchor="middle" fill="'+col[1]+'" style="font-weight:700">T: '+n.t+'</text></g>'});
+  s+='</svg>';$('#treeB').innerHTML=s;
+  $('#treeLegend').innerHTML=['numeric','boolean','string','correct','wrong'].map(function(k){return '<span><i style="background:'+C[k][0]+'"></i>'+k+'</span>'}).join('');
+}
+function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+var h=(location.hash||'').slice(1),y=/^y(\d\d)-/.exec(h);
+show(h==='sources'?'src':(y?y[1]:'25'),y?h:null);
+})();
+</script></body></html>
