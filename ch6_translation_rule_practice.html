@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>COS341 &middot; Translation rule practice</title>
+<style>
+:root{color-scheme:light dark;--paper:#f5f7fa;--panel:#fff;--ink:#18212f;--muted:#526071;--rule:#d4dbe4;--link:#1756a9;--code:#edf1f5;--note:#fff0bf;--note-border:#8a5a00}
+@media(prefers-color-scheme:dark){:root{--paper:#151b24;--panel:#1e2632;--ink:#edf2f8;--muted:#aab6c5;--rule:#3a4655;--link:#a7c9ff;--code:#283341;--note:#493b1d;--note-border:#e5a55c}}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 Arial,"Segoe UI",Roboto,sans-serif}header{background:var(--panel);border-bottom:1px solid var(--rule);padding:18px 24px}header>div,main{max-width:1100px;margin:auto}.top{display:flex;gap:12px;align-items:center;flex-wrap:wrap}h1{font-size:22px;line-height:1.3;margin:0}.home{margin-left:auto;color:var(--link)}header p{color:var(--muted);font-size:14px;margin:4px 0 0}main{padding:24px 24px 64px}nav{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 24px}nav a{background:var(--panel);border:1px solid var(--rule);padding:6px 11px;color:var(--link);text-decoration:none}nav a:hover,nav a:focus-visible{border-color:var(--link);text-decoration:underline}section{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:18px 22px;margin:16px 0;scroll-margin-top:12px}h2{font-size:21px;margin:0 0 8px}h3{font-size:17px;margin:20px 0 6px}p{margin:8px 0}ul,ol{padding-left:24px}li{margin:5px 0}code,pre{font-family:Consolas,"Courier New",monospace}code{font-size:.92em;background:var(--code);border-radius:4px;padding:1px 4px}pre{background:var(--code);border:1px solid var(--rule);border-radius:6px;padding:14px;overflow-x:auto;line-height:1.5;font-size:14px;white-space:pre}pre code{padding:0;background:none}.note{border-left:4px solid var(--note-border);background:var(--note);padding:9px 13px;margin:12px 0}.small{font-size:14px;color:var(--muted)}.diagram{border:1px solid var(--rule);border-radius:6px;overflow-x:auto;padding:10px;margin:12px 0}.diagram svg{display:block;min-width:560px;width:100%;height:auto}.diagram text{font:14px Arial,sans-serif;fill:var(--ink)}.diagram rect{fill:var(--panel);stroke:var(--link);stroke-width:1.5}.diagram path{fill:none;stroke:var(--muted);stroke-width:1.8}.diagram .arrow{fill:var(--muted);stroke:none}@media(max-width:700px){header{padding:14px 16px}main{padding:18px 16px 48px}section{padding:16px}}
+</style></head><body><header><div><div class="top"><h1>COS341 &middot; Translation rule practice</h1><a class="home" href="index.html">&larr; Index</a></div><p>Six worked variations on 2024 Question C &middot; Chapter 6 intermediate-code translation</p></div></header><main>
+<p>These are <strong>practice questions</strong>, not known exam questions. Each answer states the behaviour it assumes: an exam question's grammar, provided functions and semantics take priority.</p>
+<nav aria-label="Practice examples"><a href="#method">Method</a><a href="#do-while">Do&ndash;while</a><a href="#unless">Unless</a><a href="#else-if">Else-if</a><a href="#bounded">Bounded for</a><a href="#switch">Switch</a><a href="#break">Break / continue</a></nav>
+<section id="method"><h2>Common setup and method</h2><p>Write translation functions that <strong>return code</strong>. They do not run the source program while translating it.</p><ul><li><code>transStat(S, table)</code> translates a statement; <code>transExp(E, table, place)</code> computes an expression into <code>place</code>.</li><li><code>transCond(C, Lt, Lf, table)</code> returns code that jumps to <code>Lt</code> when C is true or <code>Lf</code> when false.</li><li><code>newlabel()</code> and <code>newvar()</code> produce fresh labels and temporary variables. <code>++</code> concatenates sequences of intermediate instructions.</li><li><code>[LABEL L]</code>, <code>[GOTO L]</code> and <code>[IF x = y THEN Lt ELSE Lf]</code> are instruction sequences. Adapt notation and argument order to the functions given in your exam.</li></ul><p>First trace what runs and where control goes; give destinations labels; then assemble the returned code in execution order. Even if translator functions are called while constructing the answer, their returned code runs only when the generated program runs.</p></section>
+<section id="do-while"><h2>1 &middot; Do&ndash;while</h2><p><strong>Practice question:</strong> Translate <code>do ALGO while COND</code>. The body runs once before the first test; repeat while COND is true.</p><h3>Answer</h3><pre><code>transDoWhile(ALGO, COND, table):
+    start = newlabel()
+    exit  = newlabel()
+    body  = transStat(ALGO, table)
+    test  = transCond(COND, start, exit, table)
+
+    return [LABEL start] ++ body ++ test ++ [LABEL exit]</code></pre><p><strong>Trace:</strong> Execute the body, then the test. True returns to <code>start</code>; false reaches <code>exit</code>. The body always runs at least once.</p><div class="note">Compare <code>repeat ALGO until COND</code>: there, true exits and false loops, so the condition's two destinations are reversed.</div></section>
+<section id="unless"><h2>2 &middot; Unless</h2><p><strong>Practice question:</strong> Translate <code>unless COND then ALGO</code>: execute ALGO only when COND is false.</p><h3>Answer</h3><pre><code>transUnless(COND, ALGO, table):
+    bodyLabel = newlabel()
+    end       = newlabel()
+    test      = transCond(COND, end, bodyLabel, table)
+    body      = transStat(ALGO, table)
+
+    return test ++ [LABEL bodyLabel] ++ body ++ [LABEL end]</code></pre><p><strong>Trace:</strong> True goes directly to <code>end</code>; false goes to <code>bodyLabel</code>, executes the body and falls through to the end.</p></section>
+<section id="else-if"><h2>3 &middot; If / else-if / else</h2><p><strong>Practice question:</strong> Translate <code>if C1 then A1 else if C2 then A2 else A3</code>. Test C2 only if C1 is false; execute exactly one branch.</p><h3>Answer</h3><pre><code>transElseIf(C1, A1, C2, A2, A3, table):
+    first  = newlabel()
+    test2  = newlabel()
+    second = newlabel()
+    third  = newlabel()
+    end    = newlabel()
+    codeC1 = transCond(C1, first, test2, table)
+    codeA1 = transStat(A1, table)
+    codeC2 = transCond(C2, second, third, table)
+    codeA2 = transStat(A2, table)
+    codeA3 = transStat(A3, table)
+
+    return codeC1 ++ [LABEL first] ++ codeA1 ++ [GOTO end]
+         ++ [LABEL test2] ++ codeC2
+         ++ [LABEL second] ++ codeA2 ++ [GOTO end]
+         ++ [LABEL third] ++ codeA3 ++ [LABEL end]</code></pre><p>The two <code>GOTO end</code> instructions prevent a completed branch from falling into a later branch. A3 already falls directly into the end label.</p><div class="diagram"><svg viewBox="0 0 760 125" role="img" aria-labelledby="branch-title"><title id="branch-title">First condition selects A1 or the second condition; the second condition selects A2 or A3; all branches end together.</title><rect x="10" y="45" width="90" height="32" rx="4"/><text x="55" y="66" text-anchor="middle">test C1</text><rect x="210" y="8" width="90" height="32" rx="4"/><text x="255" y="29" text-anchor="middle">A1</text><rect x="210" y="80" width="90" height="32" rx="4"/><text x="255" y="101" text-anchor="middle">test C2</text><rect x="430" y="50" width="90" height="32" rx="4"/><text x="475" y="71" text-anchor="middle">A2</text><rect x="430" y="90" width="90" height="32" rx="4"/><text x="475" y="111" text-anchor="middle">A3</text><rect x="650" y="45" width="90" height="32" rx="4"/><text x="695" y="66" text-anchor="middle">end</text><path d="M100 52 L208 25 M100 70 L208 96 M300 24 L650 52 M300 91 L430 66 M300 101 L430 106 M520 66 L650 66 M520 106 L650 76"/><text x="130" y="30">true</text><text x="130" y="104">false</text><text x="330" y="70">true</text><text x="330" y="118">false</text></svg></div></section>
+<section id="bounded"><h2>4 &middot; Bounded for-loop</h2><p><strong>Practice question:</strong> Translate <code>for i := start to end do ALGO</code>, counting up by one with an inclusive upper bound.</p><p><strong>Assumptions:</strong> evaluate <code>start</code>, then <code>end</code>, once before the loop; the body does not modify <code>i</code>. The variable table maps <code>i</code> to its intermediate variable. The IR supports <code>&lt;=</code> and <code>+</code>.</p><h3>Answer</h3><pre><code>transBoundedFor(i, startExp, endExp, ALGO, table):
+    startValue = newvar()
+    bound      = newvar()
+    loop       = newlabel()
+    bodyLabel  = newlabel()
+    exit       = newlabel()
+    ivar       = lookup(table, i)
+    first      = transExp(startExp, table, startValue)
+    last       = transExp(endExp, table, bound)
+    body       = transStat(ALGO, table)
+
+    return first ++ [ivar := startValue] ++ last
+         ++ [LABEL loop]
+         ++ [IF ivar &lt;= bound THEN bodyLabel ELSE exit]
+         ++ [LABEL bodyLabel] ++ body
+         ++ [ivar := ivar + 1, GOTO loop, LABEL exit]</code></pre><p><strong>Trace:</strong> With start 2 and end 4, the body sees 2, 3 and 4. If start is greater than end, the first test exits without executing the body.</p><div class="note">If the language evaluates the bound on every iteration, move its expression code to just after <code>LABEL loop</code>. If it evaluates both expressions before assigning i, place <code>last</code> before <code>ivar := startValue</code>. Follow the stated semantics.</div></section>
+<section id="switch"><h2>5 &middot; Switch with two cases</h2><p><strong>Practice question:</strong> Translate <code>switch E { case K1: A1; case K2: A2; default: A3 }</code>.</p><p><strong>Assumptions:</strong> E is evaluated once; K1 and K2 are distinct constants; equality is supported; exactly one body runs and cases do not fall through. A missing default would simply go to the end.</p><h3>Answer</h3><pre><code>transSwitch(E, K1, A1, K2, A2, A3, table):
+    value   = newvar()
+    case1   = newlabel()
+    test2   = newlabel()
+    case2   = newlabel()
+    default = newlabel()
+    end     = newlabel()
+    expr    = transExp(E, table, value)
+    body1   = transStat(A1, table)
+    body2   = transStat(A2, table)
+    body3   = transStat(A3, table)
+
+    return expr
+         ++ [IF value = K1 THEN case1 ELSE test2]
+         ++ [LABEL test2, IF value = K2 THEN case2 ELSE default]
+         ++ [LABEL case1] ++ body1 ++ [GOTO end]
+         ++ [LABEL case2] ++ body2 ++ [GOTO end]
+         ++ [LABEL default] ++ body3 ++ [LABEL end]</code></pre><p>Each test uses the same saved value of E. A matching case jumps past the other tests. The jumps after A1 and A2 prevent fall-through; remove or change them only if the source language specifies fall-through.</p><p class="small">For more cases, repeat the test-and-label pattern. If the IR cannot compare directly with a constant, first place each constant into a fresh temporary using the provided expression translator.</p></section>
+<section id="break"><h2>6 &middot; Break and continue inside a loop</h2><p><strong>Practice question:</strong> Extend translation of <code>while COND do ALGO</code> so the body may contain <code>break</code> and <code>continue</code>. A break exits the nearest loop; a continue starts its next condition test.</p><p>Pass the appropriate labels into the body translator. Ordinary statement rules forward this context to their nested statements.</p><h3>Answer</h3><pre><code>transWhile(COND, ALGO, table):
+    testLabel = newlabel()
+    bodyLabel = newlabel()
+    exitLabel = newlabel()
+    test = transCond(COND, bodyLabel, exitLabel, table)
+    body = transStat(ALGO, table,
+                     breakTarget = exitLabel,
+                     continueTarget = testLabel)
+
+    return [LABEL testLabel] ++ test
+         ++ [LABEL bodyLabel] ++ body
+         ++ [GOTO testLabel, LABEL exitLabel]
+
+transBreak(breakTarget):
+    return [GOTO breakTarget]
+
+transContinue(continueTarget):
+    return [GOTO continueTarget]</code></pre><p>A nested loop creates its own targets for its body; when its translation ends, the surrounding body still uses the outer targets. A <code>break</code> or <code>continue</code> outside a valid loop needs to be rejected by the language's checking rules.</p><div class="note">The continue target depends on the loop: in a <b>for-loop</b> it normally points to the increment, then the condition; in a <b>do&ndash;while</b> it points to the condition after the body. Jumping straight to the body start would skip those steps.</div><p>For the bounded for-loop above, insert <code>LABEL increment</code> immediately before <code>ivar := ivar + 1</code>, translate the body with <code>continueTarget = increment</code>, and use its exit label as <code>breakTarget</code>.</p></section>
+<section><h2>Exam checklist</h2><ol><li>State any behaviour the question leaves ambiguous: test timing, bounds, fall-through or nested-loop scope.</li><li>Allocate fresh labels and temporaries; use the provided translators and symbol table.</li><li>Put generated code in execution order. Make every condition's true and false destination explicit.</li><li>Check fall-through, loop exit, zero iterations versus one iteration, and any continue target.</li><li>Trace a small example through each path and compare it with the source construct.</li></ol></section>
+</main></body></html>
